@@ -1,0 +1,58 @@
+첨부한 행궁다과 웹사이트 스크린샷 2장을 참고해서, 편집 가능한 Figma 데스크톱 웹사이트 시안을 만들어줘.
+
+중요:
+- 스크린샷을 그대로 이미지로 배치하지 말고, 텍스트/도형/컴포넌트/Auto Layout으로 재구성해줘.
+- 데스크톱 웹을 우선으로 하고 모바일은 후순위로 둬.
+- 전통적이지만 촌스럽지 않은 프리미엄 한옥 찻집 느낌으로 만들어줘.
+- 색상은 크림, 한지, 진한 먹색, 시나바, 골드, 제이드 계열을 사용해줘.
+- 카드 radius는 8px 이하로 유지해줘.
+- 전체 섹션은 Header, Hero, 소개, 메뉴, 체험, 케이터링, AI 다과 추천, Footer 순서로 구성해줘.
+- 메뉴/폼/AI 추천 섹션은 실제 서비스처럼 사용할 수 있는 UI로 만들어줘.
+- AI 다과 추천은 다과상이 아니라 행궁약과 같은 개별 다과 하나를 추천하는 서비스처럼 보여줘.
+
+브랜드:
+- 이름: 행궁다과
+- 설명: 화성행궁 근처 전통 디저트 카페/체험/케이터링 홈페이지
+- 핵심 문구: 화성행궁 곁, 명인이 빚은 다과.
+
+주요 메뉴:
+- 다과상 7,000원
+- 진달래화전 7,000원
+- 대추차 9,000원
+- 쌍화차 9,000원
+- 생강차 7,000원
+- 망고빙수 15,000원
+- 녹차빙수 15,000원
+- 행궁약과 2,500원
+
+디자인 토큰:
+- Cream #F7EFE4
+- Paper #FFFCF7
+- Hanji #F1E7D8
+- Wheat #D8C5AA
+- Deep #211817
+- Brown #604537
+- Cinnabar #87352D
+- Gold #C19A5B
+- Jade #2F6F5E
+- Plum #6A3A4A
+- Muted #6D6258
+
+타이포그래피:
+- 본문: Noto Sans KR
+- 제목/브랜드: Noto Serif KR
+- 섹션 제목: 40px, 700, line-height 1.22
+- 본문: 14-16px, line-height 1.45-1.65
+
+컴포넌트:
+- Soft Card: Paper fill, Wheat border, 8px radius, soft shadow
+- Primary Button: Deep fill, Paper text, 8px radius
+- Outlined Button: Deep stroke, Deep text, 8px radius
+- Form Field: Hanji fill, Wheat border, Gold focus border, 8px radius
+- Tag Pill: Gold 10% fill, Gold 30% stroke, Brown text
+
+최종 결과:
+- Figma에서 편집 가능한 Auto Layout 기반 화면
+- Color Styles와 Text Styles 적용
+- 버튼, 카드, 폼 필드, 태그 컴포넌트화
+- 고급스럽고 정돈된 전통 디저트 브랜드 홈페이지

@@ -1,0 +1,35 @@
+{
+    "name": "행궁다과",
+    "short_name": "행궁다과",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FAF3E8",
+    "theme_color": "#231813",
+    "description": "수원 행궁동 전통 다과 브랜드 행궁다과의 공식 홈페이지 데모",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
