@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'brand_logo.dart';
+
 const _serifFallback = [
   'Apple SD Gothic Neo',
   'Noto Sans CJK KR',
@@ -8,10 +10,7 @@ const _serifFallback = [
 ];
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppNavBar({
-    super.key,
-    required this.currentRoute,
-  });
+  const AppNavBar({super.key, required this.currentRoute});
 
   final String currentRoute;
 
@@ -50,13 +49,44 @@ class _WideNav extends StatelessWidget {
             _LogoButton(),
             const Spacer(),
             _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
-            _NavItem('메뉴', '/menu', currentRoute, onTap: () => _navigate(context, '/menu')),
-            _NavItem('체험', '/experience', currentRoute, onTap: () => _navigate(context, '/experience')),
-            _NavItem('케이터링', '/catering', currentRoute, onTap: () => _navigate(context, '/catering')),
-            _NavItem('나만의 다과 추천', '/ai', currentRoute, onTap: () => _navigate(context, '/ai')),
+            _NavItem(
+              '메뉴',
+              '/menu',
+              currentRoute,
+              onTap: () => _navigate(context, '/menu'),
+            ),
+            _NavItem(
+              '체험',
+              '/experience',
+              currentRoute,
+              onTap: () => _navigate(context, '/experience'),
+            ),
+            _NavItem(
+              '케이터링',
+              '/catering',
+              currentRoute,
+              onTap: () => _navigate(context, '/catering'),
+            ),
+            _NavItem(
+              '나만의 다과 추천',
+              '/ai',
+              currentRoute,
+              onTap: () => _navigate(context, '/ai'),
+            ),
             const Spacer(),
-            _NavItem('로그인', '', currentRoute, onTap: () => _showDemoNotice(context, '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.')),
-            _NavItem('장바구니', '', currentRoute, onTap: () => _showCartSheet(context)),
+            _NavItem(
+              '로그인',
+              '',
+              currentRoute,
+              onTap: () =>
+                  _showDemoNotice(context, '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.'),
+            ),
+            _NavItem(
+              '장바구니',
+              '',
+              currentRoute,
+              onTap: () => _showCartSheet(context),
+            ),
           ],
         ),
       ),
@@ -84,10 +114,30 @@ class _CompactNav extends StatelessWidget {
           child: Row(
             children: [
               _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
-              _NavItem('메뉴', '/menu', currentRoute, onTap: () => _navigate(context, '/menu')),
-              _NavItem('체험', '/experience', currentRoute, onTap: () => _navigate(context, '/experience')),
-              _NavItem('케이터링', '/catering', currentRoute, onTap: () => _navigate(context, '/catering')),
-              _NavItem('나만의 다과 추천', '/ai', currentRoute, onTap: () => _navigate(context, '/ai')),
+              _NavItem(
+                '메뉴',
+                '/menu',
+                currentRoute,
+                onTap: () => _navigate(context, '/menu'),
+              ),
+              _NavItem(
+                '체험',
+                '/experience',
+                currentRoute,
+                onTap: () => _navigate(context, '/experience'),
+              ),
+              _NavItem(
+                '케이터링',
+                '/catering',
+                currentRoute,
+                onTap: () => _navigate(context, '/catering'),
+              ),
+              _NavItem(
+                '나만의 다과 추천',
+                '/ai',
+                currentRoute,
+                onTap: () => _navigate(context, '/ai'),
+              ),
             ],
           ),
         ),
@@ -194,16 +244,7 @@ class _LogoButton extends StatelessWidget {
         minimumSize: const Size(0, 44),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: const Text(
-        '행궁다과',
-        style: TextStyle(
-          color: Color(0xFF534344),
-          fontFamily: 'Gowun Batang',
-          fontFamilyFallback: _serifFallback,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: const HaenggungBrandLogo(height: 42),
     );
   }
 }

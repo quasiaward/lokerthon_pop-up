@@ -12,6 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +25,12 @@ flutter:
   assets:
     - assets/figma/
     - assets/figma/quiz/
+    - assets/figma/logo/
+
+  fonts:
+    - family: Gowun Batang
+      fonts:
+        - asset: assets/fonts/GowunBatang-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/GowunBatang-Bold.ttf
+          weight: 700

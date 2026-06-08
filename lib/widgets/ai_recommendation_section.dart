@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/recommendation.dart';
 import '../services/recommendation_service.dart';
@@ -52,10 +53,30 @@ const _questions = [
     after: '은 어떤 색인가요?',
     hint: '지금 가장 이끌리는 색감을 골라주세요.',
     options: [
-      _QuizOption(title: '매화 분홍', subtitle: '설레고 따뜻한 매화의 온기', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q1_c1_pink.jpg'),
-      _QuizOption(title: '소나무 청록', subtitle: '차분하고 싱그러운 솔바람', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q1_c2_teal.jpg'),
-      _QuizOption(title: '유자 노랑', subtitle: '생기 있고 달콤한 유자의 향', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q1_c3_yellow.jpg'),
-      _QuizOption(title: '먹색', subtitle: '깊고 단단한 전통의 무게', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q1_c4_ink.jpg'),
+      _QuizOption(
+        title: '매화 분홍',
+        subtitle: '설레고 따뜻한 매화의 온기',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q1_c1_pink.jpg',
+      ),
+      _QuizOption(
+        title: '소나무 청록',
+        subtitle: '차분하고 싱그러운 솔바람',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q1_c2_teal.jpg',
+      ),
+      _QuizOption(
+        title: '유자 노랑',
+        subtitle: '생기 있고 달콤한 유자의 향',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q1_c3_yellow.jpg',
+      ),
+      _QuizOption(
+        title: '먹색',
+        subtitle: '깊고 단단한 전통의 무게',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q1_c4_ink.jpg',
+      ),
     ],
   ),
   _QuizQ(
@@ -64,10 +85,30 @@ const _questions = [
     after: '는 어떤가요?',
     hint: '지금 가장 이끌리는 날씨를 골라주세요.',
     options: [
-      _QuizOption(title: '맑고 활기참', subtitle: '설레고 따뜻한 햇빛의 온기', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q2_c1_sunny.jpg'),
-      _QuizOption(title: '흐리고 지침', subtitle: '차분하고 조용한 쉬고픈 날', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q2_c2_rainy.jpg'),
-      _QuizOption(title: '잔잔하고 평온', subtitle: '생기 있고 달콤한 유자의 향', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q2_c3_calm.jpg'),
-      _QuizOption(title: '설레고 두근거려요', subtitle: '깊고 단단한 전통의 무게', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q2_c4_excited.jpg'),
+      _QuizOption(
+        title: '맑고 활기참',
+        subtitle: '설레고 따뜻한 햇빛의 온기',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q2_c1_sunny.jpg',
+      ),
+      _QuizOption(
+        title: '흐리고 지침',
+        subtitle: '차분하고 조용한 쉬고픈 날',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q2_c2_rainy.jpg',
+      ),
+      _QuizOption(
+        title: '잔잔하고 평온',
+        subtitle: '생기 있고 달콤한 유자의 향',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q2_c3_calm.jpg',
+      ),
+      _QuizOption(
+        title: '설레고 두근거려요',
+        subtitle: '깊고 단단한 전통의 무게',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q2_c4_excited.jpg',
+      ),
     ],
   ),
   _QuizQ(
@@ -76,10 +117,30 @@ const _questions = [
     after: '와 함께 하셨나요?',
     hint: '함께하고 싶은 누군가를 선택해주세요.',
     options: [
-      _QuizOption(title: '소중한 사람', subtitle: '따뜻하고 늘 곁에 있어주는 사람', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q3_c1_loved.jpg'),
-      _QuizOption(title: '혼자', subtitle: '온전한 나와의 시간', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q3_c2_alone.jpg'),
-      _QuizOption(title: '가족', subtitle: '평생 함께 있어줄 동반자', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q3_c3_family.jpg'),
-      _QuizOption(title: '친구', subtitle: '깊고 단단한 우정', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q3_c4_friend.jpg'),
+      _QuizOption(
+        title: '소중한 사람',
+        subtitle: '따뜻하고 늘 곁에 있어주는 사람',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q3_c1_loved.jpg',
+      ),
+      _QuizOption(
+        title: '혼자',
+        subtitle: '온전한 나와의 시간',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q3_c2_alone.jpg',
+      ),
+      _QuizOption(
+        title: '가족',
+        subtitle: '평생 함께 있어줄 동반자',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q3_c3_family.jpg',
+      ),
+      _QuizOption(
+        title: '친구',
+        subtitle: '깊고 단단한 우정',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q3_c4_friend.jpg',
+      ),
     ],
   ),
   _QuizQ(
@@ -88,10 +149,30 @@ const _questions = [
     after: '이 지금 당신을 달래줄 것 같나요?',
     hint: '지금 가장 이끌리는 식감을 골라주세요.',
     options: [
-      _QuizOption(title: '부드러운', subtitle: '입안에서 부드럽게 녹아내리는 식감', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q4_c1_soft.jpg'),
-      _QuizOption(title: '바삭한', subtitle: '가볍게 부서지는 즐거움', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q4_c2_crispy.jpg'),
-      _QuizOption(title: '쫀득한', subtitle: '천천히 오래 남는 만족감', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q4_c3_chewy.jpg'),
-      _QuizOption(title: '촉촉한', subtitle: '촉촉하고 은은한 식감', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q4_c4_moist.jpg'),
+      _QuizOption(
+        title: '부드러운',
+        subtitle: '입안에서 부드럽게 녹아내리는 식감',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q4_c1_soft.jpg',
+      ),
+      _QuizOption(
+        title: '바삭한',
+        subtitle: '가볍게 부서지는 즐거움',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q4_c2_crispy.jpg',
+      ),
+      _QuizOption(
+        title: '쫀득한',
+        subtitle: '천천히 오래 남는 만족감',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q4_c3_chewy.jpg',
+      ),
+      _QuizOption(
+        title: '촉촉한',
+        subtitle: '촉촉하고 은은한 식감',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q4_c4_moist.jpg',
+      ),
     ],
   ),
   _QuizQ(
@@ -100,10 +181,30 @@ const _questions = [
     after: '이 느껴지시나요?',
     hint: '지금 가장 이끌리는 계절을 골라주세요.',
     options: [
-      _QuizOption(title: '봄', subtitle: '설레고 부드러운 꽃향기의 시작', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q5_c1_spring.jpg'),
-      _QuizOption(title: '여름', subtitle: '싱그럽고 생기 넘치는 계절의 온기', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q5_c2_summer.jpg'),
-      _QuizOption(title: '가을', subtitle: '깊어지는 향과 차분한 여운', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q5_c3_autumn.jpg'),
-      _QuizOption(title: '겨울', subtitle: '고요하고 포근한 휴식의 시간', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q5_c4_winter.jpg'),
+      _QuizOption(
+        title: '봄',
+        subtitle: '설레고 부드러운 꽃향기의 시작',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q5_c1_spring.jpg',
+      ),
+      _QuizOption(
+        title: '여름',
+        subtitle: '싱그럽고 생기 넘치는 계절의 온기',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q5_c2_summer.jpg',
+      ),
+      _QuizOption(
+        title: '가을',
+        subtitle: '깊어지는 향과 차분한 여운',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q5_c3_autumn.jpg',
+      ),
+      _QuizOption(
+        title: '겨울',
+        subtitle: '고요하고 포근한 휴식의 시간',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q5_c4_winter.jpg',
+      ),
     ],
   ),
   _QuizQ(
@@ -112,10 +213,30 @@ const _questions = [
     after: '이 눈길을 끄시나요?',
     hint: '지금 가장 이끌리는 모양을 골라주세요.',
     options: [
-      _QuizOption(title: '둥근 모양', subtitle: '부드럽고 포근한 안정감', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q6_c1_round.jpg'),
-      _QuizOption(title: '물결 모양', subtitle: '자연스럽고 유연한 움직임', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q6_c2_wave.jpg'),
-      _QuizOption(title: '직선 모양', subtitle: '정돈되고 균형 잡힌 아름다움', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q6_c3_linear.jpg'),
-      _QuizOption(title: '별·꽃 모양', subtitle: '개성과 경험이 담긴 모양', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q6_c4_star.jpg'),
+      _QuizOption(
+        title: '둥근 모양',
+        subtitle: '부드럽고 포근한 안정감',
+        bgColor: _pinkBg,
+        imagePath: 'assets/figma/quiz/q6_c1_round.jpg',
+      ),
+      _QuizOption(
+        title: '물결 모양',
+        subtitle: '자연스럽고 유연한 움직임',
+        bgColor: _tealBg,
+        imagePath: 'assets/figma/quiz/q6_c2_wave.jpg',
+      ),
+      _QuizOption(
+        title: '직선 모양',
+        subtitle: '정돈되고 균형 잡힌 아름다움',
+        bgColor: _yellowBg,
+        imagePath: 'assets/figma/quiz/q6_c3_linear.jpg',
+      ),
+      _QuizOption(
+        title: '별·꽃 모양',
+        subtitle: '개성과 경험이 담긴 모양',
+        bgColor: _inkBg,
+        imagePath: 'assets/figma/quiz/q6_c4_star.jpg',
+      ),
     ],
   ),
 ];
@@ -194,19 +315,21 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   RecommendationResult? _result;
 
   void _start() => setState(() {
-        _phase = _Phase.quiz;
-        _step = 0;
-        for (var i = 0; i < _answers.length; i++) {
-          _answers[i] = null;
-        }
-        _result = null;
-      });
+    _phase = _Phase.quiz;
+    _step = 0;
+    for (var i = 0; i < _answers.length; i++) {
+      _answers[i] = null;
+    }
+    _result = null;
+  });
 
   void _pick(String title) {
     _answers[_step] = title;
     if (_step < _questions.length - 1) {
-      Future.delayed(const Duration(milliseconds: 200),
-          () => mounted ? setState(() => _step++) : null);
+      Future.delayed(
+        const Duration(milliseconds: 200),
+        () => mounted ? setState(() => _step++) : null,
+      );
     } else {
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
@@ -232,12 +355,12 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   }
 
   void _restart() => setState(() {
-        _phase = _Phase.landing;
-        for (var i = 0; i < _answers.length; i++) {
-          _answers[i] = null;
-        }
-        _result = null;
-      });
+    _phase = _Phase.landing;
+    for (var i = 0; i < _answers.length; i++) {
+      _answers[i] = null;
+    }
+    _result = null;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -254,23 +377,25 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
         ),
       ),
       child: switch (_phase) {
-        _Phase.landing => _LandingView(key: const ValueKey('landing'), onStart: _start),
+        _Phase.landing => _LandingView(
+          key: const ValueKey('landing'),
+          onStart: _start,
+        ),
         _Phase.quiz => _QuizView(
-            key: ValueKey('quiz-$_step'),
-            step: _step,
-            question: _questions[_step],
-            selected: _answers[_step],
-            onPick: _pick,
-            onBack: _step > 0 ? _back : null,
-            onSkip: _skip,
-            isLast: _step == _questions.length - 1,
-          ),
+          key: ValueKey('quiz-$_step'),
+          step: _step,
+          question: _questions[_step],
+          selected: _answers[_step],
+          onPick: _pick,
+          onBack: _step > 0 ? _back : null,
+          onSkip: _skip,
+          isLast: _step == _questions.length - 1,
+        ),
         _Phase.result => _ResultView(
-            key: const ValueKey('result'),
-            result: _result!,
-            onRetry: _start,
-            onHome: _restart,
-          ),
+          key: const ValueKey('result'),
+          result: _result!,
+          onHome: _restart,
+        ),
       },
     );
   }
@@ -279,9 +404,21 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
 // ── Landing ────────────────────────────────────────────────────────────────────
 
 const _previewCards = [
-  (subtitle: '겉바속촉 MZ', title: '행궁약과', image: 'assets/figma/recommend_yakgwa.png'),
-  (subtitle: '다섯잎 매력둥이', title: '진달래 화전', image: 'assets/figma/recommend_hwajeon.png'),
-  (subtitle: '말랑콩떡 사랑둥이', title: '송편', image: 'assets/figma/recommend_songpyeon.png'),
+  (
+    subtitle: '겉바속촉 MZ',
+    title: '행궁약과',
+    image: 'assets/figma/recommend_yakgwa.png',
+  ),
+  (
+    subtitle: '다섯잎 매력둥이',
+    title: '진달래 화전',
+    image: 'assets/figma/recommend_hwajeon.png',
+  ),
+  (
+    subtitle: '말랑콩떡 사랑둥이',
+    title: '송편',
+    image: 'assets/figma/recommend_songpyeon.png',
+  ),
 ];
 
 class _LandingView extends StatelessWidget {
@@ -333,7 +470,8 @@ class _LandingView extends StatelessWidget {
                     children: [
                       for (var i = 0; i < _previewCards.length; i++) ...[
                         Expanded(child: _PreviewCard(card: _previewCards[i])),
-                        if (i != _previewCards.length - 1) const SizedBox(width: 32),
+                        if (i != _previewCards.length - 1)
+                          const SizedBox(width: 32),
                       ],
                     ],
                   )
@@ -352,8 +490,13 @@ class _LandingView extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF934753),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 38, vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 38,
+                      vertical: 18,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                     elevation: 4,
                   ),
                   child: const Text(
@@ -477,7 +620,11 @@ class _QuizView extends StatelessWidget {
                 // Progress indicator
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 672),
-                  child: _ProgressBar(step: step, totalSteps: totalSteps, pct: pct),
+                  child: _ProgressBar(
+                    step: step,
+                    totalSteps: totalSteps,
+                    pct: pct,
+                  ),
                 ),
                 const SizedBox(height: 48),
 
@@ -499,7 +646,8 @@ class _QuizView extends StatelessWidget {
                             onTap: () => onPick(question.options[i].title),
                           ),
                         ),
-                        if (i < question.options.length - 1) const SizedBox(width: 16),
+                        if (i < question.options.length - 1)
+                          const SizedBox(width: 16),
                       ],
                     ],
                   )
@@ -531,7 +679,10 @@ class _QuizView extends StatelessWidget {
                       if (onBack != null)
                         TextButton.icon(
                           onPressed: onBack,
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 14),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 14,
+                          ),
                           label: const Text('이전 질문'),
                           style: TextButton.styleFrom(
                             foregroundColor: const Color(0xFF534344),
@@ -550,7 +701,10 @@ class _QuizView extends StatelessWidget {
                             onPressed: onSkip,
                             style: TextButton.styleFrom(
                               foregroundColor: const Color(0xFF566341),
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
                               textStyle: const TextStyle(
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
@@ -561,12 +715,19 @@ class _QuizView extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           FilledButton(
-                            onPressed: selected != null ? () => onPick(selected!) : onSkip,
+                            onPressed: selected != null
+                                ? () => onPick(selected!)
+                                : onSkip,
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF934753),
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               elevation: 1,
                             ),
                             child: Text(
@@ -593,7 +754,11 @@ class _QuizView extends StatelessWidget {
 }
 
 class _ProgressBar extends StatelessWidget {
-  const _ProgressBar({required this.step, required this.totalSteps, required this.pct});
+  const _ProgressBar({
+    required this.step,
+    required this.totalSteps,
+    required this.pct,
+  });
   final int step;
   final int totalSteps;
   final int pct;
@@ -672,7 +837,6 @@ class _QuestionHeader extends StatelessWidget {
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
                 fontSize: 48,
-                letterSpacing: -0.96,
                 height: 1.17,
               ),
             ),
@@ -685,7 +849,6 @@ class _QuestionHeader extends StatelessWidget {
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
                 fontSize: 48,
-                letterSpacing: -0.96,
                 height: 1.17,
               ),
             ),
@@ -737,7 +900,6 @@ class _KeywordText extends StatelessWidget {
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
             fontSize: 48,
-            letterSpacing: -0.96,
             height: 1.17,
           ),
         ),
@@ -802,8 +964,8 @@ class _OptionCardState extends State<_OptionCard> {
                 color: widget.selected
                     ? const Color(0xFF934753).withValues(alpha: 0.18)
                     : _hovered
-                        ? const Color(0xFF934753).withValues(alpha: 0.10)
-                        : const Color(0xFF934753).withValues(alpha: 0.05),
+                    ? const Color(0xFF934753).withValues(alpha: 0.10)
+                    : const Color(0xFF934753).withValues(alpha: 0.05),
                 blurRadius: widget.selected ? 14 : (_hovered ? 8 : 2),
                 offset: const Offset(0, 1),
               ),
@@ -856,7 +1018,9 @@ class _OptionCardState extends State<_OptionCard> {
                     fontFamily: 'Gowun Batang',
                     fontFamilyFallback: _serifFallback,
                     fontSize: 20,
-                    fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w400,
+                    fontWeight: widget.selected
+                        ? FontWeight.w700
+                        : FontWeight.w400,
                     height: 1.4,
                   ),
                 ),
@@ -886,20 +1050,20 @@ class _OptionCardState extends State<_OptionCard> {
 // ── Result ─────────────────────────────────────────────────────────────────────
 
 class _ResultView extends StatelessWidget {
-  const _ResultView({
-    super.key,
-    required this.result,
-    required this.onRetry,
-    required this.onHome,
-  });
+  const _ResultView({super.key, required this.result, required this.onHome});
   final RecommendationResult result;
-  final VoidCallback onRetry;
   final VoidCallback onHome;
 
   String get _imagePath {
-    if (result.productName.contains('화전')) return 'assets/figma/recommend_hwajeon.png';
-    if (result.productName.contains('송편')) return 'assets/figma/recommend_songpyeon.png';
-    if (result.productName.contains('빙수')) return 'assets/figma/menu_green_bingsu.png';
+    if (result.productName.contains('화전')) {
+      return 'assets/figma/recommend_hwajeon.png';
+    }
+    if (result.productName.contains('송편')) {
+      return 'assets/figma/recommend_songpyeon.png';
+    }
+    if (result.productName.contains('빙수')) {
+      return 'assets/figma/menu_green_bingsu.png';
+    }
     return 'assets/figma/recommend_yakgwa.png';
   }
 
@@ -908,105 +1072,98 @@ class _ResultView extends StatelessWidget {
     final isWide = MediaQuery.sizeOf(context).width >= 780;
 
     return Container(
-      color: const Color(0xFFFCF7F5),
-      padding: const EdgeInsets.symmetric(vertical: 64),
+      color: const Color(0xFFDDDAD9),
+      padding: const EdgeInsets.symmetric(vertical: 42),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 860),
+          constraints: const BoxConstraints(maxWidth: 1030),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
-              padding: const EdgeInsets.all(40),
+              padding: EdgeInsets.fromLTRB(
+                isWide ? 34 : 22,
+                isWide ? 30 : 24,
+                isWide ? 34 : 22,
+                isWide ? 28 : 24,
+              ),
               decoration: BoxDecoration(
                 color: const Color(0xFFFEFAF9),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFE7A9A0).withValues(alpha: 0.22),
-                    blurRadius: 40,
+                    color: Colors.black.withValues(alpha: 0.11),
+                    blurRadius: 26,
                     spreadRadius: -4,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Align(
+                  const Align(
                     alignment: Alignment.topLeft,
                     child: Text(
                       '취향 분석 결과',
                       style: TextStyle(
-                        color: const Color(0xFF534344).withValues(alpha: 0.6),
+                        color: Color(0xFF8F7E7B),
                         fontFamily: 'Gowun Batang',
                         fontFamilyFallback: _serifFallback,
-                        fontSize: 13,
-                        letterSpacing: 0.13,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFE7A9A0).withValues(alpha: 0.45),
-                          blurRadius: 40,
-                          spreadRadius: -4,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: isWide ? 250 : 210,
+                    height: isWide ? 250 : 210,
                     child: Image.asset(_imagePath, fit: BoxFit.contain),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 26),
                   Text(
-                    result.profileTitle,
+                    '당신은 ${result.profileTitle}의 매력을 가진 ${result.productName}!',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Color(0xFF934753),
+                      color: Color(0xFF633B3A),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: 15,
+                      fontSize: 28,
                       fontWeight: FontWeight.w700,
+                      height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    result.productName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF534344),
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 40,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
+                  const SizedBox(height: 14),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: Text(
+                      result.aiSummary,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF8C7E7B),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 17,
+                        height: 1.78,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    result.aiSummary,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF786A6A),
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 15,
-                      height: 1.75,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 30),
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    width: double.infinity,
+                    padding: EdgeInsets.fromLTRB(
+                      isWide ? 26 : 18,
+                      isWide ? 20 : 18,
+                      isWide ? 26 : 18,
+                      isWide ? 18 : 16,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF9F6),
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFFEFAF9),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: const Color(0xFFE7A9A0).withValues(alpha: 0.35),
+                        color: const Color(0xFFEDE4E4),
+                        width: 4,
                       ),
                     ),
                     child: Column(
@@ -1015,93 +1172,71 @@ class _ResultView extends StatelessWidget {
                         const Text(
                           'AI가 읽은 신호',
                           style: TextStyle(
-                            color: Color(0xFF534344),
+                            color: Color(0xFF5F5552),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        for (final signal in result.signals) ...[
+                        const SizedBox(height: 22),
+                        for (final signal in result.signals.take(4)) ...[
                           _SignalRow(signal: signal),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 18),
                         ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 22),
                   if (isWide)
                     Row(
                       children: [
-                        Expanded(child: _PairingBox(label: '함께 어울리는 차', value: result.teaPairing, icon: Icons.local_cafe_outlined)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _PairingBox(label: '차선 추천', value: result.secondaryMenuName, icon: Icons.restaurant_menu_outlined)),
+                        Expanded(
+                          child: _PairingBox(
+                            label: '함께 어울리는 메뉴/차',
+                            value: result.teaPairing,
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          child: _PairingBox(
+                            label: '차선 추천',
+                            value: result.secondaryMenuName,
+                          ),
+                        ),
                       ],
                     )
                   else
                     Column(
                       children: [
-                        _PairingBox(label: '함께 어울리는 차', value: result.teaPairing, icon: Icons.local_cafe_outlined),
+                        _PairingBox(
+                          label: '함께 어울리는 메뉴/차',
+                          value: result.teaPairing,
+                        ),
                         const SizedBox(height: 12),
-                        _PairingBox(label: '차선 추천', value: result.secondaryMenuName, icon: Icons.restaurant_menu_outlined),
+                        _PairingBox(
+                          label: '차선 추천',
+                          value: result.secondaryMenuName,
+                        ),
                       ],
                     ),
-                  const SizedBox(height: 32),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: onHome,
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF534344),
-                          textStyle: const TextStyle(
-                            fontFamily: 'Gowun Batang',
-                            fontFamilyFallback: _serifFallback,
-                            fontSize: 15,
-                          ),
+                  const SizedBox(height: 30),
+                  _ResultActions(
+                    onRetry: onHome,
+                    onBuy: () =>
+                        Navigator.pushReplacementNamed(context, '/menu'),
+                    onShare: () {
+                      Clipboard.setData(
+                        ClipboardData(
+                          text:
+                              '행궁다과 추천 결과: ${result.profileTitle} - ${result.productName}',
                         ),
-                        child: const Text('다시 분석하기'),
-                      ),
-                      FilledButton(
-                        onPressed: () {},
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF934753),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text(
-                          '구매하러 가기',
-                          style: TextStyle(
-                            fontFamily: 'Gowun Batang',
-                            fontFamilyFallback: _serifFallback,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFDEDCC9)),
-                          foregroundColor: const Color(0xFF534344),
-                          backgroundColor: const Color(0xFFDEDCC9),
-                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text(
-                          '친구한테 공유하기',
-                          style: TextStyle(
-                            fontFamily: 'Gowun Batang',
-                            fontFamilyFallback: _serifFallback,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          const SnackBar(content: Text('추천 결과를 복사했어요.')),
+                        );
+                    },
                   ),
                 ],
               ),
@@ -1109,6 +1244,99 @@ class _ResultView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ResultActions extends StatelessWidget {
+  const _ResultActions({
+    required this.onRetry,
+    required this.onBuy,
+    required this.onShare,
+  });
+
+  final VoidCallback onRetry;
+  final VoidCallback onBuy;
+  final VoidCallback onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 760;
+
+    final retry = TextButton(
+      onPressed: onRetry,
+      style: TextButton.styleFrom(
+        foregroundColor: const Color(0xFF8C7E7B),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+        textStyle: const TextStyle(
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 25,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      child: const Text('다시 분석하기'),
+    );
+
+    final buy = FilledButton(
+      onPressed: onBuy,
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFF9B4A59),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+      child: const Text(
+        '구매하러 가기',
+        style: TextStyle(
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 25,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    final share = FilledButton(
+      onPressed: onShare,
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFFDEDDC9),
+        foregroundColor: const Color(0xFF534344),
+        padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+      child: const Text(
+        '친구한테 공유하기',
+        style: TextStyle(
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 25,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    if (!isWide) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          retry,
+          const SizedBox(height: 10),
+          buy,
+          const SizedBox(height: 10),
+          share,
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(child: retry),
+        const SizedBox(width: 24),
+        buy,
+        const SizedBox(width: 12),
+        share,
+      ],
     );
   }
 }
@@ -1119,53 +1347,61 @@ class _SignalRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final displayWeight = signal.weight.clamp(0, 15);
+    final fill = (signal.weight / 18).clamp(0.18, 1.0);
+
+    return Column(
       children: [
-        SizedBox(
-          width: 64,
-          child: Text(
-            signal.label,
-            style: const TextStyle(
-              color: Color(0xFF786A6A),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 12,
+        Row(
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(
+                signal.label,
+                style: const TextStyle(
+                  color: Color(0xFF766A67),
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 17,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            signal.value,
-            style: const TextStyle(
-              color: Color(0xFF534344),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+            Expanded(
+              child: Text(
+                signal.value,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF5F5552),
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 17,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 60,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: signal.weight / 100,
-              backgroundColor: const Color(0xFFE5E2DC),
-              valueColor: const AlwaysStoppedAnimation(Color(0xFFD9808C)),
-              minHeight: 5,
+            SizedBox(
+              width: 44,
+              child: Text(
+                '$displayWeight',
+                textAlign: TextAlign.end,
+                style: const TextStyle(
+                  color: Color(0xFF9B4A59),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-        const SizedBox(width: 6),
-        Text(
-          '${signal.weight}',
-          style: const TextStyle(
-            color: Color(0xFF934753),
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+        const SizedBox(height: 7),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: fill,
+            backgroundColor: const Color(0xFFE4E2DD),
+            valueColor: const AlwaysStoppedAnimation(Color(0xFFD98494)),
+            minHeight: 7,
           ),
         ),
       ],
@@ -1174,48 +1410,43 @@ class _SignalRow extends StatelessWidget {
 }
 
 class _PairingBox extends StatelessWidget {
-  const _PairingBox({required this.label, required this.value, required this.icon});
+  const _PairingBox({required this.label, required this.value});
   final String label;
   final String value;
-  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      constraints: const BoxConstraints(minHeight: 112),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE7A9A0).withValues(alpha: 0.35)),
+        color: const Color(0xFFF2ECEC),
+        borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: const Color(0xFF934753), size: 18),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Color(0xFF9A9285),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 11,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Color(0xFF534344),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF5F5552),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 19,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Center(
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFC85F65),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 25,
+              ),
             ),
           ),
         ],

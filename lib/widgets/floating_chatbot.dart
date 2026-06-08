@@ -3,7 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
-import '../theme/app_colors.dart';
+
+const _serifFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
 
 class FloatingHaenggungChatbot extends StatefulWidget {
   const FloatingHaenggungChatbot({super.key});
@@ -19,7 +25,7 @@ class _FloatingHaenggungChatbotState extends State<FloatingHaenggungChatbot> {
   final List<_ChatMessage> _messages = const [
     _ChatMessage(
       role: _Role.bot,
-      text: '안녕하세요! 행궁다과 AI 안내입니다. 메뉴, 위치, 영업시간, 체험·케이터링 문의를 도와드릴게요.',
+      text: '안녕하세요! 행궁다과 AI 입니다.\n메뉴, 위치, 영업시간 등 궁금한 정보를\n물어보세요,',
     ),
   ];
   final List<_ChatMessage> _mutableMessages = [];
@@ -144,164 +150,154 @@ class _ChatWindow extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final height = MediaQuery.sizeOf(context).height;
-    final windowWidth = width < 440 ? width - 40 : 380.0;
-    final windowHeight = math.min(560.0, math.max(260.0, height - 128.0));
+    final windowWidth = width < 560 ? width - 28 : 520.0;
+    final windowHeight = math.min(660.0, math.max(420.0, height - 126.0));
 
     return Container(
       width: windowWidth,
       constraints: BoxConstraints(maxHeight: windowHeight),
       decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.wheat),
+        color: const Color(0xFFFCFCFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFD5D1D1)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.deep.withValues(alpha: 0.15),
-            blurRadius: 40,
-            spreadRadius: -4,
-            offset: const Offset(0, 18),
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 헤더
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              color: AppColors.deep,
+              padding: const EdgeInsets.fromLTRB(26, 22, 26, 26),
+              color: const Color(0xFFFCFCFC),
               child: Row(
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.gold.withValues(alpha: 0.18),
-                      border: Border.all(
-                        color: AppColors.gold.withValues(alpha: 0.4),
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '宮',
-                        style: TextStyle(
-                          color: AppColors.cinnabar,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: 'AppleMyungjo',
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '행궁다과 AI 안내',
-                        style: TextStyle(
-                          color: AppColors.paper,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        '무엇이든 물어보세요',
-                        style: TextStyle(
-                          color: Color(0xFFB9AA96),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // 메시지 목록
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(14),
-                itemCount: messages.length,
-                itemBuilder: (context, index) =>
-                    _Bubble(message: messages[index]),
-              ),
-            ),
-            // 빠른 질문 칩
-            Container(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-              decoration: BoxDecoration(
-                color: AppColors.hanji,
-                border: Border(top: BorderSide(color: AppColors.wheat)),
-              ),
-              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '빠른 질문',
-                    style: TextStyle(
-                      color: AppColors.cinnabar,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                    ),
+                  const Icon(
+                    Icons.headset_mic_outlined,
+                    color: Color(0xFF9B766F),
+                    size: 52,
                   ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final q in const [
-                        '체험 문의 방법',
-                        '포장 주문 문의',
-                        '운영 시간',
-                        'English menu',
-                      ])
-                        _QuickChip(label: q, onTap: () => onSend(q)),
-                    ],
+                  const SizedBox(width: 22),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '행궁다과 AI 안내',
+                          style: TextStyle(
+                            color: Color(0xFF7C6864),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 34,
+                            height: 1.15,
+                          ),
+                        ),
+                        SizedBox(height: 26),
+                        Text(
+                          'AI 챗봇을 통해 매장의 간단한 정보들을 쉽고 빠르게 알려줍니다.\n자세한 정보는 행궁다과 카카오톡 채널을 이용해주세요.',
+                          style: TextStyle(
+                            color: Color(0xFFAAA5A5),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 18,
+                            height: 1.35,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            // 입력창
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                border: Border(top: BorderSide(color: AppColors.wheat)),
+            Flexible(
+              child: Container(
+                width: double.infinity,
+                color: const Color(0xFFFCFAFA),
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(34, 18, 34, 20),
+                  children: [
+                    for (final message in messages) _Bubble(message: message),
+                    const SizedBox(height: 18),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _QuickQuestionPanel(onSend: onSend),
+                    ),
+                  ],
+                ),
               ),
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 18, 18, 18),
+              color: const Color(0xFFFCFCFC),
               child: Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: controller,
-                      decoration: const InputDecoration(
-                        hintText: '메시지를 입력하세요...',
-                        isDense: true,
+                    child: SizedBox(
+                      height: 60,
+                      child: TextField(
+                        controller: controller,
+                        style: const TextStyle(
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          color: Color(0xFF534344),
+                          fontSize: 18,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '메시지를 입력하세요.',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFFB5B3B3),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF3EFEF),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 34,
+                            vertical: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0CBCB),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onSubmitted: (_) => onSend(),
                       ),
-                      onSubmitted: (_) => onSend(),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => onSend(),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.deep,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.send_rounded,
-                        color: AppColors.paper,
-                        size: 16,
-                      ),
+                  const SizedBox(width: 18),
+                  IconButton(
+                    tooltip: '전송',
+                    onPressed: () => onSend(),
+                    icon: const Icon(Icons.arrow_upward_rounded),
+                    color: const Color(0xFF9B4A4F),
+                    iconSize: 54,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(62, 62),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
                 ],
@@ -314,7 +310,60 @@ class _ChatWindow extends StatelessWidget {
   }
 }
 
-// ── 빠른 질문 칩 (React 스타일: 직각, hover 시 dark) ──
+class _QuickQuestionPanel extends StatelessWidget {
+  const _QuickQuestionPanel({required this.onSend});
+
+  final void Function([String? preset]) onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 480;
+
+    return Container(
+      width: narrow ? double.infinity : 312,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEDE1E1),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
+        ),
+        border: Border.all(color: const Color(0xFFE2CACA), width: 3),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '빠른 질문',
+            style: TextStyle(
+              color: Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final q in const [
+                '체험 문의 방법',
+                '운영 시간',
+                '포장 주문 문의',
+                'English menu',
+              ])
+                _QuickChip(label: q, onTap: () => onSend(q)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _QuickChip extends StatefulWidget {
   const _QuickChip({required this.label, required this.onTap});
   final String label;
@@ -336,18 +385,27 @@ class _QuickChipState extends State<_QuickChip> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           decoration: BoxDecoration(
-            color: _hovered ? AppColors.deep : AppColors.paper,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.wheat),
+            color: _hovered ? const Color(0xFFF8F6F6) : Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              if (_hovered)
+                BoxShadow(
+                  color: const Color(0xFF9B766F).withValues(alpha: 0.16),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+            ],
           ),
           child: Text(
             widget.label,
             style: TextStyle(
-              color: _hovered ? AppColors.paper : AppColors.deep,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              color: const Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 20,
+              fontWeight: _hovered ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -356,7 +414,6 @@ class _QuickChipState extends State<_QuickChip> {
   }
 }
 
-// ── 말풍선 ─────────────────────────────────────────
 class _Bubble extends StatelessWidget {
   const _Bubble({required this.message});
   final _ChatMessage message;
@@ -367,31 +424,35 @@ class _Bubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        constraints: const BoxConstraints(maxWidth: 290),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        constraints: const BoxConstraints(maxWidth: 318),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.cinnabar : AppColors.paper,
+          color: isUser ? const Color(0xFFEDE1E1) : const Color(0xFFFEFEFE),
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(14),
-            topRight: const Radius.circular(14),
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
             bottomLeft: isUser
-                ? const Radius.circular(14)
-                : const Radius.circular(4),
+                ? const Radius.circular(16)
+                : const Radius.circular(0),
             bottomRight: isUser
-                ? const Radius.circular(4)
-                : const Radius.circular(14),
+                ? const Radius.circular(0)
+                : const Radius.circular(16),
           ),
           border: Border.all(
-            color: isUser ? AppColors.cinnabar : AppColors.wheat,
+            color: isUser ? const Color(0xFFE2CACA) : const Color(0xFFE2CACA),
+            width: 3,
           ),
         ),
         child: Text(
           message.text,
           style: TextStyle(
-            color: isUser ? AppColors.paper : AppColors.deep,
-            height: 1.55,
-            fontSize: 13,
+            color: const Color(0xFF7B716C),
+            height: 1.18,
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: isUser ? 18 : 23,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

@@ -18,7 +18,7 @@ ThemeData buildAppTheme() {
     textTheme: base.textTheme.apply(
       bodyColor: AppColors.deep,
       displayColor: AppColors.deep,
-      fontFamily: 'Noto Sans KR',
+      fontFamily: 'Gowun Batang',
     ),
     dividerTheme: DividerThemeData(
       color: AppColors.wheat.withValues(alpha: 0.7),
