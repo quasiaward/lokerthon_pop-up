@@ -1,11 +1,11 @@
 {
-    "name": "행궁다과",
-    "short_name": "행궁다과",
+    "name": "haenggung_dagwa",
+    "short_name": "haenggung_dagwa",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FAF3E8",
-    "theme_color": "#231813",
-    "description": "수원 행궁동 전통 다과 브랜드 행궁다과의 공식 홈페이지 데모",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

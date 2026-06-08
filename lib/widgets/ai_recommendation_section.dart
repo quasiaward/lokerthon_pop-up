@@ -1,10 +1,182 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../models/recommendation.dart';
 import '../services/recommendation_service.dart';
-import '../theme/app_colors.dart';
-import 'common.dart';
+
+const _serifFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
+
+// ── Quiz data ──────────────────────────────────────────────────────────────────
+
+class _QuizOption {
+  const _QuizOption({
+    required this.title,
+    required this.subtitle,
+    required this.bgColor,
+    required this.imagePath,
+  });
+  final String title;
+  final String subtitle;
+  final Color bgColor;
+  final String imagePath;
+}
+
+class _QuizQ {
+  const _QuizQ({
+    required this.before,
+    required this.keyword,
+    required this.after,
+    required this.hint,
+    required this.options,
+  });
+  final String before;
+  final String keyword;
+  final String after;
+  final String hint;
+  final List<_QuizOption> options;
+}
+
+const _pinkBg = Color(0xFFFCE4EC);
+const _tealBg = Color(0xFFE0F2F1);
+const _yellowBg = Color(0xFFFFF8E1);
+const _inkBg = Color(0xFFECEFF1);
+
+const _questions = [
+  _QuizQ(
+    before: '오늘 당신의 ',
+    keyword: '기분',
+    after: '은 어떤 색인가요?',
+    hint: '지금 가장 이끌리는 색감을 골라주세요.',
+    options: [
+      _QuizOption(title: '매화 분홍', subtitle: '설레고 따뜻한 매화의 온기', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q1_c1_pink.jpg'),
+      _QuizOption(title: '소나무 청록', subtitle: '차분하고 싱그러운 솔바람', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q1_c2_teal.jpg'),
+      _QuizOption(title: '유자 노랑', subtitle: '생기 있고 달콤한 유자의 향', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q1_c3_yellow.jpg'),
+      _QuizOption(title: '먹색', subtitle: '깊고 단단한 전통의 무게', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q1_c4_ink.jpg'),
+    ],
+  ),
+  _QuizQ(
+    before: '오늘 마음의 ',
+    keyword: '날씨',
+    after: '는 어떤가요?',
+    hint: '지금 가장 이끌리는 날씨를 골라주세요.',
+    options: [
+      _QuizOption(title: '맑고 활기참', subtitle: '설레고 따뜻한 햇빛의 온기', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q2_c1_sunny.jpg'),
+      _QuizOption(title: '흐리고 지침', subtitle: '차분하고 조용한 쉬고픈 날', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q2_c2_rainy.jpg'),
+      _QuizOption(title: '잔잔하고 평온', subtitle: '생기 있고 달콤한 유자의 향', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q2_c3_calm.jpg'),
+      _QuizOption(title: '설레고 두근거려요', subtitle: '깊고 단단한 전통의 무게', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q2_c4_excited.jpg'),
+    ],
+  ),
+  _QuizQ(
+    before: '오늘 이 자리, ',
+    keyword: '누구',
+    after: '와 함께 하셨나요?',
+    hint: '함께하고 싶은 누군가를 선택해주세요.',
+    options: [
+      _QuizOption(title: '소중한 사람', subtitle: '따뜻하고 늘 곁에 있어주는 사람', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q3_c1_loved.jpg'),
+      _QuizOption(title: '혼자', subtitle: '온전한 나와의 시간', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q3_c2_alone.jpg'),
+      _QuizOption(title: '가족', subtitle: '평생 함께 있어줄 동반자', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q3_c3_family.jpg'),
+      _QuizOption(title: '친구', subtitle: '깊고 단단한 우정', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q3_c4_friend.jpg'),
+    ],
+  ),
+  _QuizQ(
+    before: '오늘 어떤 ',
+    keyword: '식감',
+    after: '이 지금 당신을 달래줄 것 같나요?',
+    hint: '지금 가장 이끌리는 식감을 골라주세요.',
+    options: [
+      _QuizOption(title: '부드러운', subtitle: '입안에서 부드럽게 녹아내리는 식감', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q4_c1_soft.jpg'),
+      _QuizOption(title: '바삭한', subtitle: '가볍게 부서지는 즐거움', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q4_c2_crispy.jpg'),
+      _QuizOption(title: '쫀득한', subtitle: '천천히 오래 남는 만족감', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q4_c3_chewy.jpg'),
+      _QuizOption(title: '촉촉한', subtitle: '촉촉하고 은은한 식감', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q4_c4_moist.jpg'),
+    ],
+  ),
+  _QuizQ(
+    before: '지금 이 순간 어떤 ',
+    keyword: '계절',
+    after: '이 느껴지시나요?',
+    hint: '지금 가장 이끌리는 계절을 골라주세요.',
+    options: [
+      _QuizOption(title: '봄', subtitle: '설레고 부드러운 꽃향기의 시작', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q5_c1_spring.jpg'),
+      _QuizOption(title: '여름', subtitle: '싱그럽고 생기 넘치는 계절의 온기', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q5_c2_summer.jpg'),
+      _QuizOption(title: '가을', subtitle: '깊어지는 향과 차분한 여운', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q5_c3_autumn.jpg'),
+      _QuizOption(title: '겨울', subtitle: '고요하고 포근한 휴식의 시간', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q5_c4_winter.jpg'),
+    ],
+  ),
+  _QuizQ(
+    before: '어떤 ',
+    keyword: '모양',
+    after: '이 눈길을 끄시나요?',
+    hint: '지금 가장 이끌리는 모양을 골라주세요.',
+    options: [
+      _QuizOption(title: '둥근 모양', subtitle: '부드럽고 포근한 안정감', bgColor: _pinkBg, imagePath: 'assets/figma/quiz/q6_c1_round.jpg'),
+      _QuizOption(title: '물결 모양', subtitle: '자연스럽고 유연한 움직임', bgColor: _tealBg, imagePath: 'assets/figma/quiz/q6_c2_wave.jpg'),
+      _QuizOption(title: '직선 모양', subtitle: '정돈되고 균형 잡힌 아름다움', bgColor: _yellowBg, imagePath: 'assets/figma/quiz/q6_c3_linear.jpg'),
+      _QuizOption(title: '별·꽃 모양', subtitle: '개성과 경험이 담긴 모양', bgColor: _inkBg, imagePath: 'assets/figma/quiz/q6_c4_star.jpg'),
+    ],
+  ),
+];
+
+RecommendationInput _buildInput(List<String?> answers) {
+  final personality = switch (answers[0]) {
+    '매화 분홍' => '차분히 음미하는 감각형',
+    '소나무 청록' => '조용히 머무는 I형',
+    '유자 노랑' => '같이 나누는 E형',
+    '먹색' => '이야기와 의미를 좋아하는 직관형',
+    _ => personalityTypes[0],
+  };
+  final moment = switch (answers[1]) {
+    '맑고 활기참' => '친구와 디저트를 먹어요',
+    '흐리고 지침' => '혼자 쉬고 싶어요',
+    '잔잔하고 평온' => '부모님과 함께해요',
+    '설레고 두근거려요' => '수원 여행 기념이에요',
+    _ => visitMoments[0],
+  };
+  final tea = switch (answers[2]) {
+    '소중한 사람' => '따뜻한 차와 함께',
+    '혼자' => '한방차처럼 깊게',
+    '가족' => '따뜻한 차와 함께',
+    '친구' => '상큼하고 산뜻하게',
+    _ => teaPreferences[0],
+  };
+  final texture = switch (answers[3]) {
+    '부드러운' => '부드럽고 촉촉한 식감',
+    '바삭한' => '바삭하고 결 있는 식감',
+    '쫀득한' => '쫀득한 떡 식감',
+    '촉촉한' => '부드럽고 촉촉한 식감',
+    _ => texturePreferences[0],
+  };
+  final sweetness = switch (answers[4]) {
+    '봄' => '은은하고 담백한 단맛',
+    '여름' => '확실히 달콤한 맛',
+    '가을' => '적당히 달콤한 맛',
+    '겨울' => '쌉싸름하고 깊은 맛',
+    _ => sweetnessPreferences[0],
+  };
+  final choiceStyle = switch (answers[5]) {
+    '둥근 모양' => '익숙하고 안정적인 메뉴',
+    '물결 모양' => '새로운 메뉴도 좋아함',
+    '직선 모양' => '대표 메뉴를 고르는 편',
+    '별·꽃 모양' => '보기 좋은 메뉴가 좋음',
+    _ => choiceStyles[0],
+  };
+  return RecommendationInput(
+    personality: personality,
+    moment: moment,
+    sweetness: sweetness,
+    texture: texture,
+    tea: tea,
+    choiceStyle: choiceStyle,
+    situation: '',
+  );
+}
+
+enum _Phase { landing, quiz, result }
+
+// ── Main widget ────────────────────────────────────────────────────────────────
 
 class AIRecommendationSection extends StatefulWidget {
   const AIRecommendationSection({super.key});
@@ -16,1283 +188,926 @@ class AIRecommendationSection extends StatefulWidget {
 
 class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   final _service = RecommendationService();
-  final _controller = TextEditingController(
-    text: defaultRecommendationInput.situation,
-  );
-  RecommendationInput _input = defaultRecommendationInput;
+  _Phase _phase = _Phase.landing;
+  int _step = 0;
+  final _answers = <String?>[null, null, null, null, null, null];
   RecommendationResult? _result;
-  bool _isLoading = false;
-  bool _copied = false;
-  int _variant = 0;
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void _start() => setState(() {
+        _phase = _Phase.quiz;
+        _step = 0;
+        for (var i = 0; i < _answers.length; i++) {
+          _answers[i] = null;
+        }
+        _result = null;
+      });
+
+  void _pick(String title) {
+    _answers[_step] = title;
+    if (_step < _questions.length - 1) {
+      Future.delayed(const Duration(milliseconds: 200),
+          () => mounted ? setState(() => _step++) : null);
+    } else {
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (!mounted) return;
+        setState(() {
+          _result = _service.getRecommendation(_buildInput(_answers));
+          _phase = _Phase.result;
+        });
+      });
+    }
   }
 
-  Future<void> _runRecommendation() async {
-    final snapshot = _input.copyWith(situation: _controller.text);
-    final nextVariant = _variant + 1;
+  void _back() => setState(() => _step--);
 
-    setState(() {
-      _input = snapshot;
-      _variant = nextVariant;
-      _isLoading = true;
-      _copied = false;
-      _result = null;
-    });
-
-    await Future<void>.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
-
-    setState(() {
-      _result = _service.getRecommendation(snapshot, variant: nextVariant);
-      _isLoading = false;
-    });
+  void _skip() {
+    if (_step < _questions.length - 1) {
+      setState(() => _step++);
+    } else {
+      setState(() {
+        _result = _service.getRecommendation(_buildInput(_answers));
+        _phase = _Phase.result;
+      });
+    }
   }
 
-  Future<void> _copyResult() async {
-    final result = _result;
-    if (result == null) return;
-
-    await Clipboard.setData(ClipboardData(text: _service.formatResult(result)));
-    if (!mounted) return;
-    setState(() => _copied = true);
-  }
-
-  void _updateInput(RecommendationInput nextInput) {
-    setState(() {
-      _input = nextInput;
-      _copied = false;
-    });
-  }
+  void _restart() => setState(() {
+        _phase = _Phase.landing;
+        for (var i = 0; i < _answers.length; i++) {
+          _answers[i] = null;
+        }
+        _result = null;
+      });
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 1020;
-
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.deep, Color(0xFF30211D), Color(0xFF162B27)],
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 280),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.03),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 92),
-      child: SectionShell(
-        child: Column(
-          children: [
-            const SectionHeading(
-              eyebrow: 'AI Recommend',
-              title: 'AI 다과 추천',
-              description: '개별 다과 유형과 취향 신호를 비교해 한 가지 메뉴를 제안합니다.',
-              inverse: true,
-            ),
-            const SizedBox(height: 24),
-            const _EngineProofBar(),
-            const SizedBox(height: 34),
-            isWide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      child: switch (_phase) {
+        _Phase.landing => _LandingView(key: const ValueKey('landing'), onStart: _start),
+        _Phase.quiz => _QuizView(
+            key: ValueKey('quiz-$_step'),
+            step: _step,
+            question: _questions[_step],
+            selected: _answers[_step],
+            onPick: _pick,
+            onBack: _step > 0 ? _back : null,
+            onSkip: _skip,
+            isLast: _step == _questions.length - 1,
+          ),
+        _Phase.result => _ResultView(
+            key: const ValueKey('result'),
+            result: _result!,
+            onRetry: _start,
+            onHome: _restart,
+          ),
+      },
+    );
+  }
+}
+
+// ── Landing ────────────────────────────────────────────────────────────────────
+
+const _previewCards = [
+  (subtitle: '겉바속촉 MZ', title: '행궁약과', image: 'assets/figma/recommend_yakgwa.png'),
+  (subtitle: '다섯잎 매력둥이', title: '진달래 화전', image: 'assets/figma/recommend_hwajeon.png'),
+  (subtitle: '말랑콩떡 사랑둥이', title: '송편', image: 'assets/figma/recommend_songpyeon.png'),
+];
+
+class _LandingView extends StatelessWidget {
+  const _LandingView({super.key, required this.onStart});
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
+
+    return Container(
+      color: const Color(0xFFFCF7F5),
+      padding: const EdgeInsets.symmetric(vertical: 96),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const Text(
+                  '나만의 다과 추천',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 50,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '6가지 분위기 질문을 통해 당신의 취향에 맞는 다과를 추천해 드립니다.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF9A9285),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 18,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 58),
+                if (isWide)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        flex: 10,
-                        child: _InputPanel(
-                          input: _input,
-                          controller: _controller,
-                          isLoading: _isLoading,
-                          onInputChanged: _updateInput,
-                          onSubmit: _runRecommendation,
-                        ),
-                      ),
-                      const SizedBox(width: 22),
-                      Expanded(
-                        flex: 12,
-                        child: _ResultPanel(
-                          input: _input,
-                          result: _result,
-                          isLoading: _isLoading,
-                          copied: _copied,
-                          onCopy: _copyResult,
-                          onRetry: _runRecommendation,
-                        ),
-                      ),
+                      for (var i = 0; i < _previewCards.length; i++) ...[
+                        Expanded(child: _PreviewCard(card: _previewCards[i])),
+                        if (i != _previewCards.length - 1) const SizedBox(width: 32),
+                      ],
                     ],
                   )
-                : Column(
+                else
+                  Column(
                     children: [
-                      _InputPanel(
-                        input: _input,
-                        controller: _controller,
-                        isLoading: _isLoading,
-                        onInputChanged: _updateInput,
-                        onSubmit: _runRecommendation,
-                      ),
-                      const SizedBox(height: 20),
-                      _ResultPanel(
-                        input: _input,
-                        result: _result,
-                        isLoading: _isLoading,
-                        copied: _copied,
-                        onCopy: _copyResult,
-                        onRetry: _runRecommendation,
-                      ),
+                      for (final card in _previewCards) ...[
+                        _PreviewCard(card: card),
+                        const SizedBox(height: 20),
+                      ],
                     ],
                   ),
-          ],
+                const SizedBox(height: 54),
+                FilledButton(
+                  onPressed: onStart,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF934753),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 38, vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    elevation: 4,
+                  ),
+                  child: const Text(
+                    '오늘의 다과 추천 받으러 가기',
+                    style: TextStyle(
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _EngineProofBar extends StatelessWidget {
-  const _EngineProofBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 10,
-      runSpacing: 10,
-      children: const [
-        _EngineProofChip(
-          icon: Icons.psychology_alt_outlined,
-          label: '6개 성향 질문',
-        ),
-        _EngineProofChip(icon: Icons.category_outlined, label: '개별 다과 분석'),
-        _EngineProofChip(icon: Icons.tune_rounded, label: '맛·식감 매칭'),
-        _EngineProofChip(icon: Icons.edit_note_rounded, label: '상황 문장 보정'),
-      ],
-    );
-  }
-}
-
-class _EngineProofChip extends StatelessWidget {
-  const _EngineProofChip({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
+class _PreviewCard extends StatelessWidget {
+  const _PreviewCard({required this.card});
+  final ({String subtitle, String title, String image}) card;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      constraints: const BoxConstraints(maxWidth: 314),
+      height: 420,
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
       decoration: BoxDecoration(
-        color: AppColors.paper.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.28)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE7A9A0).withValues(alpha: 0.55),
+            blurRadius: 31,
+            spreadRadius: -6,
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
         children: [
-          Icon(icon, color: AppColors.gold, size: 17),
-          const SizedBox(width: 8),
           Text(
-            label,
+            card.subtitle,
+            textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppColors.hanji,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InputPanel extends StatelessWidget {
-  const _InputPanel({
-    required this.input,
-    required this.controller,
-    required this.isLoading,
-    required this.onInputChanged,
-    required this.onSubmit,
-  });
-
-  final RecommendationInput input;
-  final TextEditingController controller;
-  final bool isLoading;
-  final ValueChanged<RecommendationInput> onInputChanged;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
-      padding: const EdgeInsets.all(22),
-      color: AppColors.paper,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '성향 분석 입력',
-                      style: TextStyle(
-                        color: AppColors.cinnabar,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '다과 취향 설문',
-                      style: TextStyle(
-                        color: AppColors.deep,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Noto Serif KR',
-                        fontFamilyFallback: ['AppleMyungjo', 'serif'],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: AppColors.hanji,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.manage_search_rounded,
-                  color: AppColors.brown,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _CompactQuestionGrid(
-            children: [
-              _CompactSelect(
-                label: '성향',
-                options: personalityTypes,
-                value: input.personality,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(personality: value)),
-              ),
-              _CompactSelect(
-                label: '상황',
-                options: visitMoments,
-                value: input.moment,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(moment: value)),
-              ),
-              _CompactSelect(
-                label: '단맛',
-                options: sweetnessPreferences,
-                value: input.sweetness,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(sweetness: value)),
-              ),
-              _CompactSelect(
-                label: '식감',
-                options: texturePreferences,
-                value: input.texture,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(texture: value)),
-              ),
-              _CompactSelect(
-                label: '차 취향',
-                options: teaPreferences,
-                value: input.tea,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(tea: value)),
-              ),
-              _CompactSelect(
-                label: '선택 스타일',
-                options: choiceStyles,
-                value: input.choiceStyle,
-                onChanged: (value) =>
-                    onInputChanged(input.copyWith(choiceStyle: value)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            '오늘의 취향 메모 (선택)',
-            style: TextStyle(
-              color: AppColors.brown,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: controller,
-            maxLines: 2,
-            minLines: 2,
-            style: const TextStyle(
-              color: AppColors.deep,
+              color: Color(0xFF9A9285),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
               fontSize: 14,
-              height: 1.45,
-            ),
-            decoration: InputDecoration(
-              hintText: '예: 조용히 앉아서 따뜻한 차와 함께 먹고 싶어요',
-              hintStyle: TextStyle(
-                color: AppColors.muted.withValues(alpha: 0.62),
-              ),
-              filled: true,
-              fillColor: AppColors.cream,
-              contentPadding: const EdgeInsets.all(14),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: AppColors.brown.withValues(alpha: 0.14),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: AppColors.brown.withValues(alpha: 0.14),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.gold, width: 1.5),
-              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
+          Text(
+            card.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+          const Spacer(),
           SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: isLoading ? null : onSubmit,
-              icon: isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.paper,
-                      ),
-                    )
-                  : const Icon(Icons.auto_awesome_rounded, size: 18),
-              label: const Text('성향 분석하기'),
-            ),
+            width: 200,
+            height: 200,
+            child: Image.asset(card.image, fit: BoxFit.contain),
           ),
+          const Spacer(),
         ],
       ),
     );
   }
 }
 
-class _CompactQuestionGrid extends StatelessWidget {
-  const _CompactQuestionGrid({required this.children});
+// ── Quiz ───────────────────────────────────────────────────────────────────────
 
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final useTwoColumns = constraints.maxWidth >= 500;
-        final itemWidth = useTwoColumns
-            ? (constraints.maxWidth - 12) / 2
-            : constraints.maxWidth;
-
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            for (final child in children)
-              SizedBox(width: itemWidth, child: child),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _CompactSelect extends StatelessWidget {
-  const _CompactSelect({
-    required this.label,
-    required this.options,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final List<String> options;
-  final String value;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      isExpanded: true,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(
-          color: AppColors.brown,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-        filled: true,
-        fillColor: AppColors.cream,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 10,
-        ),
-      ),
-      selectedItemBuilder: (context) => [
-        for (final option in options)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              option,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.deep,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-      ],
-      items: [
-        for (final option in options)
-          DropdownMenuItem<String>(
-            value: option,
-            child: Text(
-              option,
-              style: const TextStyle(
-                color: AppColors.deep,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-      ],
-      onChanged: (nextValue) {
-        if (nextValue != null) onChanged(nextValue);
-      },
-    );
-  }
-}
-
-class OptionGroup extends StatelessWidget {
-  const OptionGroup({
+class _QuizView extends StatelessWidget {
+  const _QuizView({
     super.key,
-    required this.label,
-    required this.options,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final List<String> options;
-  final String value;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.brown,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final option in options)
-              _OptionButton(
-                option: option,
-                selected: option == value,
-                onTap: () => onChanged(option),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _OptionButton extends StatelessWidget {
-  const _OptionButton({
-    required this.option,
+    required this.step,
+    required this.question,
     required this.selected,
-    required this.onTap,
+    required this.onPick,
+    this.onBack,
+    required this.onSkip,
+    required this.isLast,
   });
 
-  final String option;
-  final bool selected;
-  final VoidCallback onTap;
+  final int step;
+  final _QuizQ question;
+  final String? selected;
+  final ValueChanged<String> onPick;
+  final VoidCallback? onBack;
+  final VoidCallback onSkip;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.brown : AppColors.paper,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: selected
-                ? AppColors.brown
-                : AppColors.brown.withValues(alpha: 0.12),
-          ),
-        ),
-        child: Text(
-          option,
-          style: TextStyle(
-            color: selected ? AppColors.paper : AppColors.muted,
-            fontWeight: FontWeight.w800,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
-}
+    final totalSteps = _questions.length;
+    final pct = (step / totalSteps * 100).round();
+    final isWide = MediaQuery.sizeOf(context).width >= 1100;
 
-class _ResultPanel extends StatelessWidget {
-  const _ResultPanel({
-    required this.input,
-    required this.result,
-    required this.isLoading,
-    required this.copied,
-    required this.onCopy,
-    required this.onRetry,
-  });
-
-  final RecommendationInput input;
-  final RecommendationResult? result;
-  final bool isLoading;
-  final bool copied;
-  final VoidCallback onCopy;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
-      padding: EdgeInsets.zero,
-      color: AppColors.paper,
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.hanji,
-                  AppColors.porcelain.withValues(alpha: 0.78),
-                ],
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(8),
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.brown.withValues(alpha: 0.08),
+    return Container(
+      color: const Color(0xFFFCF7F5),
+      constraints: const BoxConstraints(minHeight: 700),
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Progress indicator
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 672),
+                  child: _ProgressBar(step: step, totalSteps: totalSteps, pct: pct),
                 ),
-              ),
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final compact = constraints.maxWidth < 420;
+                const SizedBox(height: 48),
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.deep,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.psychology_alt_outlined,
-                        color: AppColors.gold,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'AI 다과 추천 엔진',
-                            style: TextStyle(
-                              color: AppColors.cinnabar,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
+                // Question header
+                _QuestionHeader(question: question),
+                const SizedBox(height: 48),
+
+                // Card grid
+                if (isWide)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < question.options.length; i++) ...[
+                        SizedBox(
+                          width: 244,
+                          child: _OptionCard(
+                            option: question.options[i],
+                            selected: selected == question.options[i].title,
+                            onTap: () => onPick(question.options[i].title),
+                          ),
+                        ),
+                        if (i < question.options.length - 1) const SizedBox(width: 16),
+                      ],
+                    ],
+                  )
+                else
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      for (final opt in question.options)
+                        SizedBox(
+                          width: 200,
+                          child: _OptionCard(
+                            option: opt,
+                            selected: selected == opt.title,
+                            onTap: () => onPick(opt.title),
+                          ),
+                        ),
+                    ],
+                  ),
+                const SizedBox(height: 48),
+
+                // Navigation
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1024),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (onBack != null)
+                        TextButton.icon(
+                          onPressed: onBack,
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 14),
+                          label: const Text('이전 질문'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF534344),
+                            textStyle: const TextStyle(
+                              fontFamily: 'Gowun Batang',
+                              fontFamilyFallback: _serifFallback,
+                              fontSize: 14,
                             ),
                           ),
-                          const SizedBox(height: 5),
-                          Text(
-                            '취향 분석 결과',
-                            style: TextStyle(
-                              color: AppColors.deep,
-                              fontWeight: FontWeight.w800,
-                              fontSize: compact ? 21 : 24,
-                              height: 1.2,
-                              fontFamily: 'Noto Serif KR',
-                              fontFamilyFallback: const [
-                                'AppleMyungjo',
-                                'serif',
-                              ],
+                        )
+                      else
+                        const SizedBox(width: 100),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: onSkip,
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFF566341),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              textStyle: const TextStyle(
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 14,
+                              ),
+                            ),
+                            child: const Text('건너뛰기'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: selected != null ? () => onPick(selected!) : onSkip,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF934753),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 1,
+                            ),
+                            child: Text(
+                              isLast ? '취향 분석하기' : '다음 단계',
+                              style: const TextStyle(
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    if (!compact) const _ReadyBadge(),
-                  ],
-                );
-              },
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(22),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _panelBody(context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _panelBody(BuildContext context) {
-    if (isLoading) {
-      return _LoadingAnalysis(input: input);
-    }
-
-    final current = result;
-    if (current == null) {
-      return _EmptyResult(input: input);
-    }
-
-    return _RecommendationResultView(
-      result: current,
-      copied: copied,
-      onCopy: onCopy,
-      onRetry: onRetry,
-    );
-  }
-}
-
-class _ReadyBadge extends StatelessWidget {
-  const _ReadyBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.36)),
-      ),
-      child: const Text(
-        'LIVE',
-        style: TextStyle(
-          color: AppColors.brown,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );
   }
 }
 
-class _EmptyResult extends StatelessWidget {
-  const _EmptyResult({required this.input});
-
-  final RecommendationInput input;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      key: const ValueKey('empty'),
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '현재 성향 신호를 읽고 있습니다',
-            style: TextStyle(
-              color: AppColors.deep,
-              fontWeight: FontWeight.w800,
-              fontSize: 22,
-              fontFamily: 'Noto Serif KR',
-              fontFamilyFallback: ['AppleMyungjo', 'serif'],
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '분석을 실행하면 추천 메뉴, 함께 어울리는 차, 차선 메뉴, 추천 근거가 한 번에 정리됩니다.',
-            style: TextStyle(
-              color: AppColors.muted,
-              fontSize: 15,
-              height: 1.65,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _SignalPreview(input: input),
-        ],
-      ),
-    );
-  }
-}
-
-class _SignalPreview extends StatelessWidget {
-  const _SignalPreview({required this.input});
-
-  final RecommendationInput input;
+class _ProgressBar extends StatelessWidget {
+  const _ProgressBar({required this.step, required this.totalSteps, required this.pct});
+  final int step;
+  final int totalSteps;
+  final int pct;
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _PreviewRow(label: '성향 신호', value: input.personality),
-        _PreviewRow(label: '상황 신호', value: input.moment),
-        _PreviewRow(label: '단맛 신호', value: input.sweetness),
-        _PreviewRow(label: '식감 신호', value: input.texture),
-        _PreviewRow(label: '차 신호', value: input.tea),
-        _PreviewRow(label: '선택 신호', value: input.choiceStyle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '$totalSteps개 중 ${step + 1}번째 질문',
+              style: const TextStyle(
+                color: Color(0xFF534344),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 14,
+                letterSpacing: 0.14,
+              ),
+            ),
+            Text(
+              '$pct% 완료',
+              style: const TextStyle(
+                color: Color(0xFF934753),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.14,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(9999),
+          child: LinearProgressIndicator(
+            value: step / totalSteps,
+            backgroundColor: const Color(0xFFE5E2DC),
+            valueColor: const AlwaysStoppedAnimation(Color(0xFFD9808C)),
+            minHeight: 6,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _PreviewRow extends StatelessWidget {
-  const _PreviewRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
+class _QuestionHeader extends StatelessWidget {
+  const _QuestionHeader({required this.question});
+  final _QuizQ question;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 82,
-            child: Text(
-              label,
+    return Column(
+      children: [
+        const Text(
+          'ATMOSPHERIC SELECTION',
+          style: TextStyle(
+            color: Color(0xFFBECCA3),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.4,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              question.before,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                color: AppColors.cinnabar,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
+                color: Color(0xFF1C1C18),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 48,
+                letterSpacing: -0.96,
+                height: 1.17,
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-              decoration: BoxDecoration(
-                color: AppColors.paper,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.brown.withValues(alpha: 0.08),
-                ),
-              ),
-              child: Text(
-                value,
-                style: const TextStyle(
-                  color: AppColors.brown,
-                  fontWeight: FontWeight.w700,
-                ),
+            _KeywordText(keyword: question.keyword),
+            Text(
+              question.after,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF1C1C18),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 48,
+                letterSpacing: -0.96,
+                height: 1.17,
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          question.hint,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF534344),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 18,
+            height: 1.56,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _LoadingAnalysis extends StatelessWidget {
-  const _LoadingAnalysis({required this.input});
-
-  final RecommendationInput input;
+class _KeywordText extends StatelessWidget {
+  const _KeywordText({required this.keyword});
+  final String keyword;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      key: const ValueKey('loading'),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '행궁다과 AI가 성향과 메뉴 특징을 맞추고 있어요...',
-            style: TextStyle(
-              color: AppColors.deep,
-              fontWeight: FontWeight.w800,
-              fontSize: 21,
-              fontFamily: 'Noto Serif KR',
-              fontFamilyFallback: ['AppleMyungjo', 'serif'],
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        Positioned(
+          bottom: 2,
+          left: 4,
+          right: 0,
+          child: Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9808C).withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
-          const SizedBox(height: 18),
-          _AnalysisStep(label: '성향 질문 읽기', value: input.personality),
-          _AnalysisStep(label: '메뉴 특징값 매칭', value: input.sweetness),
-          _AnalysisStep(label: '상황 문장 보정', value: input.situation),
-          const _AnalysisStep(label: '결과 문장 생성', value: '추천 메뉴와 차선 메뉴 정리'),
-        ],
-      ),
+        ),
+        Text(
+          keyword,
+          style: const TextStyle(
+            color: Color(0xFF934753),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 48,
+            letterSpacing: -0.96,
+            height: 1.17,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _AnalysisStep extends StatelessWidget {
-  const _AnalysisStep({required this.label, required this.value});
+class _OptionCard extends StatefulWidget {
+  const _OptionCard({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+  final _QuizOption option;
+  final bool selected;
+  final VoidCallback onTap;
 
-  final String label;
-  final String value;
+  @override
+  State<_OptionCard> createState() => _OptionCardState();
+}
+
+class _OptionCardState extends State<_OptionCard> {
+  bool _hovered = false;
+
+  Color get _gradientStart {
+    if (widget.option.bgColor == _pinkBg) return const Color(0xFFD9808C);
+    if (widget.option.bgColor == _tealBg) return const Color(0xFFD7E5BA);
+    if (widget.option.bgColor == _yellowBg) return const Color(0xFFBF923A);
+    return const Color(0xFF867274);
+  }
+
+  Color get _cardBg {
+    if (widget.selected) return widget.option.bgColor.withValues(alpha: 0.28);
+    if (_hovered) return widget.option.bgColor.withValues(alpha: 0.13);
+    return Colors.white;
+  }
+
+  Color get _borderColor {
+    if (widget.selected) return const Color(0xFF934753);
+    if (_hovered) return const Color(0xFF934753).withValues(alpha: 0.45);
+    return Colors.transparent;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.gold,
-            ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 320,
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _borderColor, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: widget.selected
+                    ? const Color(0xFF934753).withValues(alpha: 0.18)
+                    : _hovered
+                        ? const Color(0xFF934753).withValues(alpha: 0.10)
+                        : const Color(0xFF934753).withValues(alpha: 0.05),
+                blurRadius: widget.selected ? 14 : (_hovered ? 8 : 2),
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.deep,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      color: widget.option.bgColor,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
+                                colors: [
+                                  _gradientStart.withValues(alpha: 0.2),
+                                  _gradientStart.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Image.asset(
+                            widget.option.imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  value.isEmpty ? '입력값 없음' : value,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 2),
+                child: Text(
+                  widget.option.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: widget.selected
+                        ? const Color(0xFF934753)
+                        : const Color(0xFF1C1C18),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 20,
+                    fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w400,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  widget.option.subtitle,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 13,
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 11,
                     height: 1.45,
                   ),
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RecommendationResultView extends StatelessWidget {
-  const _RecommendationResultView({
-    required this.result,
-    required this.copied,
-    required this.onCopy,
-    required this.onRetry,
-  });
-
-  final RecommendationResult result;
-  final bool copied;
-  final VoidCallback onCopy;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeInUp(
-      key: const ValueKey('result'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _ResultHero(result: result),
-          const SizedBox(height: 12),
-          _RecommendationNote(message: result.packagingMessage),
-          const SizedBox(height: 18),
-          _SignalBoard(result: result),
-          const SizedBox(height: 18),
-          const Text(
-            '추천 이유',
-            style: TextStyle(
-              color: AppColors.brown,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          for (var index = 0; index < result.reasons.length; index++) ...[
-            _ReasonRow(index: index, reason: result.reasons[index]),
-            const SizedBox(height: 9),
-          ],
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isNarrow = constraints.maxWidth < 520;
-              final blocks = [
-                _InfoBlock(
-                  icon: Icons.local_cafe_outlined,
-                  title: '함께 어울리는 메뉴/차',
-                  value: result.teaPairing,
-                ),
-                _InfoBlock(
-                  icon: Icons.alt_route_rounded,
-                  title: '차선 추천',
-                  value: result.secondaryMenuName,
-                ),
-              ];
-
-              return isNarrow
-                  ? Column(
-                      children: [
-                        blocks[0],
-                        const SizedBox(height: 12),
-                        blocks[1],
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: blocks[0]),
-                        const SizedBox(width: 12),
-                        Expanded(child: blocks[1]),
-                      ],
-                    );
-            },
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [for (final tag in result.tags) TagPill(label: tag)],
-          ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              OutlinedButton.icon(
-                onPressed: onCopy,
-                icon: Icon(
-                  copied ? Icons.check_rounded : Icons.copy_rounded,
-                  size: 18,
-                ),
-                label: Text(copied ? '복사 완료' : '추천 결과 복사'),
-              ),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('다시 분석하기'),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResultHero extends StatelessWidget {
-  const _ResultHero({required this.result});
-
-  final RecommendationResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.24)),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 420;
-          final copy = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '추천 프로필',
-                style: TextStyle(
-                  color: AppColors.cinnabar,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 7),
-              Text(
-                result.profileTitle,
-                style: TextStyle(
-                  color: AppColors.brown,
-                  fontWeight: FontWeight.w800,
-                  fontSize: compact ? 18 : 20,
-                  height: 1.25,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _TypeBadge(label: result.dagwaType),
-              const SizedBox(height: 10),
-              Text(
-                result.productName,
-                style: TextStyle(
-                  color: AppColors.deep,
-                  fontWeight: FontWeight.w800,
-                  fontSize: compact ? 27 : 32,
-                  height: 1.15,
-                  fontFamily: 'Noto Serif KR',
-                  fontFamilyFallback: const ['AppleMyungjo', 'serif'],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                result.typeDescription,
-                style: const TextStyle(
-                  color: AppColors.brown,
-                  fontSize: 13,
-                  height: 1.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                result.aiSummary,
-                style: const TextStyle(
-                  color: AppColors.muted,
-                  fontSize: 15,
-                  height: 1.65,
-                ),
-              ),
-            ],
-          );
-
-          if (compact) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                copy,
-                const SizedBox(height: 14),
-                _ConfidenceBadge(confidence: result.confidence, compact: true),
-              ],
-            );
-          }
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: copy),
-              const SizedBox(width: 16),
-              _ConfidenceBadge(confidence: result.confidence),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _RecommendationNote extends StatelessWidget {
-  const _RecommendationNote({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.hanji.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.auto_awesome_rounded,
-            color: AppColors.cinnabar,
-            size: 18,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: AppColors.brown,
-                fontSize: 14,
-                height: 1.55,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TypeBadge extends StatelessWidget {
-  const _TypeBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.28)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.cinnabar,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );
   }
 }
 
-class _ConfidenceBadge extends StatelessWidget {
-  const _ConfidenceBadge({required this.confidence, this.compact = false});
+// ── Result ─────────────────────────────────────────────────────────────────────
 
-  final int confidence;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: compact ? double.infinity : 86,
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 14 : 0,
-        vertical: compact ? 12 : 14,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.deep,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: compact
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '추천 매칭도',
-                  style: TextStyle(
-                    color: AppColors.hanji,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  '$confidence%',
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              children: [
-                Text(
-                  '$confidence%',
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                const Text(
-                  '매칭도',
-                  style: TextStyle(
-                    color: AppColors.hanji,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class _SignalBoard extends StatelessWidget {
-  const _SignalBoard({required this.result});
-
+class _ResultView extends StatelessWidget {
+  const _ResultView({
+    super.key,
+    required this.result,
+    required this.onRetry,
+    required this.onHome,
+  });
   final RecommendationResult result;
+  final VoidCallback onRetry;
+  final VoidCallback onHome;
+
+  String get _imagePath {
+    if (result.productName.contains('화전')) return 'assets/figma/recommend_hwajeon.png';
+    if (result.productName.contains('송편')) return 'assets/figma/recommend_songpyeon.png';
+    if (result.productName.contains('빙수')) return 'assets/figma/menu_green_bingsu.png';
+    return 'assets/figma/recommend_yakgwa.png';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 780;
+
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'AI가 읽은 신호',
-            style: TextStyle(
-              color: AppColors.brown,
-              fontWeight: FontWeight.w800,
+      color: const Color(0xFFFCF7F5),
+      padding: const EdgeInsets.symmetric(vertical: 64),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 860),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEFAF9),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE7A9A0).withValues(alpha: 0.22),
+                    blurRadius: 40,
+                    spreadRadius: -4,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      '취향 분석 결과',
+                      style: TextStyle(
+                        color: const Color(0xFF534344).withValues(alpha: 0.6),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 13,
+                        letterSpacing: 0.13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFE7A9A0).withValues(alpha: 0.45),
+                          blurRadius: 40,
+                          spreadRadius: -4,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Image.asset(_imagePath, fit: BoxFit.contain),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    result.profileTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF934753),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    result.productName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    result.aiSummary,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF786A6A),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 15,
+                      height: 1.75,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF9F6),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFE7A9A0).withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'AI가 읽은 신호',
+                          style: TextStyle(
+                            color: Color(0xFF534344),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        for (final signal in result.signals) ...[
+                          _SignalRow(signal: signal),
+                          const SizedBox(height: 8),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (isWide)
+                    Row(
+                      children: [
+                        Expanded(child: _PairingBox(label: '함께 어울리는 차', value: result.teaPairing, icon: Icons.local_cafe_outlined)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _PairingBox(label: '차선 추천', value: result.secondaryMenuName, icon: Icons.restaurant_menu_outlined)),
+                      ],
+                    )
+                  else
+                    Column(
+                      children: [
+                        _PairingBox(label: '함께 어울리는 차', value: result.teaPairing, icon: Icons.local_cafe_outlined),
+                        const SizedBox(height: 12),
+                        _PairingBox(label: '차선 추천', value: result.secondaryMenuName, icon: Icons.restaurant_menu_outlined),
+                      ],
+                    ),
+                  const SizedBox(height: 32),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: onHome,
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF534344),
+                          textStyle: const TextStyle(
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 15,
+                          ),
+                        ),
+                        child: const Text('다시 분석하기'),
+                      ),
+                      FilledButton(
+                        onPressed: () {},
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF934753),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text(
+                          '구매하러 가기',
+                          style: TextStyle(
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () {},
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFDEDCC9)),
+                          foregroundColor: const Color(0xFF534344),
+                          backgroundColor: const Color(0xFFDEDCC9),
+                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text(
+                          '친구한테 공유하기',
+                          style: TextStyle(
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 12),
-          for (final signal in result.signals) _SignalRow(signal: signal),
-        ],
+        ),
       ),
     );
   }
@@ -1300,168 +1115,107 @@ class _SignalBoard extends StatelessWidget {
 
 class _SignalRow extends StatelessWidget {
   const _SignalRow({required this.signal});
-
   final AiSignal signal;
 
   @override
   Widget build(BuildContext context) {
-    final widthFactor = (signal.weight / 100).clamp(0.12, 1.0);
+    return Row(
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            signal.label,
+            style: const TextStyle(
+              color: Color(0xFF786A6A),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            signal.value,
+            style: const TextStyle(
+              color: Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 60,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: signal.weight / 100,
+              backgroundColor: const Color(0xFFE5E2DC),
+              valueColor: const AlwaysStoppedAnimation(Color(0xFFD9808C)),
+              minHeight: 5,
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '${signal.weight}',
+          style: const TextStyle(
+            color: Color(0xFF934753),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+class _PairingBox extends StatelessWidget {
+  const _PairingBox({required this.label, required this.value, required this.icon});
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE7A9A0).withValues(alpha: 0.35)),
+      ),
+      child: Row(
         children: [
-          Row(
-            children: [
-              SizedBox(
-                width: 92,
-                child: Text(
-                  signal.label,
+          Icon(icon, color: const Color(0xFF934753), size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
                   style: const TextStyle(
-                    color: AppColors.cinnabar,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF9A9285),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 11,
                   ),
                 ),
-              ),
-              Expanded(
-                child: Text(
-                  signal.value,
+                Text(
+                  value,
                   style: const TextStyle(
-                    color: AppColors.deep,
-                    fontSize: 13,
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              Text(
-                '${signal.weight}',
-                style: const TextStyle(
-                  color: AppColors.muted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: Container(
-              height: 6,
-              color: AppColors.hanji,
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: widthFactor,
-                child: Container(color: AppColors.gold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReasonRow extends StatelessWidget {
-  const _ReasonRow({required this.index, required this.reason});
-
-  final int index;
-  final String reason;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: AppColors.brown,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: const TextStyle(
-                  color: AppColors.paper,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              reason,
-              style: const TextStyle(
-                color: AppColors.muted,
-                fontSize: 14,
-                height: 1.65,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoBlock extends StatelessWidget {
-  const _InfoBlock({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brown.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.cinnabar, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.cinnabar,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.deep,
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-              height: 1.55,
+              ],
             ),
           ),
         ],

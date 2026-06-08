@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'pages/ai_recommendation_page.dart';
+import 'pages/catering_page.dart';
+import 'pages/experience_page.dart';
+import 'pages/home_page.dart';
+import 'pages/menu_page.dart';
 import 'theme/app_theme.dart';
-import 'widgets/home_page.dart';
 
 void main() {
   runApp(const HaenggungDagwaApp());
@@ -28,7 +32,14 @@ class HaenggungDagwaApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
-      home: const HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomePage(),
+        '/menu': (context) => const MenuPage(),
+        '/experience': (context) => const ExperiencePage(),
+        '/catering': (context) => const CateringPage(),
+        '/ai': (context) => const AiRecommendationPage(),
+      },
     );
   }
 }

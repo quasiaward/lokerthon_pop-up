@@ -1,17 +1,83 @@
 import 'package:flutter/material.dart';
 
-import '../data/place_info.dart';
 import '../theme/app_colors.dart';
 import 'common.dart';
 
-enum MenuLanguage {
-  ko('한국어'),
-  en('English'),
-  ja('日本語');
+const _serifFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
 
-  const MenuLanguage(this.label);
-  final String label;
-}
+const _menuCategories = ['모든 메뉴', '대표 다과', '전통차', '음료', '빙수', '다과상'];
+
+const _menuItems = [
+  _FigmaMenuItem(
+    name: '대추차',
+    englishName: 'Jujube Tea',
+    price: '8,000원',
+    image: 'assets/figma/menu_jujube_tea.png',
+    tags: ['대표', '전통차'],
+    categories: ['전통차', '음료'],
+  ),
+  _FigmaMenuItem(
+    name: '쌍화차',
+    englishName: 'Hanbang Ssanghwacha',
+    price: '8,000원',
+    image: 'assets/figma/menu_ssanghwa_tea.png',
+    tags: ['전통차'],
+    categories: ['전통차', '음료'],
+  ),
+  _FigmaMenuItem(
+    name: '생강차',
+    englishName: 'Traditional Ginger Tea',
+    price: '6,000원',
+    image: 'assets/figma/menu_ginger_tea.png',
+    tags: ['전통차'],
+    categories: ['전통차', '음료'],
+  ),
+  _FigmaMenuItem(
+    name: '식혜',
+    englishName: 'Sweet Rice Punch',
+    price: '4,500원',
+    image: 'assets/figma/menu_sikhye.png',
+    tags: ['전통차'],
+    categories: ['전통차', '음료'],
+  ),
+  _FigmaMenuItem(
+    name: '베리레몬차',
+    englishName: 'TripleBerryLemon Tea',
+    price: '5,500원',
+    image: 'assets/figma/menu_berry_lemon_tea.png',
+    tags: ['음료'],
+    categories: ['음료'],
+  ),
+  _FigmaMenuItem(
+    name: '흑임자 라떼',
+    englishName: 'Black Sesame Latte',
+    price: '5,500원',
+    image: 'assets/figma/menu_black_sesame_latte.png',
+    tags: ['대표', '음료'],
+    categories: ['음료'],
+  ),
+  _FigmaMenuItem(
+    name: '오미자차',
+    englishName: 'Omiija Tea',
+    price: '5,000원',
+    image: 'assets/figma/menu_omija_tea.png',
+    tags: ['대표', '전통차'],
+    categories: ['전통차', '음료'],
+  ),
+  _FigmaMenuItem(
+    name: '오미자 수단',
+    englishName: 'Omiija Tea with Teok',
+    price: '6,500원',
+    image: 'assets/figma/menu_omija_sudan.png',
+    tags: ['대표', '전통차'],
+    categories: ['대표 다과', '전통차', '다과상'],
+  ),
+];
 
 class MenuSection extends StatefulWidget {
   const MenuSection({super.key});
@@ -21,74 +87,48 @@ class MenuSection extends StatefulWidget {
 }
 
 class _MenuSectionState extends State<MenuSection> {
-  MenuLanguage _language = MenuLanguage.ko;
+  String _category = '모든 메뉴';
+
+  List<_FigmaMenuItem> get _visibleItems {
+    if (_category == '모든 메뉴') return _menuItems;
+    if (_category == '대표 다과') {
+      return _menuItems.where((item) => item.tags.contains('대표')).toList();
+    }
+    if (_category == '빙수') return const [];
+    return _menuItems
+        .where((item) => item.categories.contains(_category))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final columns = width >= 1040 ? 4 : (width >= 700 ? 2 : 1);
-
     return Container(
-      color: AppColors.paper,
+      color: const Color(0xFFF5F5F3),
       padding: const EdgeInsets.symmetric(vertical: 96),
       child: SectionShell(
         child: Column(
           children: [
-            const SectionHeading(
-              eyebrow: 'Menu',
-              title: '행궁다과 메뉴',
-              description: '다과상, 화전, 전통차, 빙수의 대표 메뉴와 가격을 정리했습니다.',
-            ),
-            const SizedBox(height: 26),
-            const _MenuCategoryStrip(),
-            const SizedBox(height: 28),
-            // 언어 탭 (React 스타일: 직각, 선택 시 dark 배경)
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.wheat),
-                color: AppColors.paper,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < MenuLanguage.values.length; i++) ...[
-                    _LangTab(
-                      language: MenuLanguage.values[i],
-                      selected: MenuLanguage.values[i] == _language,
-                      onTap: () =>
-                          setState(() => _language = MenuLanguage.values[i]),
-                    ),
-                    if (i < MenuLanguage.values.length - 1)
-                      Container(width: 1, height: 46, color: AppColors.wheat),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: actualMenuItems.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: columns == 1
-                    ? 0.94
-                    : (columns == 2 ? 0.84 : 0.74),
-              ),
-              itemBuilder: (context, index) =>
-                  _MenuCard(item: actualMenuItems[index], language: _language),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '* 표시된 가격은 공개 메뉴 기준이며 구성과 시즌에 따라 달라질 수 있습니다.',
+            const Text(
+              '행궁다과 메뉴',
               style: TextStyle(
-                color: AppColors.muted.withValues(alpha: 0.7),
-                fontSize: 13,
-                fontWeight: FontWeight.w300,
+                color: Color(0xFF534344),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 50,
+                fontWeight: FontWeight.w700,
+                height: 1.2,
               ),
             ),
+            const SizedBox(height: 34),
+            _CategoryTabs(
+              selected: _category,
+              onChanged: (category) => setState(() => _category = category),
+            ),
+            const SizedBox(height: 52),
+            const _MenuToolbar(),
+            const SizedBox(height: 24),
+            _MenuGrid(items: _visibleItems),
+            if (_visibleItems.isEmpty) const _EmptyCategory(),
           ],
         ),
       ),
@@ -96,85 +136,65 @@ class _MenuSectionState extends State<MenuSection> {
   }
 }
 
-class _MenuCategoryStrip extends StatelessWidget {
-  const _MenuCategoryStrip();
+class _CategoryTabs extends StatelessWidget {
+  const _CategoryTabs({required this.selected, required this.onChanged});
+
+  final String selected;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 10,
-      runSpacing: 10,
-      children: const [
-        _MenuCue(icon: Icons.restaurant_menu_outlined, label: '대표 다과'),
-        _MenuCue(icon: Icons.local_cafe_outlined, label: '전통차'),
-        _MenuCue(icon: Icons.icecream_outlined, label: '빙수'),
-        _MenuCue(icon: Icons.card_giftcard_outlined, label: '포장 다과'),
+      spacing: 18,
+      runSpacing: 12,
+      children: [
+        for (final category in _menuCategories)
+          _CategoryPill(
+            label: category,
+            selected: category == selected,
+            onTap: () => onChanged(category),
+          ),
       ],
     );
   }
 }
 
-class _MenuCue extends StatelessWidget {
-  const _MenuCue({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.hanji.withValues(alpha: 0.64),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.wheat.withValues(alpha: 0.82)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppColors.cinnabar),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.brown,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── 언어 탭 ─────────────────────────────────────────
-class _LangTab extends StatelessWidget {
-  const _LangTab({
-    required this.language,
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
+    required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final MenuLanguage language;
+  final String label;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
-        color: selected ? AppColors.deep : Colors.transparent,
-        child: Text(
-          language.label,
-          style: TextStyle(
-            color: selected ? AppColors.paper : AppColors.muted,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 13),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFF934753) : const Color(0xFFE6E6E6),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : const Color(0xFF806D6D),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
           ),
         ),
       ),
@@ -182,166 +202,239 @@ class _LangTab extends StatelessWidget {
   }
 }
 
-// ── 메뉴 카드 ───────────────────────────────────────
-class _MenuCard extends StatelessWidget {
-  const _MenuCard({required this.item, required this.language});
-
-  final ActualMenuItem item;
-  final MenuLanguage language;
+class _MenuToolbar extends StatelessWidget {
+  const _MenuToolbar();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.wheat),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.12),
-            blurRadius: 24,
-            spreadRadius: -8,
-            offset: const Offset(0, 16),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 13),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFB5B5B5)),
+            color: Colors.transparent,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 상단 심볼 영역
-            Expanded(
-              flex: 5,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.hanji,
-                      AppColors.porcelain.withValues(alpha: 0.72),
-                    ],
-                  ),
-                  border: Border(bottom: BorderSide(color: AppColors.wheat)),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.deep,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          item.price,
-                          style: const TextStyle(
-                            color: Color(0xFFE8D8C0),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.paper.withValues(alpha: 0.82),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.gold.withValues(alpha: 0.26),
-                          ),
-                        ),
-                        child: Text(
-                          item.symbol,
-                          style: TextStyle(
-                            color: item.accent,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Noto Serif KR',
-                            fontFamilyFallback: const ['AppleMyungjo', 'serif'],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+          child: const Text(
+            '한국어',
+            style: TextStyle(
+              color: Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ),
+        const Spacer(),
+        PopupMenuButton<String>(
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: '추천순', child: Text('추천순')),
+            PopupMenuItem(value: '가격 낮은순', child: Text('가격 낮은순')),
+          ],
+          child: const Row(
+            children: [
+              Text(
+                '추천순',
+                style: TextStyle(
+                  color: Color(0xFF534344),
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              SizedBox(width: 10),
+              Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF534344)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuGrid extends StatelessWidget {
+  const _MenuGrid({required this.items});
+
+  final List<_FigmaMenuItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 1040
+            ? 4
+            : (constraints.maxWidth >= 680 ? 2 : 1);
+        final gap = columns == 1 ? 28.0 : 24.0;
+        final itemWidth =
+            (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: 34,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: itemWidth,
+                child: _MenuPhotoCard(item: item),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MenuPhotoCard extends StatelessWidget {
+  const _MenuPhotoCard({required this.item});
+
+  final _FigmaMenuItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Image.asset(item.image, fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          children: [
+            Text(
+              item.name,
+              style: const TextStyle(
+                color: Colors.black,
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
             ),
-            // 하단 텍스트 영역
-            Expanded(
-              flex: 6,
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.category,
-                      style: const TextStyle(
-                        color: AppColors.cinnabar,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item.name(language),
-                      style: const TextStyle(
-                        color: AppColors.deep,
-                        fontSize: 22,
-                        height: 1.2,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Noto Serif KR',
-                        fontFamilyFallback: ['AppleMyungjo', 'serif'],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Text(
-                        item.description(language),
-                        style: const TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 13,
-                          height: 1.6,
-                          fontWeight: FontWeight.w300,
-                        ),
-                        overflow: TextOverflow.fade,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(children: [TagPill(label: item.tag)]),
-                  ],
+            if (item.tags.contains('대표'))
+              const Text(
+                '대표 다과',
+                style: TextStyle(
+                  color: Color(0xFFE49A78),
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
                 ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          item.englishName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Color(0xFF534344),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 18,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Wrap(
+              spacing: 5,
+              children: [for (final tag in item.tags) _MiniTag(label: tag)],
+            ),
+            const Spacer(),
+            Text(
+              item.price,
+              style: const TextStyle(
+                color: Colors.black,
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+class _MiniTag extends StatelessWidget {
+  const _MiniTag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFBCBCBC)),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.black,
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          height: 1,
+        ),
       ),
     );
   }
 }
 
-extension on ActualMenuItem {
-  String name(MenuLanguage language) => switch (language) {
-    MenuLanguage.ko => ko,
-    MenuLanguage.en => en,
-    MenuLanguage.ja => ja,
-  };
+class _EmptyCategory extends StatelessWidget {
+  const _EmptyCategory();
 
-  String description(MenuLanguage language) => switch (language) {
-    MenuLanguage.ko => koDescription,
-    MenuLanguage.en => enDescription,
-    MenuLanguage.ja => jaDescription,
-  };
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 28),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.wheat),
+      ),
+      child: const Text(
+        '해당 카테고리의 메뉴는 준비 중입니다.',
+        style: TextStyle(color: AppColors.muted, fontSize: 15),
+      ),
+    );
+  }
+}
+
+class _FigmaMenuItem {
+  const _FigmaMenuItem({
+    required this.name,
+    required this.englishName,
+    required this.price,
+    required this.image,
+    required this.tags,
+    required this.categories,
+  });
+
+  final String name;
+  final String englishName;
+  final String price;
+  final String image;
+  final List<String> tags;
+  final List<String> categories;
 }

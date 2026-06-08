@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+
+const _serifFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
+
+class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
+  const AppNavBar({
+    super.key,
+    required this.currentRoute,
+  });
+
+  final String currentRoute;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final compact = width < 1000;
+
+    return Container(
+      color: const Color(0xFFFFFEF8),
+      child: SafeArea(
+        bottom: false,
+        child: compact
+            ? _CompactNav(currentRoute: currentRoute)
+            : _WideNav(currentRoute: currentRoute),
+      ),
+    );
+  }
+}
+
+class _WideNav extends StatelessWidget {
+  const _WideNav({required this.currentRoute});
+  final String currentRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 64,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 36),
+        child: Row(
+          children: [
+            _LogoButton(),
+            const Spacer(),
+            _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
+            _NavItem('메뉴', '/menu', currentRoute, onTap: () => _navigate(context, '/menu')),
+            _NavItem('체험', '/experience', currentRoute, onTap: () => _navigate(context, '/experience')),
+            _NavItem('케이터링', '/catering', currentRoute, onTap: () => _navigate(context, '/catering')),
+            _NavItem('나만의 다과 추천', '/ai', currentRoute, onTap: () => _navigate(context, '/ai')),
+            const Spacer(),
+            _NavItem('로그인', '', currentRoute, onTap: () => _showDemoNotice(context, '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.')),
+            _NavItem('장바구니', '', currentRoute, onTap: () => _showCartSheet(context)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactNav extends StatelessWidget {
+  const _CompactNav({required this.currentRoute});
+  final String currentRoute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20, top: 10),
+          child: _LogoButton(),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(left: 12, bottom: 8),
+          child: Row(
+            children: [
+              _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
+              _NavItem('메뉴', '/menu', currentRoute, onTap: () => _navigate(context, '/menu')),
+              _NavItem('체험', '/experience', currentRoute, onTap: () => _navigate(context, '/experience')),
+              _NavItem('케이터링', '/catering', currentRoute, onTap: () => _navigate(context, '/catering')),
+              _NavItem('나만의 다과 추천', '/ai', currentRoute, onTap: () => _navigate(context, '/ai')),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+void _navigate(BuildContext context, String route) {
+  Navigator.pushReplacementNamed(context, route);
+}
+
+void _goHome(BuildContext context) {
+  Navigator.pushReplacementNamed(context, '/');
+}
+
+void _showDemoNotice(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF534344),
+      ),
+    );
+}
+
+void _showCartSheet(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: const Color(0xFFFFFCF7),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+    ),
+    builder: (ctx) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '장바구니 안내',
+              style: TextStyle(
+                color: Color(0xFF534344),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              '발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
+              style: TextStyle(
+                color: Color(0xFF6F625B),
+                fontSize: 15,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 22),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushReplacementNamed(context, '/catering');
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF934753),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('케이터링 문의'),
+                ),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushReplacementNamed(context, '/experience');
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF934753),
+                  ),
+                  child: const Text('체험 예약'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+class _LogoButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 44),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: const Text(
+        '행궁다과',
+        style: TextStyle(
+          color: Color(0xFF534344),
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem(
+    this.label,
+    this.route,
+    this.currentRoute, {
+    required this.onTap,
+  });
+
+  final String label;
+  final String route;
+  final String currentRoute;
+  final VoidCallback onTap;
+
+  bool get _isActive => route.isNotEmpty && currentRoute == route;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        minimumSize: const Size(0, 40),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        style: TextStyle(
+          color: _isActive ? const Color(0xFF934753) : const Color(0xFF837777),
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 16,
+          fontWeight: _isActive ? FontWeight.w700 : FontWeight.w400,
+        ),
+      ),
+    );
+  }
+}

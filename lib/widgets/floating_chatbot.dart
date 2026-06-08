@@ -100,27 +100,25 @@ class _FloatingHaenggungChatbotState extends State<FloatingHaenggungChatbot> {
               onSend: _send,
             ),
           const SizedBox(height: 12),
-          // FAB: React 스타일 직각 버튼
           GestureDetector(
             onTap: () => setState(() => _open = !_open),
             child: Container(
-              width: 54,
-              height: 54,
+              width: 85,
+              height: 85,
               decoration: BoxDecoration(
-                color: AppColors.deep,
-                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFFEDE7E7),
+                borderRadius: BorderRadius.circular(42.5),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.deep.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    color: Colors.black.withValues(alpha: 0.39),
+                    blurRadius: 4.3,
                   ),
                 ],
               ),
               child: Icon(
-                _open ? Icons.close_rounded : Icons.chat_bubble_outline_rounded,
-                color: const Color(0xFFE8D8C0),
-                size: 20,
+                _open ? Icons.close_rounded : Icons.headset_mic_outlined,
+                color: const Color(0xFF534344),
+                size: 41,
               ),
             ),
           ),
