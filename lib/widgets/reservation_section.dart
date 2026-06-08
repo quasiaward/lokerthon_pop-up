@@ -51,6 +51,7 @@ class _ReservationSectionState extends State<ReservationSection> {
 
   _ReservationStage _stage = _ReservationStage.select;
   int _programIndex = 0;
+  bool _hasProgramSelection = false;
   String _type = '개인';
   int _adultCount = 4;
   int _childCount = 0;
@@ -79,12 +80,22 @@ class _ReservationSectionState extends State<ReservationSection> {
   }
 
   void _selectProgram(int index) {
-    setState(() => _programIndex = index);
+    setState(() {
+      if (_stage == _ReservationStage.select &&
+          _hasProgramSelection &&
+          _programIndex == index) {
+        _stage = _ReservationStage.detail;
+        return;
+      }
+      _programIndex = index;
+      _hasProgramSelection = true;
+    });
   }
 
   void _openProgram(int index) {
     setState(() {
       _programIndex = index;
+      _hasProgramSelection = true;
       _stage = _ReservationStage.detail;
     });
   }
@@ -157,7 +168,10 @@ class _ReservationSectionState extends State<ReservationSection> {
 
   void _complete() {
     _showSnack('체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.');
-    setState(() => _stage = _ReservationStage.select);
+    setState(() {
+      _stage = _ReservationStage.select;
+      _hasProgramSelection = false;
+    });
   }
 
   void _showSnack(String message) {
@@ -178,7 +192,8 @@ class _ReservationSectionState extends State<ReservationSection> {
       color: const Color(0xFFFFFEF8),
       child: Column(
         children: [
-          _ExperienceHero(program: _program),
+          if (_stage != _ReservationStage.select)
+            _ExperienceHero(program: _program),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 240),
             transitionBuilder: (child, animation) => FadeTransition(
@@ -194,7 +209,7 @@ class _ReservationSectionState extends State<ReservationSection> {
             child: switch (_stage) {
               _ReservationStage.select => _ProgramSelectView(
                 key: const ValueKey('select'),
-                selectedIndex: _programIndex,
+                selectedIndex: _hasProgramSelection ? _programIndex : null,
                 onSelect: _selectProgram,
                 onOpen: _openProgram,
               ),
@@ -287,7 +302,7 @@ class _ProgramSelectView extends StatelessWidget {
     required this.onOpen,
   });
 
-  final int selectedIndex;
+  final int? selectedIndex;
   final ValueChanged<int> onSelect;
   final ValueChanged<int> onOpen;
 
@@ -296,37 +311,38 @@ class _ProgramSelectView extends StatelessWidget {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 66),
+      padding: EdgeInsets.fromLTRB(0, isWide ? 100 : 58, 0, isWide ? 96 : 64),
       child: SectionShell(
         child: Column(
           children: [
-            const Text(
+            Text(
               '행궁다과 체험 예약',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
-                fontSize: 46,
+                fontSize: isWide ? 50 : 36,
                 fontWeight: FontWeight.w700,
                 height: 1.2,
               ),
             ),
-            const SizedBox(height: 44),
+            const SizedBox(height: 20),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 '현재 진행되는 클래스',
                 style: TextStyle(
                   color: const Color(0xFF675C4F),
-                  fontFamily: 'Gowun Batang',
+                  fontFamily: 'Noto Serif KR',
                   fontFamilyFallback: _serifFallback,
-                  fontSize: isWide ? 31 : 25,
-                  fontWeight: FontWeight.w700,
+                  fontSize: isWide ? 32 : 25,
+                  fontWeight: FontWeight.w600,
+                  height: 1.25,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             if (isWide)
               Row(
                 children: [
@@ -334,7 +350,7 @@ class _ProgramSelectView extends StatelessWidget {
                     Expanded(
                       child: _ProgramCard(
                         program: _programs[index],
-                        selected: index == selectedIndex,
+                        selected: selectedIndex == index,
                         onTap: () => onSelect(index),
                         onDoubleTap: () => onOpen(index),
                       ),
@@ -350,7 +366,7 @@ class _ProgramSelectView extends StatelessWidget {
                   for (var index = 0; index < _programs.length; index++) ...[
                     _ProgramCard(
                       program: _programs[index],
-                      selected: index == selectedIndex,
+                      selected: selectedIndex == index,
                       onTap: () => onSelect(index),
                       onDoubleTap: () => onOpen(index),
                     ),
@@ -361,35 +377,6 @@ class _ProgramSelectView extends StatelessWidget {
               ),
             const SizedBox(height: 28),
             const _ReservationNotice(),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FilledButton(
-                  onPressed: () => onOpen(selectedIndex),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF9B4A59),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 34,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  child: const Text(
-                    '선택한 클래스 예약하기',
-                    style: TextStyle(
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -434,26 +421,26 @@ class _ProgramCardState extends State<_ProgramCard> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
             decoration: BoxDecoration(
-              color: active ? const Color(0xFFFFF7F7) : Colors.white,
+              color: widget.selected ? const Color(0xFFFFF8F8) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: widget.selected
-                    ? const Color(0xFF9B4A59)
+                    ? const Color(0xFF995959)
                     : _hovered
-                    ? const Color(0xFFD89AA1)
+                    ? const Color(0xFFE6C7C9)
                     : Colors.transparent,
-                width: widget.selected ? 2.5 : 1.5,
+                width: widget.selected ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color:
                       (active
-                              ? const Color(0xFF9B4A59)
+                              ? const Color(0xFFD2A7A7)
                               : const Color(0xFFD2CAB3))
-                          .withValues(alpha: active ? 0.18 : 0.58),
-                  blurRadius: active ? 24 : 18,
-                  spreadRadius: -4,
-                  offset: const Offset(0, 5),
+                          .withValues(alpha: active ? 0.34 : 0.80),
+                  blurRadius: active ? 22 : 20,
+                  spreadRadius: -2,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -463,7 +450,7 @@ class _ProgramCardState extends State<_ProgramCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 190,
+                    height: 192,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -486,8 +473,9 @@ class _ProgramCardState extends State<_ProgramCard> {
                                 color: Colors.white,
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                height: 20 / 14,
                               ),
                             ),
                           ),
@@ -518,11 +506,11 @@ class _ProgramCardState extends State<_ProgramCard> {
                           widget.program.title,
                           style: const TextStyle(
                             color: Color(0xFF1C1C18),
-                            fontFamily: 'Gowun Batang',
+                            fontFamily: 'Noto Serif KR',
                             fontFamilyFallback: _serifFallback,
                             fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            height: 1.32,
+                            fontWeight: FontWeight.w500,
+                            height: 32 / 24,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -533,7 +521,7 @@ class _ProgramCardState extends State<_ProgramCard> {
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
                             fontSize: 16,
-                            height: 1.55,
+                            height: 24 / 16,
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -545,8 +533,9 @@ class _ProgramCardState extends State<_ProgramCard> {
                                 color: Color(0xFF566341),
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                height: 20 / 14,
                               ),
                             ),
                             const Spacer(),
@@ -554,8 +543,10 @@ class _ProgramCardState extends State<_ProgramCard> {
                               '${_formatWon(_unitPrice)}원',
                               style: const TextStyle(
                                 color: Color(0xFF1C1C18),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
+                                fontFamily: 'Plus Jakarta Sans',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                height: 20 / 14,
                               ),
                             ),
                           ],
@@ -602,13 +593,14 @@ class _ReservationNotice extends StatelessWidget {
                   Icon(Icons.info_rounded, color: Color(0xFF9B4A59), size: 21),
                   SizedBox(width: 10),
                   Text(
-                    '예약 안내사항',
+                    '예약 안내 사항',
                     style: TextStyle(
                       color: Color(0xFF1C1C18),
-                      fontFamily: 'Gowun Batang',
+                      fontFamily: 'Noto Serif KR',
                       fontFamilyFallback: _serifFallback,
                       fontSize: 24,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
+                      height: 32 / 24,
                     ),
                   ),
                 ],
@@ -620,16 +612,17 @@ class _ReservationNotice extends StatelessWidget {
                 children:
                     const [
                           _NoticeItem(
-                            title: '진행 방식',
-                            body: '원하는 클래스를 선택하거나 더블클릭하면 상세 예약 화면으로 이동합니다.',
+                            title: '환불 규정',
+                            body:
+                                '체험 48시간 전까지 100% 환불 가능합니다. 당일 노쇼는 환불이 불가합니다.',
                           ),
                           _NoticeItem(
                             title: '준비물 안내',
                             body: '모든 재료와 앞치마가 제공됩니다. 수업 시작 10분 전까지 도착해주세요.',
                           ),
                           _NoticeItem(
-                            title: '변경 및 취소',
-                            body: '문의 접수 후 매장에서 일정과 인원 수를 확인해 안내드립니다.',
+                            title: '예약 문의',
+                            body: '4인 이상만 예약 가능하며, 개인은 받고 있지 않습니다.',
                           ),
                         ]
                         .map((item) => SizedBox(width: itemWidth, child: item))
@@ -660,8 +653,9 @@ class _NoticeItem extends StatelessWidget {
             color: Color(0xFF9B4A59),
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            height: 20 / 14,
           ),
         ),
         const SizedBox(height: 8),
@@ -672,7 +666,7 @@ class _NoticeItem extends StatelessWidget {
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
             fontSize: 16,
-            height: 1.55,
+            height: 24 / 16,
           ),
         ),
       ],

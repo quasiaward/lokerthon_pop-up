@@ -8,6 +8,12 @@ const _serifFallback = [
   'Malgun Gothic',
   'sans-serif',
 ];
+const _sansFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   const AppNavBar({super.key, required this.currentRoute});
@@ -15,7 +21,7 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String currentRoute;
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(80);
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +46,13 @@ class _WideNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = width >= 1200 ? width / 12 + 30 : 36.0;
+
     return SizedBox(
-      height: 64,
+      height: 80,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 36),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: Row(
           children: [
             _LogoButton(),
@@ -269,19 +278,43 @@ class _NavItem extends StatelessWidget {
     return TextButton(
       onPressed: onTap,
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        minimumSize: const Size(0, 52),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: Text(
-        label,
-        maxLines: 1,
-        style: TextStyle(
-          color: _isActive ? const Color(0xFF934753) : const Color(0xFF837777),
-          fontFamily: 'Gowun Batang',
-          fontFamilyFallback: _serifFallback,
-          fontSize: 16,
-          fontWeight: _isActive ? FontWeight.w700 : FontWeight.w400,
+      child: SizedBox(
+        height: 52,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 50,
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: _isActive
+                        ? const Color(0xFF995959)
+                        : route.isEmpty
+                        ? Colors.black
+                        : const Color(0xFF837777),
+                    fontFamily: 'Inter',
+                    fontFamilyFallback: _sansFallback,
+                    fontSize: 17,
+                    fontWeight: _isActive ? FontWeight.w500 : FontWeight.w400,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: _isActive ? label.length * 10.5 + 21 : 0,
+              height: 2,
+              color: const Color(0xFF995959),
+            ),
+          ],
         ),
       ),
     );

@@ -22,6 +22,12 @@ const _serifFallback = [
   'Malgun Gothic',
   'sans-serif',
 ];
+const _sansFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
 
 ImageProvider _imgProvider(String asset) => AssetImage(asset);
 
@@ -296,10 +302,13 @@ class _HeroNav extends StatelessWidget {
       );
     }
 
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = width >= 1200 ? width / 12 + 30 : 36.0;
+
     return SizedBox(
       height: 80,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 36),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: Row(
           children: [
             _HeroLogoButton(
@@ -361,10 +370,11 @@ class _HeroNavBtn extends StatelessWidget {
         maxLines: 1,
         style: TextStyle(
           color: Colors.white,
-          fontFamily: 'Gowun Batang',
-          fontFamilyFallback: _serifFallback,
+          fontFamily: 'Inter',
+          fontFamilyFallback: _sansFallback,
           fontSize: 17,
           fontWeight: FontWeight.w400,
+          height: 1,
         ),
       ),
     );
@@ -498,6 +508,8 @@ class _InfoRow extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontFamily: 'Inter',
+                  fontFamilyFallback: _sansFallback,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   height: 1.4,
@@ -509,6 +521,8 @@ class _InfoRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontFamily: 'Inter',
+                  fontFamilyFallback: _sansFallback,
                   fontSize: 14,
                   height: 1.4,
                 ),

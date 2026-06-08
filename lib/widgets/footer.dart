@@ -55,6 +55,7 @@ class AppFooter extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFFEEEDE2).withValues(alpha: 0.7),
+                    fontFamily: 'Plus Jakarta Sans',
                     fontSize: 12,
                     height: 1.35,
                   ),

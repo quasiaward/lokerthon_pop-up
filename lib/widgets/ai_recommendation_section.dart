@@ -451,19 +451,7 @@ class _LandingView extends StatelessWidget {
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  '6가지 분위기 질문을 통해 당신의 취향에 맞는 다과를 추천해 드립니다.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF9A9285),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 18,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 58),
+                const SizedBox(height: 64),
                 if (isWide)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -490,22 +478,24 @@ class _LandingView extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF934753),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 38,
-                      vertical: 18,
-                    ),
+                    minimumSize: const Size(0, 60),
+                    padding: const EdgeInsets.symmetric(horizontal: 38),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
                     ),
                     elevation: 4,
                   ),
-                  child: const Text(
-                    '오늘의 다과 추천 받으러 가기',
-                    style: TextStyle(
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '오늘의 다과 추천 받으러 가기',
+                      style: TextStyle(
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w700,
+                        height: 60 / 30,
+                      ),
                     ),
                   ),
                 ),
@@ -526,7 +516,7 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 314),
-      height: 420,
+      height: 458,
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -548,7 +538,7 @@ class _PreviewCard extends StatelessWidget {
               color: Color(0xFF9A9285),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 6),
@@ -559,15 +549,15 @@ class _PreviewCard extends StatelessWidget {
               color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 26,
+              fontSize: 30,
               fontWeight: FontWeight.w700,
               height: 1.2,
             ),
           ),
           const Spacer(),
           SizedBox(
-            width: 200,
-            height: 200,
+            width: 258,
+            height: 258,
             child: Image.asset(card.image, fit: BoxFit.contain),
           ),
           const Spacer(),
@@ -1149,44 +1139,7 @@ class _ResultView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(
-                      isWide ? 26 : 18,
-                      isWide ? 20 : 18,
-                      isWide ? 26 : 18,
-                      isWide ? 18 : 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEFAF9),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: const Color(0xFFEDE4E4),
-                        width: 4,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'AI가 읽은 신호',
-                          style: TextStyle(
-                            color: Color(0xFF5F5552),
-                            fontFamily: 'Gowun Batang',
-                            fontFamilyFallback: _serifFallback,
-                            fontSize: 20,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        for (final signal in result.signals.take(4)) ...[
-                          _SignalRow(signal: signal),
-                          const SizedBox(height: 18),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 34),
                   if (isWide)
                     Row(
                       children: [
@@ -1336,74 +1289,6 @@ class _ResultActions extends StatelessWidget {
         buy,
         const SizedBox(width: 12),
         share,
-      ],
-    );
-  }
-}
-
-class _SignalRow extends StatelessWidget {
-  const _SignalRow({required this.signal});
-  final AiSignal signal;
-
-  @override
-  Widget build(BuildContext context) {
-    final displayWeight = signal.weight.clamp(0, 15);
-    final fill = (signal.weight / 18).clamp(0.18, 1.0);
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 120,
-              child: Text(
-                signal.label,
-                style: const TextStyle(
-                  color: Color(0xFF766A67),
-                  fontFamily: 'Gowun Batang',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                signal.value,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF5F5552),
-                  fontFamily: 'Gowun Batang',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 44,
-              child: Text(
-                '$displayWeight',
-                textAlign: TextAlign.end,
-                style: const TextStyle(
-                  color: Color(0xFF9B4A59),
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 7),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: fill,
-            backgroundColor: const Color(0xFFE4E2DD),
-            valueColor: const AlwaysStoppedAnimation(Color(0xFFD98494)),
-            minHeight: 7,
-          ),
-        ),
       ],
     );
   }

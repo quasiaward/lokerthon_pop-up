@@ -106,7 +106,7 @@ class _CateringSectionState extends State<CateringSection> {
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     0,
-                    compact ? 48 : 62,
+                    compact ? 58 : 97,
                     0,
                     compact ? 72 : 96,
                   ),
