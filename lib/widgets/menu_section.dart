@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -11,6 +13,7 @@ const _serifFallback = [
 ];
 
 const _menuCategories = ['모든 메뉴', '대표 다과', '전통차', '음료', '빙수', '다과상'];
+const _decoAsset = 'assets/figma/catering_figma_deco.png';
 
 const _menuItems = [
   _FigmaMenuItem(
@@ -102,34 +105,94 @@ class _MenuSectionState extends State<MenuSection> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 900;
+
     return Container(
       color: const Color(0xFFF5F5F3),
       padding: const EdgeInsets.symmetric(vertical: 96),
-      child: SectionShell(
-        child: Column(
-          children: [
-            const Text(
-              '행궁다과 메뉴',
-              style: TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 50,
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-              ),
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            right: isWide ? -520 : -365,
+            top: isWide ? 104 : 96,
+            child: _MenuBotanicalDeco(
+              width: isWide ? 920 : 640,
+              opacity: isWide ? 0.086 : 0.064,
+              rotationDegrees: -14,
             ),
-            const SizedBox(height: 34),
-            _CategoryTabs(
-              selected: _category,
-              onChanged: (category) => setState(() => _category = category),
+          ),
+          Positioned(
+            left: isWide ? -520 : -365,
+            bottom: isWide ? 60 : 40,
+            child: _MenuBotanicalDeco(
+              width: isWide ? 920 : 640,
+              opacity: isWide ? 0.072 : 0.056,
+              rotationDegrees: 14,
+              flipX: true,
             ),
-            const SizedBox(height: 52),
-            const _MenuToolbar(),
-            const SizedBox(height: 24),
-            _MenuGrid(items: _visibleItems),
-            if (_visibleItems.isEmpty) const _EmptyCategory(),
-          ],
+          ),
+          SectionShell(
+            child: Column(
+              children: [
+                const Text(
+                  '행궁다과 메뉴',
+                  style: TextStyle(
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 50,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 34),
+                _CategoryTabs(
+                  selected: _category,
+                  onChanged: (category) => setState(() => _category = category),
+                ),
+                const SizedBox(height: 52),
+                const _MenuToolbar(),
+                const SizedBox(height: 24),
+                _MenuGrid(items: _visibleItems),
+                if (_visibleItems.isEmpty) const _EmptyCategory(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MenuBotanicalDeco extends StatelessWidget {
+  const _MenuBotanicalDeco({
+    required this.width,
+    required this.opacity,
+    required this.rotationDegrees,
+    this.flipX = false,
+  });
+
+  final double width;
+  final double opacity;
+  final double rotationDegrees;
+  final bool flipX;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Opacity(
+        opacity: opacity,
+        child: Transform.rotate(
+          angle: rotationDegrees * math.pi / 180,
+          child: Transform.scale(
+            scaleX: flipX ? -1 : 1,
+            child: SizedBox(
+              width: width,
+              height: width * 2545 / 3452,
+              child: Image.asset(_decoAsset, fit: BoxFit.contain),
+            ),
+          ),
         ),
       ),
     );

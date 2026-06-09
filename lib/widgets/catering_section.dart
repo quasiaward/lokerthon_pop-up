@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'common.dart';
@@ -99,17 +101,38 @@ class _CateringSectionState extends State<CateringSection> {
         return Container(
           color: const Color(0xFFFFF9F6),
           child: Stack(
-            clipBehavior: Clip.none,
+            clipBehavior: Clip.hardEdge,
             children: [
               if (!compact)
                 Positioned(
-                  right: -300,
-                  top: 350,
-                  width: 760,
+                  right: -520,
+                  top: 228,
+                  width: 920,
                   child: IgnorePointer(
                     child: Opacity(
-                      opacity: 0.2,
-                      child: Image.asset(_decoAsset, fit: BoxFit.contain),
+                      opacity: 0.092,
+                      child: Transform.rotate(
+                        angle: -14 * math.pi / 180,
+                        child: Image.asset(_decoAsset, fit: BoxFit.contain),
+                      ),
+                    ),
+                  ),
+                ),
+              if (!compact)
+                Positioned(
+                  left: -520,
+                  bottom: 124,
+                  width: 920,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 0.034,
+                      child: Transform.rotate(
+                        angle: 14 * math.pi / 180,
+                        child: Transform.scale(
+                          scaleX: -1,
+                          child: Image.asset(_decoAsset, fit: BoxFit.contain),
+                        ),
+                      ),
                     ),
                   ),
                 ),

@@ -1,6 +1,27 @@
 {
   "framework": null,
   "installCommand": "echo \"Skipping package install\"",
-  "buildCommand": "git clone https://github.com/flutter/flutter.git -b stable --depth 1 /tmp/flutter && /tmp/flutter/bin/flutter config --enable-web && /tmp/flutter/bin/flutter pub get && /tmp/flutter/bin/flutter build web --release",
-  "outputDirectory": "build/web"
+  "buildCommand": "git clone https://github.com/flutter/flutter.git -b stable --depth 1 /tmp/flutter && /tmp/flutter/bin/flutter config --enable-web && /tmp/flutter/bin/flutter pub get && /tmp/flutter/bin/flutter build web --release --pwa-strategy=none",
+  "outputDirectory": "build/web",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|canvaskit/|icons/|favicon.png|manifest.json|flutter.js|flutter_bootstrap.js|main.dart.js|version.json|safari_reset.html).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
 }

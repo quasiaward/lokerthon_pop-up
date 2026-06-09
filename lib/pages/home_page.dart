@@ -558,12 +558,14 @@ class _BotanicalDeco extends StatelessWidget {
     required this.height,
     this.opacity = 0.19,
     this.rotationDegrees = 0,
+    this.flipX = false,
   });
 
   final double width;
   final double height;
   final double opacity;
   final double rotationDegrees;
+  final bool flipX;
 
   @override
   Widget build(BuildContext context) {
@@ -572,54 +574,13 @@ class _BotanicalDeco extends StatelessWidget {
         opacity: opacity,
         child: Transform.rotate(
           angle: rotationDegrees * math.pi / 180,
-          child: SizedBox(
-            width: width,
-            height: height,
-            child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BotanicalDecoWindow extends StatelessWidget {
-  const _BotanicalDecoWindow({
-    required this.width,
-    required this.height,
-    required this.imageWidth,
-    required this.imageHeight,
-    required this.imageOffset,
-    this.opacity = 0.19,
-  });
-
-  final double width;
-  final double height;
-  final double imageWidth;
-  final double imageHeight;
-  final Offset imageOffset;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: ClipRect(
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: imageOffset.dx,
-                top: imageOffset.dy,
-                child: _BotanicalDeco(
-                  width: imageWidth,
-                  height: imageHeight,
-                  opacity: opacity,
-                ),
-              ),
-            ],
+          child: Transform.scale(
+            scaleX: flipX ? -1 : 1,
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+            ),
           ),
         ),
       ),
@@ -642,14 +603,16 @@ class _BrandSection extends StatelessWidget {
       color: const Color(0xFFF3EEEE),
       padding: const EdgeInsets.symmetric(vertical: 82),
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: Clip.hardEdge,
         children: [
           Positioned(
-            right: isWide ? -560 : -430,
-            bottom: isWide ? -355 : -210,
+            right: isWide ? -520 : -365,
+            bottom: isWide ? 22 : 36,
             child: _BotanicalDeco(
-              width: isWide ? 1101 : 760,
-              height: isWide ? 688 : 475,
+              width: isWide ? 920 : 640,
+              height: isWide ? 678 : 472,
+              opacity: isWide ? 0.105 : 0.074,
+              rotationDegrees: -14,
             ),
           ),
           Center(
@@ -836,26 +799,30 @@ class _MenuPreviewSection extends StatelessWidget {
       color: const Color(0xFFF6F6F4),
       padding: const EdgeInsets.symmetric(vertical: 82),
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: Clip.hardEdge,
         children: [
-          if (isWide)
-            const Positioned(
-              right: -560,
-              top: -331,
-              child: _BotanicalDeco(width: 1101, height: 688, opacity: 0.16),
-            ),
           Positioned(
-            left: isWide ? -24 : -78,
-            bottom: isWide ? 16 : -8,
-            child: _BotanicalDecoWindow(
-              width: isWide ? 430 : 300,
-              height: isWide ? 430 : 350,
-              imageWidth: isWide ? 790 : 650,
-              imageHeight: isWide ? 614 : 505,
-              imageOffset: Offset(isWide ? -445 : -365, isWide ? -145 : -112),
-              opacity: 0.17,
+            left: isWide ? -520 : -365,
+            bottom: isWide ? 22 : 36,
+            child: _BotanicalDeco(
+              width: isWide ? 920 : 640,
+              height: isWide ? 678 : 472,
+              opacity: isWide ? 0.092 : 0.068,
+              rotationDegrees: 14,
+              flipX: true,
             ),
           ),
+          if (isWide)
+            const Positioned(
+              right: -520,
+              top: 30,
+              child: _BotanicalDeco(
+                width: 810,
+                height: 597,
+                opacity: 0.032,
+                rotationDegrees: -14,
+              ),
+            ),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1142),
@@ -1083,14 +1050,16 @@ class _ExperienceSection extends StatelessWidget {
       color: const Color(0xFFF8F6F1),
       padding: const EdgeInsets.symmetric(vertical: 88),
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: Clip.hardEdge,
         children: [
           Positioned(
-            right: isWide ? -170 : -360,
-            bottom: isWide ? 0 : -40,
+            right: isWide ? -520 : -365,
+            bottom: isWide ? 22 : 36,
             child: _BotanicalDeco(
-              width: isWide ? 724 : 640,
-              height: isWide ? 487 : 430,
+              width: isWide ? 920 : 640,
+              height: isWide ? 678 : 472,
+              opacity: isWide ? 0.096 : 0.068,
+              rotationDegrees: -14,
             ),
           ),
           Center(
@@ -1187,14 +1156,9 @@ class _ExpCardWidget extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                right: -44,
-                top: -116,
-                child: _BotanicalDeco(
-                  width: 276,
-                  height: 271,
-                  opacity: 0.43,
-                  rotationDegrees: 20.92,
-                ),
+                right: -54,
+                top: -54,
+                child: _ExperienceWatercolorWash(color: data.tint),
               ),
               Padding(
                 padding: const EdgeInsets.all(32),
@@ -1271,20 +1235,115 @@ class _ExperienceCardIcon extends StatelessWidget {
         color: data.tint,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(data.icon, color: data.iconColor, size: 28),
-          if (data.iconOverlay != null)
-            Positioned(
-              right: 11,
-              bottom: 10,
-              child: Icon(data.iconOverlay, color: data.iconColor, size: 17),
-            ),
-        ],
+      child: Center(
+        child: data.iconOverlay != null
+            ? CustomPaint(
+                size: const Size(30, 30),
+                painter: _TasteTestGlyphPainter(data.iconColor),
+              )
+            : Icon(data.icon, color: data.iconColor, size: 29),
       ),
     );
   }
+}
+
+class _ExperienceWatercolorWash extends StatelessWidget {
+  const _ExperienceWatercolorWash({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        size: const Size(164, 164),
+        painter: _WatercolorWashPainter(color),
+      ),
+    );
+  }
+}
+
+class _WatercolorWashPainter extends CustomPainter {
+  const _WatercolorWashPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.56, size.height * 0.42);
+    final radius = size.shortestSide * 0.42;
+    final path = Path();
+    for (var i = 0; i < 28; i++) {
+      final angle = (math.pi * 2 * i) / 28;
+      final wave =
+          1 + math.sin(angle * 3.1) * 0.08 + math.cos(angle * 5.2) * 0.04;
+      final point = Offset(
+        center.dx + math.cos(angle) * radius * wave,
+        center.dy + math.sin(angle) * radius * wave,
+      );
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        path.lineTo(point.dx, point.dy);
+      }
+    }
+    path.close();
+
+    for (var i = 0; i < 4; i++) {
+      final paint = Paint()
+        ..color = color.withValues(alpha: 0.13 - i * 0.018)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9);
+      canvas.drawPath(path.shift(Offset(i * 1.8, i * 1.2)), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WatercolorWashPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _TasteTestGlyphPainter extends CustomPainter {
+  const _TasteTestGlyphPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = color
+      ..strokeWidth = 2.6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final fill = Paint()..color = color;
+
+    final topLeft = Offset(size.width * 0.20, size.height * 0.22);
+    final topMid = Offset(size.width * 0.53, size.height * 0.22);
+    final lowerLeft = Offset(size.width * 0.20, size.height * 0.73);
+    final lowerMid = Offset(size.width * 0.46, size.height * 0.58);
+
+    canvas.drawLine(topLeft, topMid, stroke);
+    canvas.drawLine(topLeft, lowerLeft, stroke);
+    canvas.drawLine(lowerLeft, lowerMid, stroke);
+
+    for (final node in [topLeft, topMid, lowerLeft]) {
+      canvas.drawCircle(node, 2.3, fill);
+      canvas.drawCircle(node, 4.7, stroke);
+    }
+
+    final pencilStart = Offset(size.width * 0.58, size.height * 0.82);
+    final pencilEnd = Offset(size.width * 0.86, size.height * 0.49);
+    canvas.drawLine(pencilStart, pencilEnd, stroke);
+    canvas.drawLine(
+      Offset(size.width * 0.72, size.height * 0.47),
+      Offset(size.width * 0.89, size.height * 0.63),
+      stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TasteTestGlyphPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 // ─── Shared Section Title ────────────────────────────────────────────────────

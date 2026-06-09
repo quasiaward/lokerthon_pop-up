@@ -300,74 +300,139 @@ class _ProgramSelectView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, isWide ? 100 : 58, 0, isWide ? 96 : 64),
-      child: SectionShell(
-        child: Column(
-          children: [
-            Text(
-              '행궁다과 체험 예약',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: isWide ? 50 : 36,
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '현재 진행되는 클래스',
-                style: TextStyle(
-                  color: const Color(0xFF675C4F),
-                  fontFamily: 'Noto Serif KR',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: isWide ? 32 : 25,
-                  fontWeight: FontWeight.w600,
-                  height: 1.25,
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Positioned(
+          right: isWide ? -520 : -365,
+          bottom: isWide ? 22 : 36,
+          width: isWide ? 920 : 640,
+          child: const _ReservationBotanicalBackdrop(
+            opacity: 0.096,
+            rotationDegrees: -14,
+          ),
+        ),
+        Positioned(
+          left: isWide ? -520 : -365,
+          top: isWide ? 86 : 52,
+          width: isWide ? 920 : 640,
+          child: const _ReservationBotanicalBackdrop(
+            opacity: 0.034,
+            rotationDegrees: 14,
+            flipX: true,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            0,
+            isWide ? 100 : 58,
+            0,
+            isWide ? 96 : 64,
+          ),
+          child: SectionShell(
+            child: Column(
+              children: [
+                Text(
+                  '행궁다과 체험 예약',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: isWide ? 50 : 36,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '현재 진행되는 클래스',
+                    style: TextStyle(
+                      color: const Color(0xFF675C4F),
+                      fontFamily: 'Noto Serif KR',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: isWide ? 32 : 25,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                if (isWide)
+                  Row(
+                    children: [
+                      for (
+                        var index = 0;
+                        index < _programs.length;
+                        index++
+                      ) ...[
+                        Expanded(
+                          child: _ProgramCard(
+                            program: _programs[index],
+                            selected: selectedIndex == index,
+                            onTap: () => onSelect(index),
+                            onDoubleTap: () => onOpen(index),
+                          ),
+                        ),
+                        if (index != _programs.length - 1)
+                          const SizedBox(width: 26),
+                      ],
+                    ],
+                  )
+                else
+                  Column(
+                    children: [
+                      for (
+                        var index = 0;
+                        index < _programs.length;
+                        index++
+                      ) ...[
+                        _ProgramCard(
+                          program: _programs[index],
+                          selected: selectedIndex == index,
+                          onTap: () => onSelect(index),
+                          onDoubleTap: () => onOpen(index),
+                        ),
+                        if (index != _programs.length - 1)
+                          const SizedBox(height: 20),
+                      ],
+                    ],
+                  ),
+                const SizedBox(height: 28),
+                const _ReservationNotice(),
+              ],
             ),
-            const SizedBox(height: 14),
-            if (isWide)
-              Row(
-                children: [
-                  for (var index = 0; index < _programs.length; index++) ...[
-                    Expanded(
-                      child: _ProgramCard(
-                        program: _programs[index],
-                        selected: selectedIndex == index,
-                        onTap: () => onSelect(index),
-                        onDoubleTap: () => onOpen(index),
-                      ),
-                    ),
-                    if (index != _programs.length - 1)
-                      const SizedBox(width: 26),
-                  ],
-                ],
-              )
-            else
-              Column(
-                children: [
-                  for (var index = 0; index < _programs.length; index++) ...[
-                    _ProgramCard(
-                      program: _programs[index],
-                      selected: selectedIndex == index,
-                      onTap: () => onSelect(index),
-                      onDoubleTap: () => onOpen(index),
-                    ),
-                    if (index != _programs.length - 1)
-                      const SizedBox(height: 20),
-                  ],
-                ],
-              ),
-            const SizedBox(height: 28),
-            const _ReservationNotice(),
-          ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReservationBotanicalBackdrop extends StatelessWidget {
+  const _ReservationBotanicalBackdrop({
+    required this.opacity,
+    this.rotationDegrees = 0,
+    this.flipX = false,
+  });
+
+  final double opacity;
+  final double rotationDegrees;
+  final bool flipX;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Opacity(
+        opacity: opacity,
+        child: Transform.rotate(
+          angle: rotationDegrees * math.pi / 180,
+          child: Transform.scale(
+            scaleX: flipX ? -1 : 1,
+            child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+          ),
         ),
       ),
     );
@@ -674,15 +739,19 @@ class _ReservationDetailView extends StatelessWidget {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
     return Stack(
+      clipBehavior: Clip.hardEdge,
       children: [
         Positioned(
-          right: -130,
-          bottom: -24,
-          width: 330,
+          right: isWide ? -480 : -360,
+          bottom: isWide ? 16 : 28,
+          width: isWide ? 780 : 600,
           child: IgnorePointer(
             child: Opacity(
-              opacity: 0.36,
-              child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+              opacity: isWide ? 0.092 : 0.068,
+              child: Transform.rotate(
+                angle: -14 * math.pi / 180,
+                child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+              ),
             ),
           ),
         ),
@@ -1208,16 +1277,22 @@ class _ReservationConfirmView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 900;
+
     return Stack(
+      clipBehavior: Clip.hardEdge,
       children: [
         Positioned(
-          right: -120,
-          bottom: -30,
-          width: 330,
+          right: isWide ? -480 : -360,
+          bottom: isWide ? 16 : 28,
+          width: isWide ? 780 : 600,
           child: IgnorePointer(
             child: Opacity(
-              opacity: 0.34,
-              child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+              opacity: isWide ? 0.086 : 0.064,
+              child: Transform.rotate(
+                angle: -14 * math.pi / 180,
+                child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+              ),
             ),
           ),
         ),

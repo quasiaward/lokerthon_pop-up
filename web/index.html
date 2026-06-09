@@ -18,6 +18,9 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="description" content="A new Flutter project.">
 
   <!-- iOS meta tags & icons -->
@@ -41,6 +44,45 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    (function () {
+      const reloadFlag = 'haenggung-sw-cache-cleared-v2';
+
+      async function clearFlutterCache() {
+        let hadServiceWorker = false;
+
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          hadServiceWorker = registrations.length > 0 || Boolean(navigator.serviceWorker.controller);
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+        }
+
+        if (hadServiceWorker && !sessionStorage.getItem(reloadFlag)) {
+          sessionStorage.setItem(reloadFlag, '1');
+          window.location.reload();
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'flutter_bootstrap.js?v=' + Date.now();
+        script.async = true;
+        document.body.appendChild(script);
+      }
+
+      window.addEventListener('load', function () {
+        clearFlutterCache().catch(function () {
+          const script = document.createElement('script');
+          script.src = 'flutter_bootstrap.js?v=' + Date.now();
+          script.async = true;
+          document.body.appendChild(script);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
