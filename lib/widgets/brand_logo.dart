@@ -5,6 +5,8 @@ class HaenggungBrandLogo extends StatelessWidget {
 
   static const _assetPath =
       'assets/figma/logo/haenggung_logo_flutter_transparent.png';
+  static const _lightAssetPath =
+      'assets/figma/logo/haenggung_home_logo_light.png';
   static const _assetRatio = 1600 / 546;
 
   final bool light;
@@ -12,6 +14,7 @@ class HaenggungBrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final assetPath = light ? _lightAssetPath : _assetPath;
     final innerHeight = height * 0.9;
     final horizontalSafety = height * 0.12;
     final logoWidth = innerHeight * _assetRatio + horizontalSafety * 2;
@@ -23,7 +26,7 @@ class HaenggungBrandLogo extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: horizontalSafety),
         child: Center(
           child: Image.asset(
-            _assetPath,
+            assetPath,
             height: innerHeight,
             width: innerHeight * _assetRatio,
             fit: BoxFit.contain,
