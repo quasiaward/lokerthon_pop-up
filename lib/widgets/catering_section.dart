@@ -48,7 +48,7 @@ const _osakgyeongdan = _DagwaOption(
   cardImageSize: 198,
 );
 
-const _selectorOptions = [_yakgwa, _hwajeon, _songpyeon];
+const _selectorOptions = [_yakgwa, _hwajeon, _songpyeon, _osakgyeongdan];
 
 class CateringSection extends StatefulWidget {
   const CateringSection({super.key});
@@ -70,8 +70,8 @@ class _CateringSectionState extends State<CateringSection> {
   @override
   void initState() {
     super.initState();
-    _slots = [_songpyeon, _osakgyeongdan, _songpyeon, _hwajeon, null, null];
-    _activeSlot = _slots.indexWhere((slot) => slot == null);
+    _slots = List<_DagwaOption?>.filled(6, null);
+    _activeSlot = 0;
   }
 
   void _selectSlot(int index) {
@@ -156,7 +156,9 @@ class _CateringSectionState extends State<CateringSection> {
                         totalPrice: _totalPrice,
                         onSlotTap: _selectSlot,
                       ),
-                      SizedBox(height: compact ? 26 : 34),
+                      SizedBox(height: compact ? 14 : 18),
+                      const _UsageGuideCard(),
+                      SizedBox(height: compact ? 24 : 32),
                       _TrayBuilder(
                         slots: _slots,
                         activeSlot: _activeSlot,
@@ -166,10 +168,7 @@ class _CateringSectionState extends State<CateringSection> {
                       const _SelectorHeading(),
                       const SizedBox(height: 18),
                       _DagwaSelector(
-                        options: const [
-                          ..._selectorOptions,
-                          ..._selectorOptions,
-                        ],
+                        options: _selectorOptions,
                         onSelected: _addDagwa,
                       ),
                     ],
@@ -419,6 +418,136 @@ class _SlotChip extends StatelessWidget {
   }
 }
 
+class _UsageGuideCard extends StatelessWidget {
+  const _UsageGuideCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 720;
+    final pills = const [
+      _GuidePill(icon: Icons.touch_app_outlined, label: '칸 선택'),
+      _GuidePill(icon: Icons.add_circle_outline_rounded, label: '다과 담기'),
+      _GuidePill(icon: Icons.refresh_rounded, label: '칸 교체'),
+    ];
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 760),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.66),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE9DDD8)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            compact ? 16 : 20,
+            compact ? 14 : 16,
+            compact ? 16 : 20,
+            compact ? 14 : 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flex(
+                direction: compact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: compact
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center,
+                children: [
+                  const _GuideTitle(),
+                  SizedBox(width: compact ? 0 : 14, height: compact ? 8 : 0),
+                  Flexible(
+                    fit: compact ? FlexFit.loose : FlexFit.tight,
+                    child: Text(
+                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 이미 채운 칸을 누르면 새 다과로 교체됩니다.',
+                      style: TextStyle(
+                        color: const Color(0xFF8B7D7A),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: compact ? 13 : 14,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: pills),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GuideTitle extends StatelessWidget {
+  const _GuideTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.auto_awesome_rounded, color: Color(0xFF934753), size: 18),
+        SizedBox(width: 7),
+        Text(
+          '상자 구성 방법',
+          style: TextStyle(
+            color: Color(0xFF534344),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            height: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GuidePill extends StatelessWidget {
+  const _GuidePill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4ECE9),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFE5D6D0)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(11, 8, 6, 8),
+            child: Icon(icon, color: const Color(0xFF934753), size: 16),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 13, 8),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF534344),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SelectorHeading extends StatelessWidget {
   const _SelectorHeading();
 
@@ -655,27 +784,37 @@ class _DagwaSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900
-            ? 3
-            : (constraints.maxWidth >= 660 ? 2 : 1);
-        final gap = columns == 1 ? 18.0 : 32.0;
-        final cardWidth =
-            (constraints.maxWidth - gap * (columns - 1)) / columns;
+        final columns = constraints.maxWidth >= 920
+            ? 4
+            : (constraints.maxWidth >= 560 ? 2 : 1);
+        final gap = columns == 1 ? 18.0 : (columns == 4 ? 20.0 : 28.0);
+        final maxGridWidth = columns == 4
+            ? 1000.0
+            : (columns == 2 ? 660.0 : 314.0);
+        final gridWidth = constraints.maxWidth < maxGridWidth
+            ? constraints.maxWidth
+            : maxGridWidth;
+        final cardWidth = (gridWidth - gap * (columns - 1)) / columns;
 
-        return Wrap(
-          alignment: WrapAlignment.center,
-          spacing: gap,
-          runSpacing: 14,
-          children: [
-            for (final option in options)
-              SizedBox(
-                width: cardWidth.clamp(240.0, 314.0),
-                child: _DagwaCard(
-                  option: option,
-                  onTap: () => onSelected(option),
-                ),
-              ),
-          ],
+        return Center(
+          child: SizedBox(
+            width: gridWidth,
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: gap,
+              runSpacing: 18,
+              children: [
+                for (final option in options)
+                  SizedBox(
+                    width: cardWidth,
+                    child: _DagwaCard(
+                      option: option,
+                      onTap: () => onSelected(option),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -705,8 +844,8 @@ class _DagwaCardState extends State<_DagwaCard> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          height: 349,
-          padding: const EdgeInsets.fromLTRB(22, 28, 22, 20),
+          height: 342,
+          padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
           decoration: BoxDecoration(
             color: _hovered ? const Color(0xFFFFFEFD) : Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -724,50 +863,15 @@ class _DagwaCardState extends State<_DagwaCard> {
               ),
             ],
           ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 13),
-                  decoration: BoxDecoration(
-                    color: _hovered
-                        ? const Color(0xFF934753)
-                        : const Color(0xFFF4ECE9),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.add_rounded,
-                        color: _hovered
-                            ? Colors.white
-                            : const Color(0xFF934753),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        '담기',
-                        style: TextStyle(
-                          color: _hovered
-                              ? Colors.white
-                              : const Color(0xFF934753),
-                          fontFamily: 'Gowun Batang',
-                          fontFamilyFallback: _serifFallback,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          height: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final imageSize = (constraints.maxWidth - 44).clamp(
+                142.0,
+                widget.option.cardImageSize,
+              );
+              final titleSize = constraints.maxWidth < 210 ? 25.0 : 28.0;
+
+              return Column(
                 children: [
                   Text(
                     widget.option.price,
@@ -785,33 +889,82 @@ class _DagwaCardState extends State<_DagwaCard> {
                     widget.option.name,
                     textAlign: TextAlign.center,
                     maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: _hovered ? const Color(0xFF934753) : Colors.black,
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: 30,
+                      fontSize: titleSize,
                       fontWeight: FontWeight.w700,
                       height: 1.05,
                     ),
                   ),
-                  const Spacer(),
-                  AnimatedScale(
-                    duration: const Duration(milliseconds: 150),
-                    scale: _hovered ? 1.04 : 1,
-                    child: SizedBox(
-                      width: widget.option.cardImageSize,
-                      height: widget.option.cardImageSize,
-                      child: Image.asset(
-                        widget.option.image,
-                        fit: BoxFit.contain,
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: Center(
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 150),
+                        scale: _hovered ? 1.04 : 1,
+                        child: SizedBox(
+                          width: imageSize.toDouble(),
+                          height: imageSize.toDouble(),
+                          child: Image.asset(
+                            widget.option.image,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _AddDagwaButton(hovered: _hovered),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AddDagwaButton extends StatelessWidget {
+  const _AddDagwaButton({required this.hovered});
+
+  final bool hovered;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: hovered ? const Color(0xFF934753) : const Color(0xFFF4ECE9),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_rounded,
+            color: hovered ? Colors.white : const Color(0xFF934753),
+            size: 20,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '담기',
+            style: TextStyle(
+              color: hovered ? Colors.white : const Color(0xFF934753),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ],
       ),
     );
   }

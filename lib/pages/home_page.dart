@@ -575,7 +575,51 @@ class _BotanicalDeco extends StatelessWidget {
           child: SizedBox(
             width: width,
             height: height,
-            child: Image.asset(_botanicalDecoImage, fit: BoxFit.cover),
+            child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BotanicalDecoWindow extends StatelessWidget {
+  const _BotanicalDecoWindow({
+    required this.width,
+    required this.height,
+    required this.imageWidth,
+    required this.imageHeight,
+    required this.imageOffset,
+    this.opacity = 0.19,
+  });
+
+  final double width;
+  final double height;
+  final double imageWidth;
+  final double imageHeight;
+  final Offset imageOffset;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: ClipRect(
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: imageOffset.dx,
+                top: imageOffset.dy,
+                child: _BotanicalDeco(
+                  width: imageWidth,
+                  height: imageHeight,
+                  opacity: opacity,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -601,12 +645,11 @@ class _BrandSection extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            right: isWide ? -520 : -390,
-            bottom: isWide ? -145 : -90,
+            right: isWide ? -560 : -430,
+            bottom: isWide ? -355 : -210,
             child: _BotanicalDeco(
               width: isWide ? 1101 : 760,
               height: isWide ? 688 : 475,
-              rotationDegrees: -10.11,
             ),
           ),
           Center(
@@ -795,13 +838,22 @@ class _MenuPreviewSection extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          if (isWide)
+            const Positioned(
+              right: -560,
+              top: -331,
+              child: _BotanicalDeco(width: 1101, height: 688, opacity: 0.16),
+            ),
           Positioned(
-            left: isWide ? -320 : -360,
-            bottom: isWide ? -165 : -120,
-            child: _BotanicalDeco(
-              width: isWide ? 790 : 650,
-              height: isWide ? 614 : 505,
-              rotationDegrees: 8.26,
+            left: isWide ? -24 : -78,
+            bottom: isWide ? 16 : -8,
+            child: _BotanicalDecoWindow(
+              width: isWide ? 430 : 300,
+              height: isWide ? 430 : 350,
+              imageWidth: isWide ? 790 : 650,
+              imageHeight: isWide ? 614 : 505,
+              imageOffset: Offset(isWide ? -445 : -365, isWide ? -145 : -112),
+              opacity: 0.17,
             ),
           ),
           Center(
@@ -1000,8 +1052,10 @@ class _ExperienceSection extends StatelessWidget {
         title: '취향 테스트',
         body: '개인의 취향을 분석해 어울리는 다과와 차를 추천합니다.',
         action: '시작하기',
-        icon: Icons.favorite_border_rounded,
-        tint: const Color(0xFFFFD9DC),
+        icon: Icons.account_tree_outlined,
+        iconOverlay: Icons.edit_rounded,
+        iconColor: const Color(0xFF9B4A59),
+        tint: const Color(0xFFFFDCE0),
         onTap: onTasteTap,
       ),
       _ExpCard(
@@ -1009,14 +1063,16 @@ class _ExperienceSection extends StatelessWidget {
         body: '직접 빚고 맛보며 한국 다과의 이야기를 배워봅니다.',
         action: '예약하기',
         icon: Icons.school_outlined,
-        tint: const Color(0xFFD7E5BA),
+        iconColor: const Color(0xFF557057),
+        tint: const Color(0xFFDCE9C1),
         onTap: onClassTap,
       ),
       _ExpCard(
         title: '맞춤형 케이터링',
         body: '행사 성격과 인원에 맞춘 다과 세트를 구성합니다.',
         action: '문의하기',
-        icon: Icons.restaurant_menu_outlined,
+        icon: Icons.restaurant_rounded,
+        iconColor: const Color(0xFF7D5724),
         tint: const Color(0xFFFFDEA7),
         onTap: onCateringTap,
       ),
@@ -1030,8 +1086,8 @@ class _ExperienceSection extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            right: isWide ? -270 : -380,
-            bottom: isWide ? -95 : -80,
+            right: isWide ? -170 : -360,
+            bottom: isWide ? 0 : -40,
             child: _BotanicalDeco(
               width: isWide ? 724 : 640,
               height: isWide ? 487 : 430,
@@ -1088,6 +1144,8 @@ class _ExpCard {
     required this.body,
     required this.action,
     required this.icon,
+    this.iconOverlay,
+    required this.iconColor,
     required this.tint,
     required this.onTap,
   });
@@ -1095,6 +1153,8 @@ class _ExpCard {
   final String body;
   final String action;
   final IconData icon;
+  final IconData? iconOverlay;
+  final Color iconColor;
   final Color tint;
   final VoidCallback onTap;
 }
@@ -1142,19 +1202,7 @@ class _ExpCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: data.tint,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        data.icon,
-                        color: const Color(0xFF934753),
-                        size: 26,
-                      ),
-                    ),
+                    _ExperienceCardIcon(data: data),
                     const SizedBox(height: 24),
                     Text(
                       data.title,
@@ -1204,6 +1252,36 @@ class _ExpCardWidget extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ExperienceCardIcon extends StatelessWidget {
+  const _ExperienceCardIcon({required this.data});
+
+  final _ExpCard data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: data.tint,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(data.icon, color: data.iconColor, size: 28),
+          if (data.iconOverlay != null)
+            Positioned(
+              right: 11,
+              bottom: 10,
+              child: Icon(data.iconOverlay, color: data.iconColor, size: 17),
+            ),
+        ],
       ),
     );
   }
