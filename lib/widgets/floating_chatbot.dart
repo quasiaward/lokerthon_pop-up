@@ -151,11 +151,11 @@ class _ChatWindow extends StatelessWidget {
     final width = MediaQuery.sizeOf(context).width;
     final height = MediaQuery.sizeOf(context).height;
     final windowWidth = width < 560 ? width - 28 : 520.0;
-    final windowHeight = math.min(660.0, math.max(420.0, height - 126.0));
+    final windowHeight = math.min(560.0, math.max(430.0, height - 126.0));
 
     return Container(
       width: windowWidth,
-      constraints: BoxConstraints(maxHeight: windowHeight),
+      height: windowHeight,
       decoration: BoxDecoration(
         color: const Color(0xFFFCFCFC),
         borderRadius: BorderRadius.circular(8),
@@ -175,17 +175,17 @@ class _ChatWindow extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(26, 22, 26, 26),
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 16),
               color: const Color(0xFFFCFCFC),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.headset_mic_outlined,
                     color: Color(0xFF9B766F),
-                    size: 52,
+                    size: 42,
                   ),
-                  const SizedBox(width: 22),
+                  const SizedBox(width: 16),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,19 +197,19 @@ class _ChatWindow extends StatelessWidget {
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
                             fontWeight: FontWeight.w700,
-                            fontSize: 34,
+                            fontSize: 29,
                             height: 1.15,
                           ),
                         ),
-                        SizedBox(height: 26),
+                        SizedBox(height: 10),
                         Text(
                           'AI 챗봇을 통해 매장의 간단한 정보들을 쉽고 빠르게 알려줍니다.\n자세한 정보는 행궁다과 카카오톡 채널을 이용해주세요.',
                           style: TextStyle(
                             color: Color(0xFFAAA5A5),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
-                            fontSize: 18,
-                            height: 1.35,
+                            fontSize: 15,
+                            height: 1.32,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -219,32 +219,17 @@ class _ChatWindow extends StatelessWidget {
                 ],
               ),
             ),
-            Flexible(
-              child: Container(
-                width: double.infinity,
-                color: const Color(0xFFFCFAFA),
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(34, 18, 34, 20),
-                  children: [
-                    for (final message in messages) _Bubble(message: message),
-                    const SizedBox(height: 18),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _QuickQuestionPanel(onSend: onSend),
-                    ),
-                  ],
-                ),
-              ),
+            Expanded(
+              child: _ChatBody(messages: messages, onSend: onSend),
             ),
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 18, 18, 18),
+              padding: const EdgeInsets.fromLTRB(16, 12, 18, 14),
               color: const Color(0xFFFCFCFC),
               child: Row(
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 60,
+                      height: 54,
                       child: TextField(
                         controller: controller,
                         style: const TextStyle(
@@ -259,14 +244,14 @@ class _ChatWindow extends StatelessWidget {
                             color: Color(0xFFB5B3B3),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
-                            fontSize: 23,
+                            fontSize: 19,
                             fontWeight: FontWeight.w700,
                           ),
                           filled: true,
                           fillColor: const Color(0xFFF3EFEF),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 34,
-                            vertical: 16,
+                            horizontal: 28,
+                            vertical: 13,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
@@ -288,15 +273,15 @@ class _ChatWindow extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 18),
+                  const SizedBox(width: 14),
                   IconButton(
                     tooltip: '전송',
                     onPressed: () => onSend(),
                     icon: const Icon(Icons.arrow_upward_rounded),
                     color: const Color(0xFF9B4A4F),
-                    iconSize: 54,
+                    iconSize: 42,
                     style: IconButton.styleFrom(
-                      minimumSize: const Size(62, 62),
+                      minimumSize: const Size(52, 52),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
@@ -310,18 +295,108 @@ class _ChatWindow extends StatelessWidget {
   }
 }
 
+class _ChatBody extends StatelessWidget {
+  const _ChatBody({required this.messages, required this.onSend});
+
+  final List<_ChatMessage> messages;
+  final void Function([String? preset]) onSend;
+
+  bool get _initial => messages.length == 1 && messages.first.role == _Role.bot;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFFCFAFA),
+      child: _initial
+          ? _InitialChatBody(message: messages.first, onSend: onSend)
+          : _ConversationList(messages: messages, onSend: onSend),
+    );
+  }
+}
+
+class _InitialChatBody extends StatelessWidget {
+  const _InitialChatBody({required this.message, required this.onSend});
+
+  final _ChatMessage message;
+  final void Function([String? preset]) onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 500;
+        final content = wide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: _Bubble(message: message, compact: true)),
+                  const SizedBox(width: 14),
+                  SizedBox(
+                    width: 230,
+                    child: _QuickQuestionPanel(onSend: onSend, compact: true),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _Bubble(message: message, compact: true),
+                  const SizedBox(height: 12),
+                  _QuickQuestionPanel(onSend: onSend, compact: true),
+                ],
+              );
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(24, wide ? 16 : 12, 24, wide ? 18 : 12),
+          child: Center(child: content),
+        );
+      },
+    );
+  }
+}
+
+class _ConversationList extends StatelessWidget {
+  const _ConversationList({required this.messages, required this.onSend});
+
+  final List<_ChatMessage> messages;
+  final void Function([String? preset]) onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(28, 16, 28, 18),
+      children: [
+        for (final message in messages)
+          _Bubble(message: message, compact: true),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _QuickQuestionPanel(onSend: onSend, compact: true),
+        ),
+      ],
+    );
+  }
+}
+
 class _QuickQuestionPanel extends StatelessWidget {
-  const _QuickQuestionPanel({required this.onSend});
+  const _QuickQuestionPanel({required this.onSend, this.compact = false});
 
   final void Function([String? preset]) onSend;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < 480;
 
     return Container(
-      width: narrow ? double.infinity : 312,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      width: compact || narrow ? double.infinity : 312,
+      padding: EdgeInsets.fromLTRB(
+        16,
+        compact ? 13 : 16,
+        16,
+        compact ? 14 : 18,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFEDE1E1),
         borderRadius: const BorderRadius.only(
@@ -340,14 +415,14 @@ class _QuickQuestionPanel extends StatelessWidget {
               color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: compact ? 10 : 16),
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: compact ? 8 : 12,
+            runSpacing: compact ? 8 : 12,
             children: [
               for (final q in const [
                 '체험 문의 방법',
@@ -355,7 +430,7 @@ class _QuickQuestionPanel extends StatelessWidget {
                 '포장 주문 문의',
                 'English menu',
               ])
-                _QuickChip(label: q, onTap: () => onSend(q)),
+                _QuickChip(label: q, compact: compact, onTap: () => onSend(q)),
             ],
           ),
         ],
@@ -365,8 +440,13 @@ class _QuickQuestionPanel extends StatelessWidget {
 }
 
 class _QuickChip extends StatefulWidget {
-  const _QuickChip({required this.label, required this.onTap});
+  const _QuickChip({
+    required this.label,
+    required this.compact,
+    required this.onTap,
+  });
   final String label;
+  final bool compact;
   final VoidCallback onTap;
 
   @override
@@ -385,7 +465,10 @@ class _QuickChipState extends State<_QuickChip> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.compact ? 14 : 18,
+            vertical: widget.compact ? 8 : 10,
+          ),
           decoration: BoxDecoration(
             color: _hovered ? const Color(0xFFF8F6F6) : Colors.white,
             borderRadius: BorderRadius.circular(999),
@@ -404,7 +487,7 @@ class _QuickChipState extends State<_QuickChip> {
               color: const Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 20,
+              fontSize: widget.compact ? 17 : 20,
               fontWeight: _hovered ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
@@ -415,8 +498,9 @@ class _QuickChipState extends State<_QuickChip> {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.message});
+  const _Bubble({required this.message, this.compact = false});
   final _ChatMessage message;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -425,8 +509,11 @@ class _Bubble extends StatelessWidget {
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        constraints: const BoxConstraints(maxWidth: 318),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 15 : 18,
+          vertical: compact ? 14 : 18,
+        ),
+        constraints: BoxConstraints(maxWidth: compact ? 260 : 318),
         decoration: BoxDecoration(
           color: isUser ? const Color(0xFFEDE1E1) : const Color(0xFFFEFEFE),
           borderRadius: BorderRadius.only(
@@ -448,10 +535,10 @@ class _Bubble extends StatelessWidget {
           message.text,
           style: TextStyle(
             color: const Color(0xFF7B716C),
-            height: 1.18,
+            height: compact ? 1.25 : 1.18,
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
-            fontSize: isUser ? 18 : 23,
+            fontSize: compact ? (isUser ? 16 : 18) : (isUser ? 18 : 23),
             fontWeight: FontWeight.w700,
           ),
         ),

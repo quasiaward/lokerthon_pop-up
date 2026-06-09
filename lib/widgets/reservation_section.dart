@@ -12,7 +12,6 @@ const _serifFallback = [
   'sans-serif',
 ];
 
-const _heroImage = 'assets/figma/experience_rice_cake_class.png';
 const _botanicalDecoImage = 'assets/figma/catering_figma_deco.png';
 const _unitPrice = 50000;
 
@@ -80,16 +79,7 @@ class _ReservationSectionState extends State<ReservationSection> {
   }
 
   void _selectProgram(int index) {
-    setState(() {
-      if (_stage == _ReservationStage.select &&
-          _hasProgramSelection &&
-          _programIndex == index) {
-        _stage = _ReservationStage.detail;
-        return;
-      }
-      _programIndex = index;
-      _hasProgramSelection = true;
-    });
+    _openProgram(index);
   }
 
   void _openProgram(int index) {
@@ -244,7 +234,7 @@ class _ExperienceHero extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(_heroImage, fit: BoxFit.cover),
+          Image.asset(program.image, fit: BoxFit.cover),
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.18),

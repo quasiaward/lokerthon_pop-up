@@ -15,6 +15,7 @@ const _decoAsset = 'assets/figma/catering_figma_deco.png';
 const _yakgwa = _DagwaOption(
   name: '행궁약과',
   price: '5,000',
+  priceValue: 5000,
   image: 'assets/figma/catering_figma_yakgwa.png',
   trayScale: 0.23,
   cardImageSize: 228,
@@ -23,6 +24,7 @@ const _yakgwa = _DagwaOption(
 const _hwajeon = _DagwaOption(
   name: '진달래 화전',
   price: '5,000',
+  priceValue: 5000,
   image: 'assets/figma/catering_figma_hwajeon.png',
   trayScale: 0.29,
   cardImageSize: 225,
@@ -31,6 +33,7 @@ const _hwajeon = _DagwaOption(
 const _songpyeon = _DagwaOption(
   name: '송편',
   price: '5,000',
+  priceValue: 5000,
   image: 'assets/figma/catering_figma_songpyeon.png',
   trayScale: 0.25,
   cardImageSize: 190,
@@ -39,6 +42,7 @@ const _songpyeon = _DagwaOption(
 const _osakgyeongdan = _DagwaOption(
   name: '오색경단',
   price: '5,000',
+  priceValue: 5000,
   image: 'assets/figma/catering_figma_osakgyeongdan.png',
   trayScale: 0.26,
   cardImageSize: 198,
@@ -57,10 +61,17 @@ class _CateringSectionState extends State<CateringSection> {
   late final List<_DagwaOption?> _slots;
   int? _activeSlot;
 
+  int get _filledCount => _slots.whereType<_DagwaOption>().length;
+  int get _totalPrice => _slots.whereType<_DagwaOption>().fold(
+    0,
+    (sum, item) => sum + item.priceValue,
+  );
+
   @override
   void initState() {
     super.initState();
     _slots = [_songpyeon, _osakgyeongdan, _songpyeon, _hwajeon, null, null];
+    _activeSlot = _slots.indexWhere((slot) => slot == null);
   }
 
   void _selectSlot(int index) {
@@ -71,10 +82,11 @@ class _CateringSectionState extends State<CateringSection> {
     setState(() {
       final targetIndex =
           _activeSlot ?? _slots.indexWhere((slot) => slot == null);
-      _slots[targetIndex == -1 ? 0 : targetIndex] = option;
+      final resolvedIndex = targetIndex == -1 ? 0 : targetIndex;
+      _slots[resolvedIndex] = option;
 
       final nextEmpty = _slots.indexWhere((slot) => slot == null);
-      _activeSlot = nextEmpty == -1 ? null : nextEmpty;
+      _activeSlot = nextEmpty == -1 ? resolvedIndex : nextEmpty;
     });
   }
 
@@ -136,13 +148,23 @@ class _CateringSectionState extends State<CateringSection> {
                           height: 1.55,
                         ),
                       ),
-                      SizedBox(height: compact ? 30 : 36),
+                      SizedBox(height: compact ? 22 : 28),
+                      _CompositionStatus(
+                        slots: _slots,
+                        activeSlot: _activeSlot,
+                        filledCount: _filledCount,
+                        totalPrice: _totalPrice,
+                        onSlotTap: _selectSlot,
+                      ),
+                      SizedBox(height: compact ? 26 : 34),
                       _TrayBuilder(
                         slots: _slots,
                         activeSlot: _activeSlot,
                         onSlotTap: _selectSlot,
                       ),
-                      SizedBox(height: compact ? 42 : 64),
+                      SizedBox(height: compact ? 34 : 54),
+                      const _SelectorHeading(),
+                      const SizedBox(height: 18),
                       _DagwaSelector(
                         options: const [
                           ..._selectorOptions,
@@ -158,6 +180,269 @@ class _CateringSectionState extends State<CateringSection> {
           ),
         );
       },
+    );
+  }
+}
+
+class _CompositionStatus extends StatelessWidget {
+  const _CompositionStatus({
+    required this.slots,
+    required this.activeSlot,
+    required this.filledCount,
+    required this.totalPrice,
+    required this.onSlotTap,
+  });
+
+  final List<_DagwaOption?> slots;
+  final int? activeSlot;
+  final int filledCount;
+  final int totalPrice;
+  final ValueChanged<int> onSlotTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 720;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 760),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE8DCD6)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFB99A90).withValues(alpha: 0.10),
+              blurRadius: 24,
+              spreadRadius: -10,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          child: compact
+              ? Column(
+                  children: [
+                    _StatusText(
+                      filledCount: filledCount,
+                      totalPrice: totalPrice,
+                      activeSlot: activeSlot,
+                    ),
+                    const SizedBox(height: 14),
+                    _SlotChipRow(
+                      slots: slots,
+                      activeSlot: activeSlot,
+                      onSlotTap: onSlotTap,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    _StatusText(
+                      filledCount: filledCount,
+                      totalPrice: totalPrice,
+                      activeSlot: activeSlot,
+                    ),
+                    const Spacer(),
+                    _SlotChipRow(
+                      slots: slots,
+                      activeSlot: activeSlot,
+                      onSlotTap: onSlotTap,
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusText extends StatelessWidget {
+  const _StatusText({
+    required this.filledCount,
+    required this.totalPrice,
+    required this.activeSlot,
+  });
+
+  final int filledCount;
+  final int totalPrice;
+  final int? activeSlot;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeLabel = activeSlot == null
+        ? '구성 완료'
+        : '${activeSlot! + 1}번 칸 선택';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '상자 구성',
+              style: TextStyle(
+                color: Color(0xFF534344),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '$filledCount / 6',
+              style: const TextStyle(
+                color: Color(0xFF934753),
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              '${_formatWon(totalPrice)}원',
+              style: const TextStyle(
+                color: Color(0xFF837777),
+                fontFamily: 'Plus Jakarta Sans',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          activeLabel,
+          style: const TextStyle(
+            color: Color(0xFF9A9285),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            height: 1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SlotChipRow extends StatelessWidget {
+  const _SlotChipRow({
+    required this.slots,
+    required this.activeSlot,
+    required this.onSlotTap,
+  });
+
+  final List<_DagwaOption?> slots;
+  final int? activeSlot;
+  final ValueChanged<int> onSlotTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var index = 0; index < slots.length; index++)
+          _SlotChip(
+            index: index,
+            option: slots[index],
+            active: activeSlot == index,
+            onTap: () => onSlotTap(index),
+          ),
+      ],
+    );
+  }
+}
+
+class _SlotChip extends StatelessWidget {
+  const _SlotChip({
+    required this.index,
+    required this.option,
+    required this.active,
+    required this.onTap,
+  });
+
+  final int index;
+  final _DagwaOption? option;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 40,
+          height: 40,
+          padding: EdgeInsets.all(option == null ? 0 : 4),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFF934753) : const Color(0xFFFFFCFA),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: active ? const Color(0xFF934753) : const Color(0xFFE5D6D0),
+              width: active ? 2 : 1,
+            ),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF934753).withValues(alpha: 0.18),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: option == null
+              ? Icon(
+                  Icons.add_rounded,
+                  color: active ? Colors.white : const Color(0xFFB79B95),
+                  size: 21,
+                )
+              : ClipOval(
+                  child: Image.asset(option!.image, fit: BoxFit.contain),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectorHeading extends StatelessWidget {
+  const _SelectorHeading();
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 760),
+      child: const Row(
+        children: [
+          Text(
+            '다과 선택',
+            style: TextStyle(
+              color: Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+          SizedBox(width: 14),
+          Expanded(child: Divider(color: Color(0xFFE9DDD8))),
+        ],
+      ),
     );
   }
 }
@@ -248,11 +533,14 @@ class _TraySlot extends StatelessWidget {
       top: center.dy - size / 2,
       width: size,
       height: size,
-      child: GestureDetector(
-        onTap: onTap,
-        child: option == null
-            ? _EmptyTraySlot(active: active, label: '${index + 1}')
-            : _TrayItem(option: option!, active: active),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: option == null
+              ? _EmptyTraySlot(active: active, label: '${index + 1}')
+              : _TrayItem(option: option!, active: active),
+        ),
       ),
     );
   }
@@ -266,23 +554,30 @@ class _TrayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
+    return AnimatedScale(
       duration: const Duration(milliseconds: 160),
-      padding: EdgeInsets.all(active ? 4 : 0),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: active ? const Color(0xFF995959) : Colors.transparent,
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
-            blurRadius: 19,
-            offset: const Offset(0, 4),
+      scale: active ? 1.06 : 1,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: EdgeInsets.all(active ? 5 : 0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: active
+                ? const Color(0xFF934753).withValues(alpha: 0.82)
+                : Colors.transparent,
+            width: 2,
           ),
-        ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: active ? 0.26 : 0.22),
+              blurRadius: active ? 24 : 19,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Image.asset(option.image, fit: BoxFit.contain),
       ),
-      child: Image.asset(option.image, fit: BoxFit.contain),
     );
   }
 }
@@ -299,26 +594,53 @@ class _EmptyTraySlot extends StatelessWidget {
       duration: const Duration(milliseconds: 160),
       decoration: BoxDecoration(
         color: active
-            ? Colors.white.withValues(alpha: 0.2)
-            : Colors.transparent,
+            ? Colors.white.withValues(alpha: 0.54)
+            : Colors.white.withValues(alpha: 0.22),
+        shape: BoxShape.circle,
         border: Border.all(
           color: active
-              ? const Color(0xFF995959).withValues(alpha: 0.5)
-              : Colors.transparent,
+              ? const Color(0xFF934753).withValues(alpha: 0.70)
+              : const Color(0xFFD9C9C4).withValues(alpha: 0.62),
           width: 2,
         ),
-      ),
-      child: active
-          ? Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF995959),
-                  fontWeight: FontWeight.w700,
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF934753).withValues(alpha: 0.16),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
                 ),
+              ]
+            : null,
+      ),
+      child: Center(
+        child: active
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.add_rounded,
+                    color: Color(0xFF934753),
+                    size: 28,
+                  ),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF934753),
+                      fontFamily: 'Plus Jakarta Sans',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              )
+            : Icon(
+                Icons.add_rounded,
+                color: const Color(0xFFBCA7A1).withValues(alpha: 0.72),
+                size: 26,
               ),
-            )
-          : null,
+      ),
     );
   }
 }
@@ -386,49 +708,106 @@ class _DagwaCardState extends State<_DagwaCard> {
           height: 349,
           padding: const EdgeInsets.fromLTRB(22, 28, 22, 20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: _hovered
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF995959).withValues(alpha: 0.14),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ]
-                : null,
+            color: _hovered ? const Color(0xFFFFFEFD) : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _hovered ? const Color(0xFFE0C7C2) : Colors.transparent,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(
+                  0xFF995959,
+                ).withValues(alpha: _hovered ? 0.16 : 0.06),
+                blurRadius: _hovered ? 24 : 12,
+                spreadRadius: -6,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          child: Column(
+          child: Stack(
             children: [
-              Text(
-                widget.option.price,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'Gowun Batang',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: 16,
-                  height: 1.25,
+              Positioned(
+                top: 0,
+                right: 0,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 13),
+                  decoration: BoxDecoration(
+                    color: _hovered
+                        ? const Color(0xFF934753)
+                        : const Color(0xFFF4ECE9),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add_rounded,
+                        color: _hovered
+                            ? Colors.white
+                            : const Color(0xFF934753),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        '담기',
+                        style: TextStyle(
+                          color: _hovered
+                              ? Colors.white
+                              : const Color(0xFF934753),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                widget.option.name,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: TextStyle(
-                  color: _hovered ? const Color(0xFF995959) : Colors.black,
-                  fontFamily: 'Gowun Batang',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                  height: 1.05,
-                ),
-              ),
-              const Spacer(),
-              SizedBox(
-                width: widget.option.cardImageSize,
-                height: widget.option.cardImageSize,
-                child: Image.asset(widget.option.image, fit: BoxFit.contain),
+              Column(
+                children: [
+                  Text(
+                    widget.option.price,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF4A3D3A),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 16,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.option.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: TextStyle(
+                      color: _hovered ? const Color(0xFF934753) : Colors.black,
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      height: 1.05,
+                    ),
+                  ),
+                  const Spacer(),
+                  AnimatedScale(
+                    duration: const Duration(milliseconds: 150),
+                    scale: _hovered ? 1.04 : 1,
+                    child: SizedBox(
+                      width: widget.option.cardImageSize,
+                      height: widget.option.cardImageSize,
+                      child: Image.asset(
+                        widget.option.image,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -442,6 +821,7 @@ class _DagwaOption {
   const _DagwaOption({
     required this.name,
     required this.price,
+    required this.priceValue,
     required this.image,
     required this.trayScale,
     required this.cardImageSize,
@@ -449,7 +829,21 @@ class _DagwaOption {
 
   final String name;
   final String price;
+  final int priceValue;
   final String image;
   final double trayScale;
   final double cardImageSize;
+}
+
+String _formatWon(int value) {
+  final raw = value.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < raw.length; i++) {
+    final remaining = raw.length - i;
+    buffer.write(raw[i]);
+    if (remaining > 1 && remaining % 3 == 1) {
+      buffer.write(',');
+    }
+  }
+  return buffer.toString();
 }

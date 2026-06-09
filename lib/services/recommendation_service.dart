@@ -278,6 +278,58 @@ class RecommendationService {
     ].join('\n');
   }
 
+  String buildLocalAiPrompt(RecommendationInput input) {
+    final situation = input.situation.trim();
+    final features = _featuresFor(input, situation);
+    final featureLines = _promptFeatureLines(features);
+    final situationText = situation.isEmpty ? '없음' : situation;
+
+    return [
+      '[행궁다과 나만의 다과 추천 로컬 AI 프롬프트]',
+      '',
+      '역할:',
+      '너는 화성행궁 근처 전통 다과 브랜드 행궁다과의 취향 추천 AI다.',
+      '고객이 고른 감각적 질문 답변을 해석해 실제 메뉴 한 가지를 따뜻하고 단정한 문장으로 추천한다.',
+      '',
+      '입력 축:',
+      '- 색감/성향: ${input.personality}',
+      '- 마음 날씨/방문 순간: ${input.moment}',
+      '- 동행/차 무드: ${input.tea}',
+      '- 식감: ${input.texture}',
+      '- 계절/단맛: ${input.sweetness}',
+      '- 모양/선택 성향: ${input.choiceStyle}',
+      '- 자유 상황: $situationText',
+      '',
+      '해석된 핵심 취향:',
+      if (featureLines.isEmpty)
+        '- 균형 잡힌 취향'
+      else
+        ...featureLines.map((line) => '- $line'),
+      '',
+      '추천 후보 메뉴:',
+      ..._profiles.map(
+        (profile) =>
+            '- ${profile.name} / ${profile.dagwaType}: ${profile.typeDescription} 어울리는 차는 ${profile.pairing}.',
+      ),
+      '',
+      '판단 기준:',
+      '- 추천은 다과상 구성이나 임시 이미지가 아니라 행궁다과의 실제 개별 메뉴 한 가지로 제한한다.',
+      '- 감정, 동행, 맛, 식감, 계절감, 모양 선호, 자유 상황을 함께 읽되 한 가지 답변만 과하게 반영하지 않는다.',
+      '- 결과 화면에는 내부 점수표나 "AI가 읽은 신호" 같은 분석 패널을 노출하지 않는다.',
+      '- 설명은 피그마 결과 카드처럼 조용하고 고급스럽게 쓴다. 기술적인 말투, 과장된 마케팅 문구, 긴 목록은 피한다.',
+      '',
+      '출력 규칙:',
+      '- profileTitle: 고객 취향을 6~10자 안팎의 부드러운 별칭으로 쓴다.',
+      '- headline: "{profileTitle}에게 어울리는 오늘의 다과" 형식을 유지한다.',
+      '- aiSummary: 2문장 이내로, 선택한 질문 흐름과 추천 메뉴가 자연스럽게 이어지도록 쓴다.',
+      '- reasons: 추천 이유 3개를 짧게 쓴다. 메뉴 유형, 맛/식감, 방문 상황 또는 차 페어링을 각각 다룬다.',
+      '- teaPairing: 함께 마시기 좋은 차 또는 곁들임 메뉴를 한 가지 제안한다.',
+      '- secondaryMenuName: 차선 추천 메뉴명을 한 가지 제안한다.',
+      '- packagingMessage: 구매나 공유로 이어질 수 있는 따뜻한 한 줄 문장을 쓴다.',
+      '- tags: 화면 보조용 태그 3~5개만 남긴다.',
+    ].join('\n');
+  }
+
   static Map<String, int> _featuresFor(
     RecommendationInput input,
     String situation,
@@ -481,29 +533,34 @@ class RecommendationService {
     _MenuProfile selected,
     Map<String, int> features,
   ) {
-    final prefix = input.situation.trim().isEmpty ? '' : '입력한 상황까지 반영하면 ';
+    final prefix = input.situation.trim().isEmpty ? '' : '남겨주신 상황까지 함께 보면 ';
     final featureSummary = _featureSummary(selected, features);
-    return '$prefix$featureSummary 신호가 ${selected.dagwaType}인 ${selected.name}과 가장 잘 맞습니다. ${selected.summary}';
+    final arc = _preferenceArc(input);
+    return '$prefix$arc $featureSummary 취향이 가장 또렷하게 읽혔어요. ${selected.name}은 ${selected.summary}';
   }
 
   static String _typeReason(_MenuProfile selected, Map<String, int> features) {
     final featureSummary = _featureSummary(selected, features);
-    return '${selected.dagwaType} 유형은 ${selected.typeDescription} $featureSummary 취향 신호와 자연스럽게 이어집니다.';
+    return '${selected.name}은 ${selected.typeDescription} 그래서 $featureSummary 취향과 자연스럽게 이어집니다.';
   }
 
   static String _tasteReason(RecommendationInput input, _MenuProfile selected) {
     switch (selected.id) {
       case 'yakgwa-story':
-        return '바삭하고 결 있는 식감, 선물이나 포장 가능성, 수원 여행의 기념성을 함께 반영해 약과 쪽 가중치를 높였습니다.';
+        return '바삭하고 결 있는 식감과 ${input.choiceStyle} 성향이 선물성, 지역성 쪽으로 이어져 행궁약과를 우선했습니다.';
       case 'flower-pancake':
-        return '보기 좋은 메뉴와 산뜻한 취향을 반영해 꽃의 색감과 은은한 단맛이 살아 있는 화전 쪽을 우선했습니다.';
+        return '${input.sweetness}과 ${input.choiceStyle} 선택을 반영해 꽃의 색감과 은은한 단맛이 살아 있는 화전을 우선했습니다.';
       case 'mango-bingsu':
-        return '확실한 달콤함과 시원하게 녹는 식감, 함께 나누는 상황이 빙수 계열과 잘 맞았습니다.';
+        return '${input.sweetness}, ${input.texture}, ${input.moment} 흐름이 달콤하고 시원하게 나누는 빙수와 잘 맞았습니다.';
       case 'green-tea-bingsu':
-        return '시원함은 유지하되 단맛을 절제하고 싶은 신호가 있어 녹차의 쌉싸름함을 반영했습니다.';
+        return '${input.texture}은 살리면서 ${input.sweetness}을 선호하는 흐름이 녹차의 쌉싸름함과 잘 맞았습니다.';
       default:
         return '${input.sweetness}, ${input.texture} 선호가 ${selected.name}의 맛과 식감에 자연스럽게 이어집니다.';
     }
+  }
+
+  static String _preferenceArc(RecommendationInput input) {
+    return '${input.personality}의 무드와 ${input.texture} 선호가 겹치면서';
   }
 
   static String _situationSignal(String situation) {
@@ -560,6 +617,16 @@ class RecommendationService {
     final labels = _topFeatureLabels(selected, features);
     if (labels.isEmpty) return '균형 잡힌 취향';
     return labels.join('·');
+  }
+
+  static List<String> _promptFeatureLines(Map<String, int> features) {
+    final entries = features.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return [
+      for (final entry in entries.take(8))
+        if (_featureLabels[entry.key] != null)
+          '${_featureLabels[entry.key]}: ${entry.value}',
+    ];
   }
 
   static void _mergeFeatures(
