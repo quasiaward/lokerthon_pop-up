@@ -75,7 +75,16 @@ class _CateringSectionState extends State<CateringSection> {
   }
 
   void _selectSlot(int index) {
-    setState(() => _activeSlot = index);
+    setState(() {
+      final prev = _activeSlot;
+      // 채워진 칸이 선택된 상태에서 다른 칸을 누르면 자리를 맞바꾼다(빈 칸이면 이동).
+      if (prev != null && prev != index && _slots[prev] != null) {
+        final moved = _slots[prev];
+        _slots[prev] = _slots[index];
+        _slots[index] = moved;
+      }
+      _activeSlot = index;
+    });
   }
 
   void _addDagwa(_DagwaOption option) {
@@ -105,8 +114,8 @@ class _CateringSectionState extends State<CateringSection> {
             children: [
               Positioned(
                 right: 0,
-                top: 625 * deco,
-                child: WatercolorDeco(decoCluster, width: 706 * deco),
+                top: 470 * deco,
+                child: WatercolorDeco(decoClusterSoft, width: 535 * deco),
               ),
               SectionShell(
                 maxWidth: 1040,
@@ -454,7 +463,7 @@ class _UsageGuideCard extends StatelessWidget {
                   Flexible(
                     fit: compact ? FlexFit.loose : FlexFit.tight,
                     child: Text(
-                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 이미 채운 칸을 누르면 새 다과로 교체됩니다.',
+                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 채워진 칸을 누른 뒤 다른 칸을 누르면 두 칸의 자리가 서로 바뀝니다.',
                       style: TextStyle(
                         color: const Color(0xFF8B7D7A),
                         fontFamily: 'Gowun Batang',
