@@ -1,8 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'common.dart';
+import 'watercolor_deco.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -12,7 +11,6 @@ const _serifFallback = [
 ];
 
 const _trayAsset = 'assets/figma/catering_figma_tray_6_display.png';
-const _decoAsset = 'assets/figma/catering_figma_deco.png';
 
 const _yakgwa = _DagwaOption(
   name: '행궁약과',
@@ -98,44 +96,18 @@ class _CateringSectionState extends State<CateringSection> {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 720;
 
+        final deco = decoScaleOf(context, designWidth: 1409);
+
         return Container(
           color: const Color(0xFFFFF9F6),
           child: Stack(
             clipBehavior: Clip.hardEdge,
             children: [
-              if (!compact)
-                Positioned(
-                  right: -520,
-                  top: 228,
-                  width: 920,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: 0.092,
-                      child: Transform.rotate(
-                        angle: -14 * math.pi / 180,
-                        child: Image.asset(_decoAsset, fit: BoxFit.contain),
-                      ),
-                    ),
-                  ),
-                ),
-              if (!compact)
-                Positioned(
-                  left: -520,
-                  bottom: 124,
-                  width: 920,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: 0.034,
-                      child: Transform.rotate(
-                        angle: 14 * math.pi / 180,
-                        child: Transform.scale(
-                          scaleX: -1,
-                          child: Image.asset(_decoAsset, fit: BoxFit.contain),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              Positioned(
+                right: 0,
+                top: 625 * deco,
+                child: WatercolorDeco(decoCluster, width: 706 * deco),
+              ),
               SectionShell(
                 maxWidth: 1040,
                 child: Padding(

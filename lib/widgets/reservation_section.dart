@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'common.dart';
+import 'watercolor_deco.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -12,7 +13,6 @@ const _serifFallback = [
   'sans-serif',
 ];
 
-const _botanicalDecoImage = 'assets/figma/catering_figma_deco.png';
 const _unitPrice = 50000;
 
 const _programs = [
@@ -299,28 +299,15 @@ class _ProgramSelectView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final deco = decoScaleOf(context, designWidth: 1409);
 
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
         Positioned(
-          right: isWide ? -520 : -365,
-          bottom: isWide ? 22 : 36,
-          width: isWide ? 920 : 640,
-          child: const _ReservationBotanicalBackdrop(
-            opacity: 0.096,
-            rotationDegrees: -14,
-          ),
-        ),
-        Positioned(
-          left: isWide ? -520 : -365,
-          top: isWide ? 86 : 52,
-          width: isWide ? 920 : 640,
-          child: const _ReservationBotanicalBackdrop(
-            opacity: 0.034,
-            rotationDegrees: 14,
-            flipX: true,
-          ),
+          right: 0,
+          bottom: 3 * deco,
+          child: WatercolorDeco(decoCluster, width: 706 * deco),
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(
@@ -407,34 +394,6 @@ class _ProgramSelectView extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ReservationBotanicalBackdrop extends StatelessWidget {
-  const _ReservationBotanicalBackdrop({
-    required this.opacity,
-    this.rotationDegrees = 0,
-    this.flipX = false,
-  });
-
-  final double opacity;
-  final double rotationDegrees;
-  final bool flipX;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.rotate(
-          angle: rotationDegrees * math.pi / 180,
-          child: Transform.scale(
-            scaleX: flipX ? -1 : 1,
-            child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -737,23 +696,15 @@ class _ReservationDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final deco = decoScaleOf(context, designWidth: 1409);
 
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
         Positioned(
-          right: isWide ? -480 : -360,
-          bottom: isWide ? 16 : 28,
-          width: isWide ? 780 : 600,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: isWide ? 0.092 : 0.068,
-              child: Transform.rotate(
-                angle: -14 * math.pi / 180,
-                child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
-              ),
-            ),
-          ),
+          right: 0,
+          bottom: 16 * deco,
+          child: WatercolorDeco(decoCluster, width: 706 * deco),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 46),
@@ -1277,24 +1228,15 @@ class _ReservationConfirmView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final deco = decoScaleOf(context, designWidth: 1409);
 
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
         Positioned(
-          right: isWide ? -480 : -360,
-          bottom: isWide ? 16 : 28,
-          width: isWide ? 780 : 600,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: isWide ? 0.086 : 0.064,
-              child: Transform.rotate(
-                angle: -14 * math.pi / 180,
-                child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
-              ),
-            ),
-          ),
+          right: 0,
+          bottom: 16 * deco,
+          child: WatercolorDeco(decoCluster, width: 706 * deco),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 40),

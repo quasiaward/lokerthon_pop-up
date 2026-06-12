@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../models/recommendation.dart';
 import '../services/recommendation_service.dart';
+import 'watercolor_deco.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -594,150 +595,174 @@ class _QuizView extends StatelessWidget {
     final totalSteps = _questions.length;
     final pct = (step / totalSteps * 100).round();
     final isWide = MediaQuery.sizeOf(context).width >= 1100;
+    final deco = decoScaleOf(context, designWidth: 1409);
 
     return Container(
       color: const Color(0xFFFCF7F5),
       constraints: const BoxConstraints(minHeight: 700),
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1100),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Progress indicator
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 672),
-                  child: _ProgressBar(
-                    step: step,
-                    totalSteps: totalSteps,
-                    pct: pct,
-                  ),
-                ),
-                const SizedBox(height: 48),
-
-                // Question header
-                _QuestionHeader(question: question),
-                const SizedBox(height: 48),
-
-                // Card grid
-                if (isWide)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            left: 45 * deco,
+            bottom: 0,
+            child: WatercolorDeco(decoQuizPink, width: 525 * deco),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: WatercolorDeco(decoQuizBlob, width: 422 * deco),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 48),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      for (var i = 0; i < question.options.length; i++) ...[
-                        SizedBox(
-                          width: 244,
-                          child: _OptionCard(
-                            option: question.options[i],
-                            selected: selected == question.options[i].title,
-                            onTap: () => onPick(question.options[i].title),
-                          ),
+                      // Progress indicator
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 672),
+                        child: _ProgressBar(
+                          step: step,
+                          totalSteps: totalSteps,
+                          pct: pct,
                         ),
-                        if (i < question.options.length - 1)
-                          const SizedBox(width: 16),
-                      ],
-                    ],
-                  )
-                else
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      for (final opt in question.options)
-                        SizedBox(
-                          width: 200,
-                          child: _OptionCard(
-                            option: opt,
-                            selected: selected == opt.title,
-                            onTap: () => onPick(opt.title),
-                          ),
-                        ),
-                    ],
-                  ),
-                const SizedBox(height: 48),
+                      ),
+                      const SizedBox(height: 48),
 
-                // Navigation
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1024),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (onBack != null)
-                        TextButton.icon(
-                          onPressed: onBack,
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            size: 14,
-                          ),
-                          label: const Text('이전 질문'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF534344),
-                            textStyle: const TextStyle(
-                              fontFamily: 'Gowun Batang',
-                              fontFamilyFallback: _serifFallback,
-                              fontSize: 14,
-                            ),
-                          ),
+                      // Question header
+                      _QuestionHeader(question: question),
+                      const SizedBox(height: 48),
+
+                      // Card grid
+                      if (isWide)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            for (
+                              var i = 0;
+                              i < question.options.length;
+                              i++
+                            ) ...[
+                              SizedBox(
+                                width: 244,
+                                child: _OptionCard(
+                                  option: question.options[i],
+                                  selected:
+                                      selected == question.options[i].title,
+                                  onTap: () =>
+                                      onPick(question.options[i].title),
+                                ),
+                              ),
+                              if (i < question.options.length - 1)
+                                const SizedBox(width: 16),
+                            ],
+                          ],
                         )
                       else
-                        const SizedBox(width: 100),
-                      Row(
-                        children: [
-                          TextButton(
-                            onPressed: onSkip,
-                            style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF566341),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            for (final opt in question.options)
+                              SizedBox(
+                                width: 200,
+                                child: _OptionCard(
+                                  option: opt,
+                                  selected: selected == opt.title,
+                                  onTap: () => onPick(opt.title),
+                                ),
                               ),
-                              textStyle: const TextStyle(
-                                fontFamily: 'Gowun Batang',
-                                fontFamilyFallback: _serifFallback,
-                                fontSize: 14,
-                              ),
+                          ],
+                        ),
+                      const SizedBox(height: 48),
+
+                      // Navigation
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1024),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (onBack != null)
+                              TextButton.icon(
+                                onPressed: onBack,
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 14,
+                                ),
+                                label: const Text('이전 질문'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF534344),
+                                  textStyle: const TextStyle(
+                                    fontFamily: 'Gowun Batang',
+                                    fontFamilyFallback: _serifFallback,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(width: 100),
+                            Row(
+                              children: [
+                                TextButton(
+                                  onPressed: onSkip,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color(0xFF566341),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 12,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontFamily: 'Gowun Batang',
+                                      fontFamilyFallback: _serifFallback,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  child: const Text('건너뛰기'),
+                                ),
+                                const SizedBox(width: 8),
+                                FilledButton(
+                                  onPressed: selected != null
+                                      ? () => onPick(selected!)
+                                      : onSkip,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF934753),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 1,
+                                  ),
+                                  child: Text(
+                                    isLast ? '취향 분석하기' : '다음 단계',
+                                    style: const TextStyle(
+                                      fontFamily: 'Gowun Batang',
+                                      fontFamilyFallback: _serifFallback,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: const Text('건너뛰기'),
-                          ),
-                          const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: selected != null
-                                ? () => onPick(selected!)
-                                : onSkip,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF934753),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              elevation: 1,
-                            ),
-                            child: Text(
-                              isLast ? '취향 분석하기' : '다음 단계',
-                              style: const TextStyle(
-                                fontFamily: 'Gowun Batang',
-                                fontFamilyFallback: _serifFallback,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

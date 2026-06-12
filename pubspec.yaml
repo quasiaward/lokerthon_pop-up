@@ -26,6 +26,7 @@ flutter:
     - assets/figma/
     - assets/figma/quiz/
     - assets/figma/logo/
+    - assets/figma/deco/
 
   fonts:
     - family: Gowun Batang

@@ -1,11 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
 import '../widgets/brand_logo.dart';
 import '../widgets/floating_chatbot.dart';
 import '../widgets/footer.dart';
+import '../widgets/watercolor_deco.dart';
 
 const _heroImage = 'assets/figma/home_hero.png';
 const _brandWindowImage = 'assets/figma/brand_window.png';
@@ -14,7 +13,6 @@ const _brandTableImage = 'assets/figma/brand_table.png';
 const _menuDagwasangImage = 'assets/figma/menu_dagwasang.png';
 const _menuBingsuImage = 'assets/figma/menu_green_bingsu.png';
 const _menuYakgwaImage = 'assets/figma/menu_yakgwa.png';
-const _botanicalDecoImage = 'assets/figma/catering_figma_deco.png';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -34,8 +32,25 @@ ImageProvider _imgProvider(String asset) => AssetImage(asset);
 Widget _img(String asset, {BoxFit fit = BoxFit.cover}) =>
     Image.asset(asset, fit: fit);
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final _brandSectionKey = GlobalKey();
+
+  void _scrollToBrand() {
+    final brandContext = _brandSectionKey.currentContext;
+    if (brandContext == null) return;
+    Scrollable.ensureVisible(
+      brandContext,
+      duration: const Duration(milliseconds: 560),
+      curve: Curves.easeInOutCubic,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +63,7 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   _HeroSection(
+                    onAboutTap: _scrollToBrand,
                     onMenuTap: () =>
                         Navigator.pushReplacementNamed(context, '/menu'),
                     onExperienceTap: () =>
@@ -67,7 +83,7 @@ class HomePage extends StatelessWidget {
                       ),
                     onCartTap: () => _showCartSheet(context),
                   ),
-                  const _BrandSection(),
+                  _BrandSection(key: _brandSectionKey),
                   _MenuPreviewSection(
                     onMoreTap: () =>
                         Navigator.pushReplacementNamed(context, '/menu'),
@@ -162,6 +178,7 @@ class HomePage extends StatelessWidget {
 
 class _HeroSection extends StatelessWidget {
   const _HeroSection({
+    required this.onAboutTap,
     required this.onMenuTap,
     required this.onExperienceTap,
     required this.onCateringTap,
@@ -170,6 +187,7 @@ class _HeroSection extends StatelessWidget {
     required this.onCartTap,
   });
 
+  final VoidCallback onAboutTap;
   final VoidCallback onMenuTap;
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
@@ -218,6 +236,7 @@ class _HeroSection extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: _HeroNav(
+                onAboutTap: onAboutTap,
                 onMenuTap: onMenuTap,
                 onExperienceTap: onExperienceTap,
                 onCateringTap: onCateringTap,
@@ -256,6 +275,7 @@ class _HeroSection extends StatelessWidget {
 
 class _HeroNav extends StatelessWidget {
   const _HeroNav({
+    required this.onAboutTap,
     required this.onMenuTap,
     required this.onExperienceTap,
     required this.onCateringTap,
@@ -264,6 +284,7 @@ class _HeroNav extends StatelessWidget {
     required this.onCartTap,
   });
 
+  final VoidCallback onAboutTap;
   final VoidCallback onMenuTap;
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
@@ -289,7 +310,7 @@ class _HeroNav extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _HeroNavBtn('소개', onTap: () {}),
+                  _HeroNavBtn('소개', onTap: onAboutTap),
                   _HeroNavBtn('메뉴', onTap: onMenuTap),
                   _HeroNavBtn('체험', onTap: onExperienceTap),
                   _HeroNavBtn('케이터링', onTap: onCateringTap),
@@ -315,7 +336,7 @@ class _HeroNav extends StatelessWidget {
               onTap: () => Navigator.pushReplacementNamed(context, '/'),
             ),
             const Spacer(),
-            _HeroNavBtn('소개', onTap: () {}),
+            _HeroNavBtn('소개', onTap: onAboutTap),
             _HeroNavBtn('메뉴', onTap: onMenuTap),
             _HeroNavBtn('체험', onTap: onExperienceTap),
             _HeroNavBtn('케이터링', onTap: onCateringTap),
@@ -552,68 +573,28 @@ class _HeroDot extends StatelessWidget {
   }
 }
 
-class _BotanicalDeco extends StatelessWidget {
-  const _BotanicalDeco({
-    required this.width,
-    required this.height,
-    this.opacity = 0.19,
-    this.rotationDegrees = 0,
-    this.flipX = false,
-  });
-
-  final double width;
-  final double height;
-  final double opacity;
-  final double rotationDegrees;
-  final bool flipX;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.rotate(
-          angle: rotationDegrees * math.pi / 180,
-          child: Transform.scale(
-            scaleX: flipX ? -1 : 1,
-            child: SizedBox(
-              width: width,
-              height: height,
-              child: Image.asset(_botanicalDecoImage, fit: BoxFit.contain),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ─── Brand Section ───────────────────────────────────────────────────────────
 
 class _BrandSection extends StatelessWidget {
-  const _BrandSection();
+  const _BrandSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
     final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
+    final deco = decoScaleOf(context);
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF3EEEE),
+      color: const Color(0xFFF6EFEF),
       padding: const EdgeInsets.symmetric(vertical: 82),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
           Positioned(
-            right: isWide ? -520 : -365,
-            bottom: isWide ? 22 : 36,
-            child: _BotanicalDeco(
-              width: isWide ? 920 : 640,
-              height: isWide ? 678 : 472,
-              opacity: isWide ? 0.105 : 0.074,
-              rotationDegrees: -14,
-            ),
+            right: 0,
+            bottom: -10 * deco,
+            child: WatercolorDeco(decoBlossomPink, width: 542 * deco),
           ),
           Center(
             child: ConstrainedBox(
@@ -794,35 +775,20 @@ class _MenuPreviewSection extends StatelessWidget {
       ),
     ];
 
+    final deco = decoScaleOf(context);
+
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF6F6F4),
+      color: const Color(0xFFF6F6F6),
       padding: const EdgeInsets.symmetric(vertical: 82),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
           Positioned(
-            left: isWide ? -520 : -365,
-            bottom: isWide ? 22 : 36,
-            child: _BotanicalDeco(
-              width: isWide ? 920 : 640,
-              height: isWide ? 678 : 472,
-              opacity: isWide ? 0.092 : 0.068,
-              rotationDegrees: 14,
-              flipX: true,
-            ),
+            left: 0,
+            bottom: 0,
+            child: WatercolorDeco(decoBlossomYellow, width: 463 * deco),
           ),
-          if (isWide)
-            const Positioned(
-              right: -520,
-              top: 30,
-              child: _BotanicalDeco(
-                width: 810,
-                height: 597,
-                opacity: 0.032,
-                rotationDegrees: -14,
-              ),
-            ),
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1142),
@@ -1022,7 +988,8 @@ class _ExperienceSection extends StatelessWidget {
         icon: Icons.account_tree_outlined,
         iconOverlay: Icons.edit_rounded,
         iconColor: const Color(0xFF9B4A59),
-        tint: const Color(0xFFFFDCE0),
+        tint: const Color(0xFFFFD9DC),
+        cornerAsset: decoCardPink,
         onTap: onTasteTap,
       ),
       _ExpCard(
@@ -1032,6 +999,7 @@ class _ExperienceSection extends StatelessWidget {
         icon: Icons.school_outlined,
         iconColor: const Color(0xFF557057),
         tint: const Color(0xFFDCE9C1),
+        cornerAsset: decoCardGreen,
         onTap: onClassTap,
       ),
       _ExpCard(
@@ -1041,26 +1009,24 @@ class _ExperienceSection extends StatelessWidget {
         icon: Icons.restaurant_rounded,
         iconColor: const Color(0xFF7D5724),
         tint: const Color(0xFFFFDEA7),
+        cornerAsset: decoCardYellow,
         onTap: onCateringTap,
       ),
     ];
 
+    final deco = decoScaleOf(context);
+
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF8F6F1),
+      color: const Color(0xFFF6F4F0),
       padding: const EdgeInsets.symmetric(vertical: 88),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
           Positioned(
-            right: isWide ? -520 : -365,
-            bottom: isWide ? 22 : 36,
-            child: _BotanicalDeco(
-              width: isWide ? 920 : 640,
-              height: isWide ? 678 : 472,
-              opacity: isWide ? 0.096 : 0.068,
-              rotationDegrees: -14,
-            ),
+            right: 0,
+            bottom: 0,
+            child: WatercolorDeco(decoClusterSoft, width: 535 * deco),
           ),
           Center(
             child: ConstrainedBox(
@@ -1116,6 +1082,7 @@ class _ExpCard {
     this.iconOverlay,
     required this.iconColor,
     required this.tint,
+    required this.cornerAsset,
     required this.onTap,
   });
   final String title;
@@ -1125,6 +1092,7 @@ class _ExpCard {
   final IconData? iconOverlay;
   final Color iconColor;
   final Color tint;
+  final String cornerAsset;
   final VoidCallback onTap;
 }
 
@@ -1156,9 +1124,9 @@ class _ExpCardWidget extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                right: -54,
-                top: -54,
-                child: _ExperienceWatercolorWash(color: data.tint),
+                right: 0,
+                top: 0,
+                child: WatercolorDeco(data.cornerAsset, width: 223),
               ),
               Padding(
                 padding: const EdgeInsets.all(32),
@@ -1245,61 +1213,6 @@ class _ExperienceCardIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ExperienceWatercolorWash extends StatelessWidget {
-  const _ExperienceWatercolorWash({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: CustomPaint(
-        size: const Size(164, 164),
-        painter: _WatercolorWashPainter(color),
-      ),
-    );
-  }
-}
-
-class _WatercolorWashPainter extends CustomPainter {
-  const _WatercolorWashPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.56, size.height * 0.42);
-    final radius = size.shortestSide * 0.42;
-    final path = Path();
-    for (var i = 0; i < 28; i++) {
-      final angle = (math.pi * 2 * i) / 28;
-      final wave =
-          1 + math.sin(angle * 3.1) * 0.08 + math.cos(angle * 5.2) * 0.04;
-      final point = Offset(
-        center.dx + math.cos(angle) * radius * wave,
-        center.dy + math.sin(angle) * radius * wave,
-      );
-      if (i == 0) {
-        path.moveTo(point.dx, point.dy);
-      } else {
-        path.lineTo(point.dx, point.dy);
-      }
-    }
-    path.close();
-
-    for (var i = 0; i < 4; i++) {
-      final paint = Paint()
-        ..color = color.withValues(alpha: 0.13 - i * 0.018)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9);
-      canvas.drawPath(path.shift(Offset(i * 1.8, i * 1.2)), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _WatercolorWashPainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 class _TasteTestGlyphPainter extends CustomPainter {
