@@ -78,10 +78,13 @@ class _CateringSectionState extends State<CateringSection> {
     setState(() => _activeSlot = index);
   }
 
-  void _removeSlot(int index) {
+  void _swapSlots(int from, int to) {
+    if (from == to) return;
     setState(() {
-      _slots[index] = null;
-      _activeSlot = index;
+      final moved = _slots[from];
+      _slots[from] = _slots[to];
+      _slots[to] = moved;
+      _activeSlot = to;
     });
   }
 
@@ -165,7 +168,7 @@ class _CateringSectionState extends State<CateringSection> {
                         slots: _slots,
                         activeSlot: _activeSlot,
                         onSlotTap: _selectSlot,
-                        onSlotRemove: _removeSlot,
+                        onSwap: _swapSlots,
                       ),
                       SizedBox(height: compact ? 34 : 54),
                       const _SelectorHeading(),
@@ -430,7 +433,7 @@ class _UsageGuideCard extends StatelessWidget {
     final pills = const [
       _GuidePill(icon: Icons.touch_app_outlined, label: '칸 선택'),
       _GuidePill(icon: Icons.add_circle_outline_rounded, label: '다과 담기'),
-      _GuidePill(icon: Icons.close_rounded, label: '칸 비우기'),
+      _GuidePill(icon: Icons.open_with_rounded, label: '끌어서 칸 교체'),
     ];
 
     return ConstrainedBox(
@@ -462,7 +465,7 @@ class _UsageGuideCard extends StatelessWidget {
                   Flexible(
                     fit: compact ? FlexFit.loose : FlexFit.tight,
                     child: Text(
-                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 × 버튼으로 비우거나, 다른 다과를 담아 교체할 수 있습니다.',
+                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 다른 칸으로 끌어다 놓아 자리를 바꿀 수 있습니다.',
                       style: TextStyle(
                         color: const Color(0xFF8B7D7A),
                         fontFamily: 'Gowun Batang',
@@ -584,13 +587,13 @@ class _TrayBuilder extends StatelessWidget {
     required this.slots,
     required this.activeSlot,
     required this.onSlotTap,
-    required this.onSlotRemove,
+    required this.onSwap,
   });
 
   final List<_DagwaOption?> slots;
   final int? activeSlot;
   final ValueChanged<int> onSlotTap;
-  final ValueChanged<int> onSlotRemove;
+  final void Function(int from, int to) onSwap;
 
   static const _slotCenters = [
     Offset(0.235, 0.27),
@@ -629,7 +632,7 @@ class _TrayBuilder extends StatelessWidget {
                     ),
                     trayWidth: width,
                     onTap: () => onSlotTap(index),
-                    onRemove: () => onSlotRemove(index),
+                    onSwap: onSwap,
                   ),
               ],
             );
@@ -648,7 +651,7 @@ class _TraySlot extends StatelessWidget {
     required this.center,
     required this.trayWidth,
     required this.onTap,
-    required this.onRemove,
+    required this.onSwap,
   });
 
   final int index;
@@ -657,7 +660,7 @@ class _TraySlot extends StatelessWidget {
   final Offset center;
   final double trayWidth;
   final VoidCallback onTap;
-  final VoidCallback onRemove;
+  final void Function(int from, int to) onSwap;
 
   @override
   Widget build(BuildContext context) {
@@ -670,63 +673,64 @@ class _TraySlot extends StatelessWidget {
       top: center.dy - size / 2,
       width: size,
       height: size,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: onTap,
-                child: option == null
-                    ? _EmptyTraySlot(active: active, label: '${index + 1}')
-                    : _TrayItem(option: option!, active: active),
+      child: DragTarget<int>(
+        onWillAcceptWithDetails: (details) => details.data != index,
+        onAcceptWithDetails: (details) => onSwap(details.data, index),
+        builder: (context, candidate, rejected) {
+          final hovering = candidate.isNotEmpty;
+          final content = option == null
+              ? _EmptyTraySlot(active: active || hovering, label: '${index + 1}')
+              : _TrayItem(option: option!, active: active || hovering);
+
+          final tappable = GestureDetector(onTap: onTap, child: content);
+
+          if (option == null) {
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: tappable,
+            );
+          }
+
+          return MouseRegion(
+            cursor: SystemMouseCursors.grab,
+            child: Draggable<int>(
+              data: index,
+              feedback: _TrayDragFeedback(option: option!, size: size),
+              childWhenDragging: IgnorePointer(
+                child: _EmptyTraySlot(active: false, label: '${index + 1}'),
               ),
+              child: tappable,
             ),
-            if (option != null)
-              Positioned(
-                top: -4,
-                right: -4,
-                child: _SlotRemoveButton(onTap: onRemove),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 }
 
-class _SlotRemoveButton extends StatelessWidget {
-  const _SlotRemoveButton({required this.onTap});
+class _TrayDragFeedback extends StatelessWidget {
+  const _TrayDragFeedback({required this.option, required this.size});
 
-  final VoidCallback onTap;
+  final _DagwaOption option;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Tooltip(
-          message: '칸 비우기',
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: const Color(0xFF534344),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.22),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+    return SizedBox(
+      width: size * 1.12,
+      height: size * 1.12,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.32),
+              blurRadius: 32,
+              offset: const Offset(0, 14),
             ),
-            child: const Icon(Icons.close_rounded, color: Colors.white, size: 15),
-          ),
+          ],
         ),
+        child: Image.asset(option.image, fit: BoxFit.contain),
       ),
     );
   }
