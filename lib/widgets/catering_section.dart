@@ -78,6 +78,12 @@ class _CateringSectionState extends State<CateringSection> {
     setState(() => _activeSlot = index);
   }
 
+  // 빈 공간을 누르면 상자 칸 선택을 해제한다(아이폰에서 빈 곳을 눌러 키보드를 내리듯).
+  void _deselect() {
+    if (_activeSlot == null) return;
+    setState(() => _activeSlot = null);
+  }
+
   void _swapSlots(int from, int to) {
     if (from == to) return;
     setState(() {
@@ -108,10 +114,13 @@ class _CateringSectionState extends State<CateringSection> {
 
         final deco = decoScaleOf(context, designWidth: 1409);
 
-        return Container(
-          color: const Color(0xFFFFF9F6),
-          child: Stack(
-            clipBehavior: Clip.hardEdge,
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _deselect,
+          child: Container(
+            color: const Color(0xFFFFF9F6),
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
             children: [
               Positioned(
                 right: 0,
@@ -182,6 +191,7 @@ class _CateringSectionState extends State<CateringSection> {
                 ),
               ),
             ],
+          ),
           ),
         );
       },
@@ -744,26 +754,28 @@ class _TrayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 선택 시: 딱딱한 테두리 대신 살짝 떠오르며 은은한 자두빛 광이 번진다.
     return AnimatedScale(
-      duration: const Duration(milliseconds: 160),
-      scale: active ? 1.06 : 1,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      scale: active ? 1.1 : 1,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: EdgeInsets.all(active ? 5 : 0),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: active
-                ? const Color(0xFF934753).withValues(alpha: 0.82)
-                : Colors.transparent,
-            width: 2,
-          ),
+          shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: active ? 0.26 : 0.22),
-              blurRadius: active ? 24 : 19,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: active ? 0.24 : 0.2),
+              blurRadius: active ? 28 : 18,
+              offset: Offset(0, active ? 9 : 4),
             ),
+            if (active)
+              BoxShadow(
+                color: const Color(0xFF934753).withValues(alpha: 0.5),
+                blurRadius: 34,
+                spreadRadius: 1,
+              ),
           ],
         ),
         child: Image.asset(option.image, fit: BoxFit.contain),
@@ -789,15 +801,16 @@ class _EmptyTraySlot extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: active
-              ? const Color(0xFF934753).withValues(alpha: 0.70)
+              ? const Color(0xFF934753).withValues(alpha: 0.45)
               : const Color(0xFFD9C9C4).withValues(alpha: 0.62),
-          width: 2,
+          width: active ? 1.5 : 1,
         ),
         boxShadow: active
             ? [
                 BoxShadow(
-                  color: const Color(0xFF934753).withValues(alpha: 0.16),
-                  blurRadius: 18,
+                  color: const Color(0xFF934753).withValues(alpha: 0.22),
+                  blurRadius: 24,
+                  spreadRadius: 1,
                   offset: const Offset(0, 6),
                 ),
               ]
