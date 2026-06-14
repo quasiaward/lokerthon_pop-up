@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/lang.dart';
 import 'brand_logo.dart';
+import 'lang_toggle.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -57,45 +59,50 @@ class _WideNav extends StatelessWidget {
           children: [
             _LogoButton(),
             const Spacer(),
-            _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
+            _NavItem(tr('소개', 'About'), '/', currentRoute,
+                onTap: () => _goHome(context)),
             _NavItem(
-              '메뉴',
+              tr('메뉴', 'Menu'),
               '/menu',
               currentRoute,
               onTap: () => _navigate(context, '/menu'),
             ),
             _NavItem(
-              '체험',
+              tr('체험', 'Experience'),
               '/experience',
               currentRoute,
               onTap: () => _navigate(context, '/experience'),
             ),
             _NavItem(
-              '케이터링',
+              tr('케이터링', 'Catering'),
               '/catering',
               currentRoute,
               onTap: () => _navigate(context, '/catering'),
             ),
             _NavItem(
-              '나만의 다과 추천',
+              tr('나만의 다과 추천', 'Find Your Dagwa'),
               '/ai',
               currentRoute,
               onTap: () => _navigate(context, '/ai'),
             ),
             const Spacer(),
             _NavItem(
-              '로그인',
+              tr('로그인', 'Log in'),
               '',
               currentRoute,
-              onTap: () =>
-                  _showDemoNotice(context, '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.'),
+              onTap: () => _showDemoNotice(
+                  context,
+                  tr('로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.',
+                      'In this demo, login is replaced by the reservation lookup flow.')),
             ),
             _NavItem(
-              '장바구니',
+              tr('장바구니', 'Cart'),
               '',
               currentRoute,
               onTap: () => _showCartSheet(context),
             ),
+            const SizedBox(width: 8),
+            const LangToggle(),
           ],
         ),
       ),
@@ -114,35 +121,42 @@ class _CompactNav extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 20, top: 10),
-          child: _LogoButton(),
+          padding: const EdgeInsets.only(left: 20, top: 10, right: 12),
+          child: Row(
+            children: [
+              _LogoButton(),
+              const Spacer(),
+              const LangToggle(),
+            ],
+          ),
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.only(left: 12, bottom: 8),
           child: Row(
             children: [
-              _NavItem('소개', '/', currentRoute, onTap: () => _goHome(context)),
+              _NavItem(tr('소개', 'About'), '/', currentRoute,
+                  onTap: () => _goHome(context)),
               _NavItem(
-                '메뉴',
+                tr('메뉴', 'Menu'),
                 '/menu',
                 currentRoute,
                 onTap: () => _navigate(context, '/menu'),
               ),
               _NavItem(
-                '체험',
+                tr('체험', 'Experience'),
                 '/experience',
                 currentRoute,
                 onTap: () => _navigate(context, '/experience'),
               ),
               _NavItem(
-                '케이터링',
+                tr('케이터링', 'Catering'),
                 '/catering',
                 currentRoute,
                 onTap: () => _navigate(context, '/catering'),
               ),
               _NavItem(
-                '나만의 다과 추천',
+                tr('나만의 다과 추천', 'Find Your Dagwa'),
                 '/ai',
                 currentRoute,
                 onTap: () => _navigate(context, '/ai'),
@@ -189,9 +203,9 @@ void _showCartSheet(BuildContext context) {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '장바구니 안내',
-              style: TextStyle(
+            Text(
+              tr('장바구니 안내', 'About the cart'),
+              style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
@@ -200,9 +214,10 @@ void _showCartSheet(BuildContext context) {
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              '발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
-              style: TextStyle(
+            Text(
+              tr('발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
+                  'In this demo, instead of checkout the cart leads into the experience booking and catering inquiry flows.'),
+              style: const TextStyle(
                 color: Color(0xFF6F625B),
                 fontSize: 15,
                 height: 1.6,
@@ -222,7 +237,7 @@ void _showCartSheet(BuildContext context) {
                     backgroundColor: const Color(0xFF934753),
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('케이터링 문의'),
+                  child: Text(tr('케이터링 문의', 'Catering inquiry')),
                 ),
                 OutlinedButton(
                   onPressed: () {
@@ -232,7 +247,7 @@ void _showCartSheet(BuildContext context) {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF934753),
                   ),
-                  child: const Text('체험 예약'),
+                  child: Text(tr('체험 예약', 'Book experience')),
                 ),
               ],
             ),

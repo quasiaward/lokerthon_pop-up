@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
+import '../l10n/lang.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -22,19 +23,8 @@ class FloatingHaenggungChatbot extends StatefulWidget {
 class _FloatingHaenggungChatbotState extends State<FloatingHaenggungChatbot> {
   final _controller = TextEditingController();
   bool _open = false;
-  final List<_ChatMessage> _messages = const [
-    _ChatMessage(
-      role: _Role.bot,
-      text: '안녕하세요! 행궁다과 AI 입니다.\n메뉴, 위치, 영업시간 등 궁금한 정보를\n물어보세요,',
-    ),
-  ];
+  // 사용자가 보낸 뒤부터 쌓인다. 비어 있으면 초기 인사 화면을 보여준다.
   final List<_ChatMessage> _mutableMessages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _mutableMessages.addAll(_messages);
-  }
 
   @override
   void dispose() {
@@ -56,38 +46,52 @@ class _FloatingHaenggungChatbotState extends State<FloatingHaenggungChatbot> {
 
   String _answer(String text) {
     final lower = text.toLowerCase();
-    if (text.contains('예약') || text.contains('체험') || text.contains('방문')) {
-      return '네이버 지도 기준으로는 즉시 예약 버튼보다 전화·현장 문의가 자연스럽습니다. 희망 체험 날짜, 시간, 인원, 연락처를 남기시면 매장 확인 후 안내받는 흐름으로 정리해 두었습니다.';
+    bool has(List<String> ko, [List<String> en = const []]) =>
+        ko.any(text.contains) || en.any(lower.contains);
+
+    if (has(['예약', '체험', '방문'],
+        ['book', 'reserv', 'experience', 'visit'])) {
+      return tr(
+          '네이버 지도 기준으로는 즉시 예약 버튼보다 전화·현장 문의가 자연스럽습니다. 희망 체험 날짜, 시간, 인원, 연락처를 남기시면 매장 확인 후 안내받는 흐름으로 정리해 두었습니다.',
+          'Experiences are arranged by phone or in person rather than instant booking. Leave your preferred date, time, party size, and contact, and the shop will follow up after confirming.');
     }
-    if (text.contains('케이터링') ||
-        text.contains('행사') ||
-        text.contains('주문') ||
-        text.contains('포장') ||
-        text.contains('단체')) {
-      return '케이터링 문의는 다과상, 행궁약과, 정과류, 전통차 구성을 중심으로 수량과 픽업 시간을 확인하는 방식이 좋습니다. 가장 정확한 확인 전화는 $placePhone입니다.';
+    if (has(['케이터링', '행사', '주문', '포장', '단체'],
+        ['cater', 'event', 'order', 'takeout', 'package', 'group'])) {
+      return tr(
+          '케이터링 문의는 다과상, 행궁약과, 정과류, 전통차 구성을 중심으로 수량과 픽업 시간을 확인하는 방식이 좋습니다. 가장 정확한 확인 전화는 $placePhone입니다.',
+          'For catering, we recommend confirming quantities and pickup time around dagwa trays, Haenggung yakgwa, jeonggwa, and traditional teas. The surest way to confirm is to call $placePhone.');
     }
-    if (text.contains('메뉴') || text.contains('약과') || text.contains('다과')) {
-      return '공개 메뉴 기준 대표 메뉴는 진달래화전 7,000원, 다과상 7,000원, 쌍화차 9,000원, 대추차 9,000원, 생강차 7,000원입니다. 빙수와 포장 다과도 함께 확인해 보세요.';
+    if (has(['메뉴', '약과', '다과'], ['menu', 'yakgwa', 'dagwa', 'sweets'])) {
+      return tr(
+          '공개 메뉴 기준 대표 메뉴는 진달래화전 7,000원, 다과상 7,000원, 쌍화차 9,000원, 대추차 9,000원, 생강차 7,000원입니다. 빙수와 포장 다과도 함께 확인해 보세요.',
+          'Signature items include Azalea Hwajeon 7,000 KRW, Dagwa Tray 7,000 KRW, Ssanghwa Tea 9,000 KRW, Jujube Tea 9,000 KRW, and Ginger Tea 7,000 KRW. Bingsu and takeaway sweets are also available.');
     }
-    if (text.contains('위치') || text.contains('행궁동') || text.contains('주소')) {
-      return '행궁다과 주소는 $placeRoadAddress입니다. 지번 주소는 $placeLotAddress이고, 화성행궁 관람 전후에 들르기 좋은 2층 매장입니다.';
+    if (has(['위치', '행궁동', '주소'], ['location', 'address', 'where'])) {
+      return tr(
+          '행궁다과 주소는 $placeRoadAddress입니다. 지번 주소는 $placeLotAddress이고, 화성행궁 관람 전후에 들르기 좋은 2층 매장입니다.',
+          'Our address is $placeRoadAddressEn — a 2nd-floor shop, perfect to drop by before or after visiting Hwaseong Palace.');
     }
-    if (text.contains('운영') || text.contains('영업') || text.contains('시간')) {
-      return '공개 영업정보 기준 $placeTodayStatus, $placeRegularClosed입니다. 영업시간은 변동될 수 있어 방문 전 네이버 지도나 전화($placePhone)로 확인해 주세요.';
+    if (has(['운영', '영업', '시간'], ['hour', 'open', 'time'])) {
+      return tr(
+          '공개 영업정보 기준 $placeTodayStatus, $placeRegularClosed입니다. 영업시간은 변동될 수 있어 방문 전 네이버 지도나 전화($placePhone)로 확인해 주세요.',
+          'Hours: $placeTodayStatusEn, $placeRegularClosedEn. Hours may change, so please check Naver Map or call $placePhone before visiting.');
     }
-    if (text.contains('가격') || text.contains('얼마') || text.contains('비용')) {
-      return '공개 메뉴 기준 진달래화전·다과상 7,000원, 생강차 7,000원, 대추차·쌍화차 9,000원입니다. 계절 메뉴와 포장 구성은 매장에서 확인하는 편이 정확합니다.';
-    }
-    if (lower.contains('english') || lower.contains('menu')) {
-      return 'Our menu is available in English! Visit the Menu section and select the "English" tab to view all items with English descriptions and prices.';
+    if (has(['가격', '얼마', '비용'], ['price', 'cost', 'how much'])) {
+      return tr(
+          '공개 메뉴 기준 진달래화전·다과상 7,000원, 생강차 7,000원, 대추차·쌍화차 9,000원입니다. 계절 메뉴와 포장 구성은 매장에서 확인하는 편이 정확합니다.',
+          'Azalea Hwajeon and Dagwa Tray are 7,000 KRW, Ginger Tea 7,000 KRW, and Jujube/Ssanghwa Tea 9,000 KRW. Seasonal menus and takeaway sets are best confirmed at the shop.');
     }
     if (text.contains('日本') || text.contains('予約') || text.contains('メニュー')) {
       return 'メニューは日本語でもご確認いただけます。「メニュー」セクションで「日本語」タブをお選びください。';
     }
-    if (text.contains('AI') || text.contains('추천') || text.contains('처방')) {
-      return 'AI 다과 추천 섹션에서 성향, 상황, 단맛, 식감, 차 취향을 답하면 오늘 어울리는 다과와 함께 마실 차, 차선 메뉴까지 추천해 드립니다.';
+    if (has(['AI', '추천', '처방'], ['recommend', 'taste'])) {
+      return tr(
+          'AI 다과 추천 섹션에서 성향, 상황, 단맛, 식감, 차 취향을 답하면 오늘 어울리는 다과와 함께 마실 차, 차선 메뉴까지 추천해 드립니다.',
+          'In the dagwa recommendation section, answer a few questions about your mood, taste, texture, and tea preference to get today\'s matching dagwa, a tea pairing, and a second pick.');
     }
-    return '행궁다과에 대해 더 궁금한 점이 있으시면 메뉴, 위치, 영업시간, 가격, 체험·케이터링 문의를 입력해 주세요. 전화 문의: $placePhone';
+    return tr(
+        '행궁다과에 대해 더 궁금한 점이 있으시면 메뉴, 위치, 영업시간, 가격, 체험·케이터링 문의를 입력해 주세요. 전화 문의: $placePhone',
+        'Ask about menu, location, hours, prices, or experience/catering inquiries. By phone: $placePhone');
   }
 
   @override
@@ -186,13 +190,13 @@ class _ChatWindow extends StatelessWidget {
                     size: 42,
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '행궁다과 AI 안내',
-                          style: TextStyle(
+                          tr('행궁다과 AI 안내', 'Haenggung Dagwa AI Guide'),
+                          style: const TextStyle(
                             color: Color(0xFF7C6864),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
@@ -201,10 +205,11 @@ class _ChatWindow extends StatelessWidget {
                             height: 1.15,
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
-                          'AI 챗봇을 통해 매장의 간단한 정보들을 쉽고 빠르게 알려줍니다.\n자세한 정보는 행궁다과 카카오톡 채널을 이용해주세요.',
-                          style: TextStyle(
+                          tr('AI 챗봇을 통해 매장의 간단한 정보들을 쉽고 빠르게 알려줍니다.\n자세한 정보는 행궁다과 카카오톡 채널을 이용해주세요.',
+                              'A quick AI guide to basic shop info. For details, please use the Haenggung Dagwa KakaoTalk channel.'),
+                          style: const TextStyle(
                             color: Color(0xFFAAA5A5),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
@@ -239,7 +244,7 @@ class _ChatWindow extends StatelessWidget {
                           fontSize: 18,
                         ),
                         decoration: InputDecoration(
-                          hintText: '메시지를 입력하세요.',
+                          hintText: tr('메시지를 입력하세요.', 'Type a message.'),
                           hintStyle: const TextStyle(
                             color: Color(0xFFB5B3B3),
                             fontFamily: 'Gowun Batang',
@@ -275,7 +280,7 @@ class _ChatWindow extends StatelessWidget {
                   ),
                   const SizedBox(width: 14),
                   IconButton(
-                    tooltip: '전송',
+                    tooltip: tr('전송', 'Send'),
                     onPressed: () => onSend(),
                     icon: const Icon(Icons.arrow_upward_rounded),
                     color: const Color(0xFF9B4A4F),
@@ -301,7 +306,7 @@ class _ChatBody extends StatelessWidget {
   final List<_ChatMessage> messages;
   final void Function([String? preset]) onSend;
 
-  bool get _initial => messages.length == 1 && messages.first.role == _Role.bot;
+  bool get _initial => messages.isEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -309,20 +314,24 @@ class _ChatBody extends StatelessWidget {
       width: double.infinity,
       color: const Color(0xFFFCFAFA),
       child: _initial
-          ? _InitialChatBody(message: messages.first, onSend: onSend)
+          ? _InitialChatBody(onSend: onSend)
           : _ConversationList(messages: messages, onSend: onSend),
     );
   }
 }
 
 class _InitialChatBody extends StatelessWidget {
-  const _InitialChatBody({required this.message, required this.onSend});
+  const _InitialChatBody({required this.onSend});
 
-  final _ChatMessage message;
   final void Function([String? preset]) onSend;
 
   @override
   Widget build(BuildContext context) {
+    final message = _ChatMessage(
+      role: _Role.bot,
+      text: tr('안녕하세요! 행궁다과 AI 입니다.\n메뉴, 위치, 영업시간 등 궁금한 정보를\n물어보세요,',
+          'Hello! I\'m the Haenggung Dagwa AI.\nAsk me about the menu, location,\nhours, and more.'),
+    );
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= 500;
@@ -409,9 +418,9 @@ class _QuickQuestionPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '빠른 질문',
-            style: TextStyle(
+          Text(
+            tr('빠른 질문', 'Quick questions'),
+            style: const TextStyle(
               color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
@@ -424,13 +433,18 @@ class _QuickQuestionPanel extends StatelessWidget {
             spacing: compact ? 8 : 12,
             runSpacing: compact ? 8 : 12,
             children: [
-              for (final q in const [
-                '체험 문의 방법',
-                '운영 시간',
-                '포장 주문 문의',
-                'English menu',
+              // (표시 라벨, 봇에게 보낼 질의 키워드)
+              for (final q in [
+                (tr('체험 문의 방법', 'Booking an experience'), '체험'),
+                (tr('운영 시간', 'Opening hours'), '운영'),
+                (tr('포장 주문 문의', 'Takeout orders'), '포장'),
+                (tr('가격 안내', 'Prices'), '가격'),
               ])
-                _QuickChip(label: q, compact: compact, onTap: () => onSend(q)),
+                _QuickChip(
+                  label: q.$1,
+                  compact: compact,
+                  onTap: () => onSend(q.$2),
+                ),
             ],
           ),
         ],

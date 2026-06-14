@@ -58,8 +58,10 @@ class FeaturedMenu {
 }
 
 const placeName = '행궁다과';
+const placeNameEn = 'Haenggung Dagwa';
 const placeCategory = '카페·디저트';
 const placeRoadAddress = '경기 수원시 팔달구 행궁로 25 2층';
+const placeRoadAddressEn = '25 Haenggung-ro, 2F, Paldal-gu, Suwon, Gyeonggi';
 const placeLotAddress = '경기 수원시 팔달구 남창동 26-1';
 const placePhone = '031-251-9030';
 const placeNaverUrl = 'https://naver.me/Fy2FI8D4';
@@ -67,8 +69,11 @@ const placeInstagramUrl = 'https://www.instagram.com/haenggung_da_gwa_1';
 const placeVisitorReviewText = '방문자 리뷰 1,074';
 const placeBlogReviewText = '블로그 리뷰 181';
 const placeTodayStatus = '월·수·목·금·일 10:00-21:00 / 토 10:00-22:00';
+const placeTodayStatusEn = 'Mon·Wed·Thu·Fri·Sun 10:00-21:00 / Sat 10:00-22:00';
 const placeRegularClosed = '매주 화요일 휴무';
+const placeRegularClosedEn = 'Closed every Tuesday';
 const placeShortHours = '영업시간 변동 가능 · 방문 전 네이버 지도 확인';
+const placeShortHoursEn = 'Hours may vary · check Naver Map before visiting';
 
 const placeHighlights = ['화성행궁 옆 2층', '떡공예 명인 운영', '다과상·전통차', '빙수·포장 다과'];
 

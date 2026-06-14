@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/lang.dart';
 import 'common.dart';
 import 'watercolor_deco.dart';
 
@@ -14,6 +15,7 @@ const _trayAsset = 'assets/figma/catering_figma_tray_6_display.png';
 
 const _yakgwa = _DagwaOption(
   name: '행궁약과',
+  nameEn: 'Haenggung Yakgwa',
   price: '5,000',
   priceValue: 5000,
   image: 'assets/figma/catering_figma_yakgwa.png',
@@ -23,6 +25,7 @@ const _yakgwa = _DagwaOption(
 
 const _hwajeon = _DagwaOption(
   name: '진달래 화전',
+  nameEn: 'Azalea Hwajeon',
   price: '5,000',
   priceValue: 5000,
   image: 'assets/figma/catering_figma_hwajeon.png',
@@ -32,6 +35,7 @@ const _hwajeon = _DagwaOption(
 
 const _songpyeon = _DagwaOption(
   name: '송편',
+  nameEn: 'Songpyeon',
   price: '5,000',
   priceValue: 5000,
   image: 'assets/figma/catering_figma_songpyeon.png',
@@ -41,6 +45,7 @@ const _songpyeon = _DagwaOption(
 
 const _osakgyeongdan = _DagwaOption(
   name: '오색경단',
+  nameEn: 'Five-color Gyeongdan',
   price: '5,000',
   priceValue: 5000,
   image: 'assets/figma/catering_figma_osakgyeongdan.png',
@@ -139,7 +144,7 @@ class _CateringSectionState extends State<CateringSection> {
                   child: Column(
                     children: [
                       Text(
-                        '6구 다과 상자',
+                        tr('6구 다과 상자', '6-Piece Dagwa Box'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: const Color(0xFF534344),
@@ -152,7 +157,8 @@ class _CateringSectionState extends State<CateringSection> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '원하는 다과로 상자를 구성해주세요.',
+                        tr('원하는 다과로 상자를 구성해주세요.',
+                            'Compose your box with the dagwa you like.'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: const Color(0xFF534344),
@@ -286,9 +292,15 @@ class _StatusText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeLabel = activeSlot == null
-        ? '구성 완료'
-        : '${activeSlot! + 1}번 칸 선택';
+    final String activeLabel;
+    if (activeSlot != null) {
+      activeLabel = tr('${activeSlot! + 1}번 칸 선택',
+          'Slot ${activeSlot! + 1} selected');
+    } else if (filledCount >= 6) {
+      activeLabel = tr('구성 완료', 'Box complete');
+    } else {
+      activeLabel = tr('칸을 선택하세요', 'Tap a slot to select');
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,9 +308,9 @@ class _StatusText extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '상자 구성',
-              style: TextStyle(
+            Text(
+              tr('상자 구성', 'Your box'),
+              style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
@@ -320,7 +332,7 @@ class _StatusText extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Text(
-              '${_formatWon(totalPrice)}원',
+              tr('${_formatWon(totalPrice)}원', '${_formatWon(totalPrice)} KRW'),
               style: const TextStyle(
                 color: Color(0xFF837777),
                 fontFamily: 'Plus Jakarta Sans',
@@ -440,10 +452,12 @@ class _UsageGuideCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 720;
-    final pills = const [
-      _GuidePill(icon: Icons.touch_app_outlined, label: '칸 선택'),
-      _GuidePill(icon: Icons.add_circle_outline_rounded, label: '다과 담기'),
-      _GuidePill(icon: Icons.open_with_rounded, label: '끌어서 칸 교체'),
+    final pills = [
+      _GuidePill(icon: Icons.touch_app_outlined, label: tr('칸 선택', 'Select slot')),
+      _GuidePill(
+          icon: Icons.add_circle_outline_rounded, label: tr('다과 담기', 'Add dagwa')),
+      _GuidePill(
+          icon: Icons.open_with_rounded, label: tr('끌어서 칸 교체', 'Drag to swap')),
     ];
 
     return ConstrainedBox(
@@ -475,7 +489,8 @@ class _UsageGuideCard extends StatelessWidget {
                   Flexible(
                     fit: compact ? FlexFit.loose : FlexFit.tight,
                     child: Text(
-                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 다른 칸으로 끌어다 놓아 자리를 바꿀 수 있습니다.',
+                      tr('상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 다른 칸으로 끌어다 놓아 자리를 바꿀 수 있습니다.',
+                          'Tap a box slot first, then choose Add on a dagwa card below. Drag a placed dagwa onto another slot to swap their positions.'),
                       style: TextStyle(
                         color: const Color(0xFF8B7D7A),
                         fontFamily: 'Gowun Batang',
@@ -502,14 +517,15 @@ class _GuideTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.auto_awesome_rounded, color: Color(0xFF934753), size: 18),
-        SizedBox(width: 7),
+        const Icon(Icons.auto_awesome_rounded,
+            color: Color(0xFF934753), size: 18),
+        const SizedBox(width: 7),
         Text(
-          '상자 구성 방법',
-          style: TextStyle(
+          tr('상자 구성 방법', 'How to build your box'),
+          style: const TextStyle(
             color: Color(0xFF534344),
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
@@ -571,11 +587,11 @@ class _SelectorHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 760),
-      child: const Row(
+      child: Row(
         children: [
           Text(
-            '다과 선택',
-            style: TextStyle(
+            tr('다과 선택', 'Choose dagwa'),
+            style: const TextStyle(
               color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
@@ -584,8 +600,8 @@ class _SelectorHeading extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          SizedBox(width: 14),
-          Expanded(child: Divider(color: Color(0xFFE9DDD8))),
+          const SizedBox(width: 14),
+          const Expanded(child: Divider(color: Color(0xFFE9DDD8))),
         ],
       ),
     );
@@ -948,7 +964,7 @@ class _DagwaCardState extends State<_DagwaCard> {
               return Column(
                 children: [
                   Text(
-                    widget.option.price,
+                    tr(widget.option.price, '${widget.option.price} KRW'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Color(0xFF4A3D3A),
@@ -960,7 +976,7 @@ class _DagwaCardState extends State<_DagwaCard> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.option.name,
+                    tr(widget.option.name, widget.option.nameEn),
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1028,7 +1044,7 @@ class _AddDagwaButton extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '담기',
+            tr('담기', 'Add'),
             style: TextStyle(
               color: hovered ? Colors.white : const Color(0xFF934753),
               fontFamily: 'Gowun Batang',
@@ -1047,6 +1063,7 @@ class _AddDagwaButton extends StatelessWidget {
 class _DagwaOption {
   const _DagwaOption({
     required this.name,
+    required this.nameEn,
     required this.price,
     required this.priceValue,
     required this.image,
@@ -1055,6 +1072,7 @@ class _DagwaOption {
   });
 
   final String name;
+  final String nameEn;
   final String price;
   final int priceValue;
   final String image;

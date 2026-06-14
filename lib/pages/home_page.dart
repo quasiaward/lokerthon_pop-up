@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
+import '../l10n/lang.dart';
 import '../widgets/brand_logo.dart';
 import '../widgets/floating_chatbot.dart';
 import '../widgets/footer.dart';
+import '../widgets/lang_toggle.dart';
 import '../widgets/watercolor_deco.dart';
 
 const _heroImage = 'assets/figma/home_hero.png';
@@ -75,10 +77,12 @@ class _HomePageState extends State<HomePage> {
                     onLoginTap: () => ScaffoldMessenger.of(context)
                       ..hideCurrentSnackBar()
                       ..showSnackBar(
-                        const SnackBar(
-                          content: Text('로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.'),
+                        SnackBar(
+                          content: Text(tr(
+                              '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.',
+                              'In this demo, login is replaced by the reservation lookup flow.')),
                           behavior: SnackBarBehavior.floating,
-                          backgroundColor: Color(0xFF534344),
+                          backgroundColor: const Color(0xFF534344),
                         ),
                       ),
                     onCartTap: () => _showCartSheet(context),
@@ -120,9 +124,9 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '장바구니 안내',
-              style: TextStyle(
+            Text(
+              tr('장바구니 안내', 'About the cart'),
+              style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
@@ -131,9 +135,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              '발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
-              style: TextStyle(
+            Text(
+              tr('발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
+                  'In this demo, instead of checkout the cart leads into the experience booking and catering inquiry flows.'),
+              style: const TextStyle(
                 color: Color(0xFF6F625B),
                 fontSize: 15,
                 height: 1.6,
@@ -153,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: const Color(0xFF934753),
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('케이터링 문의'),
+                  child: Text(tr('케이터링 문의', 'Catering inquiry')),
                 ),
                 OutlinedButton(
                   onPressed: () {
@@ -163,7 +168,7 @@ class _HomePageState extends State<HomePage> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF934753),
                   ),
-                  child: const Text('체험 예약'),
+                  child: Text(tr('체험 예약', 'Book experience')),
                 ),
               ],
             ),
@@ -310,11 +315,14 @@ class _HeroNav extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _HeroNavBtn('소개', onTap: onAboutTap),
-                  _HeroNavBtn('메뉴', onTap: onMenuTap),
-                  _HeroNavBtn('체험', onTap: onExperienceTap),
-                  _HeroNavBtn('케이터링', onTap: onCateringTap),
-                  _HeroNavBtn('나만의 다과 추천', onTap: onAiTap),
+                  _HeroNavBtn(tr('소개', 'About'), onTap: onAboutTap),
+                  _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
+                  _HeroNavBtn(tr('체험', 'Experience'), onTap: onExperienceTap),
+                  _HeroNavBtn(tr('케이터링', 'Catering'), onTap: onCateringTap),
+                  _HeroNavBtn(tr('나만의 다과 추천', 'Find Your Dagwa'),
+                      onTap: onAiTap),
+                  const SizedBox(width: 4),
+                  const LangToggle(light: true),
                 ],
               ),
             ),
@@ -336,14 +344,16 @@ class _HeroNav extends StatelessWidget {
               onTap: () => Navigator.pushReplacementNamed(context, '/'),
             ),
             const Spacer(),
-            _HeroNavBtn('소개', onTap: onAboutTap),
-            _HeroNavBtn('메뉴', onTap: onMenuTap),
-            _HeroNavBtn('체험', onTap: onExperienceTap),
-            _HeroNavBtn('케이터링', onTap: onCateringTap),
-            _HeroNavBtn('나만의 다과 추천', onTap: onAiTap),
+            _HeroNavBtn(tr('소개', 'About'), onTap: onAboutTap),
+            _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
+            _HeroNavBtn(tr('체험', 'Experience'), onTap: onExperienceTap),
+            _HeroNavBtn(tr('케이터링', 'Catering'), onTap: onCateringTap),
+            _HeroNavBtn(tr('나만의 다과 추천', 'Find Your Dagwa'), onTap: onAiTap),
             const Spacer(),
-            _HeroNavBtn('로그인', onTap: onLoginTap),
-            _HeroNavBtn('장바구니', onTap: onCartTap),
+            _HeroNavBtn(tr('로그인', 'Log in'), onTap: onLoginTap),
+            _HeroNavBtn(tr('장바구니', 'Cart'), onTap: onCartTap),
+            const SizedBox(width: 6),
+            const LangToggle(light: true),
           ],
         ),
       ),
@@ -422,7 +432,8 @@ class _HeroContent extends StatelessWidget {
           SizedBox(
             width: isWide ? 560 : double.infinity,
             child: Text(
-              '화성행궁 곁,\n명인이 빚은 다과.',
+              tr('화성행궁 곁,\n명인이 빚은 다과.',
+                  'Beside Hwaseong Palace,\ndagwa shaped by master hands.'),
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Gowun Batang',
@@ -436,9 +447,10 @@ class _HeroContent extends StatelessWidget {
           const SizedBox(height: 38),
           SizedBox(
             width: isWide ? 495 : double.infinity,
-            child: const Text(
-              '장인의 손길로 빚어낸 행궁다과의 섬세한 맛과 멋을 경험해보세요. 한 점의 다과에 담긴 전통과 느린 삶의 이야기를 전합니다.',
-              style: TextStyle(
+            child: Text(
+              tr('장인의 손길로 빚어낸 행궁다과의 섬세한 맛과 멋을 경험해보세요. 한 점의 다과에 담긴 전통과 느린 삶의 이야기를 전합니다.',
+                  'Experience the delicate taste and beauty of Haenggung Dagwa, crafted by artisan hands. Each piece carries a story of tradition and an unhurried life.'),
+              style: const TextStyle(
                 color: Color(0xFFF2F2ED),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
@@ -470,24 +482,29 @@ class _HeroInfoPanel extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          _InfoRow(icon: Icons.place_outlined, label: '위치', value: '행궁로 25 2층'),
-          SizedBox(height: 20),
+        children: [
+          _InfoRow(
+            icon: Icons.place_outlined,
+            label: tr('위치', 'Location'),
+            value: tr('행궁로 25 2층', '25 Haenggung-ro, 2F'),
+          ),
+          const SizedBox(height: 20),
           _InfoRow(
             icon: Icons.schedule_outlined,
-            label: '운영',
-            value: '월,수,목,금,일 10:00-21:00 / 토 10:00-22:00',
+            label: tr('운영', 'Hours'),
+            value: tr('월,수,목,금,일 10:00-21:00 / 토 10:00-22:00',
+                'Mon, Wed, Thu, Fri, Sun 10:00-21:00 / Sat 10:00-22:00'),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _InfoRow(
             icon: Icons.event_busy_outlined,
-            label: '휴무',
-            value: '매주 화요일 정기휴무',
+            label: tr('휴무', 'Closed'),
+            value: tr('매주 화요일 정기휴무', 'Closed every Tuesday'),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _InfoRow(
             icon: Icons.info_outline_rounded,
-            label: '문의',
+            label: tr('문의', 'Contact'),
             value: placePhone,
           ),
         ],
@@ -603,12 +620,14 @@ class _BrandSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: padding),
                 child: Column(
                   children: [
-                    const _SectionTitle(
+                    _SectionTitle(
                       eyebrow: 'BRAND',
-                      eyebrowColor: Color(0xFFE06B7E),
-                      title: '한국 다과의 서정을 담은 브랜드',
-                      description:
+                      eyebrowColor: const Color(0xFFE06B7E),
+                      title: tr('한국 다과의 서정을 담은 브랜드',
+                          'A brand that captures the poetry of Korean dagwa'),
+                      description: tr(
                           '행궁다과는 화성행궁의 정취와 한국 다과의 정서를 담은 브랜드입니다.\n전통 다과를 현대적으로 재해석하여 정갈한 맛과 계절의 이야기를 전하며, 바쁜 일상 속 잠시 머물러 쉬어갈 수 있는 여유로운 시간을 선물합니다.',
+                          'Haenggung Dagwa is a brand inspired by the mood of Hwaseong Palace and the spirit of Korean dagwa.\nReinterpreting traditional sweets for today, it offers refined flavors and seasonal stories — a moment of calm to pause within a busy day.'),
                     ),
                     const SizedBox(height: 72),
                     if (isWide)
@@ -620,26 +639,29 @@ class _BrandSection extends StatelessWidget {
                             children: [
                               SizedBox(
                                 width: col,
-                                child: const _CaptionedImage(
+                                child: _CaptionedImage(
                                   asset: _brandWindowImage,
-                                  caption: '화성행궁 산책길의 찻집',
+                                  caption: tr('화성행궁 산책길의 찻집',
+                                      'A tea house on the Hwaseong Palace walk'),
                                   aspectRatio: 559 / 498,
                                 ),
                               ),
                               const SizedBox(width: 30),
                               SizedBox(
                                 width: col,
-                                child: const Column(
+                                child: Column(
                                   children: [
                                     _CaptionedImage(
                                       asset: _brandTrayImage,
-                                      caption: '떡과 다과를 정갈하게',
+                                      caption: tr('떡과 다과를 정갈하게',
+                                          'Rice cakes and sweets, elegantly set'),
                                       aspectRatio: 559 / 234,
                                     ),
-                                    SizedBox(height: 30),
+                                    const SizedBox(height: 30),
                                     _CaptionedImage(
                                       asset: _brandTableImage,
-                                      caption: '계절 메뉴와 작은 경험들',
+                                      caption: tr('계절 메뉴와 작은 경험들',
+                                          'Seasonal menus and small experiences'),
                                       aspectRatio: 559 / 234,
                                     ),
                                   ],
@@ -650,23 +672,26 @@ class _BrandSection extends StatelessWidget {
                         },
                       )
                     else
-                      const Column(
+                      Column(
                         children: [
                           _CaptionedImage(
                             asset: _brandWindowImage,
-                            caption: '화성행궁 산책길의 찻집',
+                            caption: tr('화성행궁 산책길의 찻집',
+                                'A tea house on the Hwaseong Palace walk'),
                             aspectRatio: 559 / 498,
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           _CaptionedImage(
                             asset: _brandTrayImage,
-                            caption: '떡과 다과를 정갈하게',
+                            caption: tr('떡과 다과를 정갈하게',
+                                'Rice cakes and sweets, elegantly set'),
                             aspectRatio: 559 / 234,
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           _CaptionedImage(
                             asset: _brandTableImage,
-                            caption: '계절 메뉴와 작은 경험들',
+                            caption: tr('계절 메뉴와 작은 경험들',
+                                'Seasonal menus and small experiences'),
                             aspectRatio: 559 / 234,
                           ),
                         ],
@@ -751,27 +776,27 @@ class _MenuPreviewSection extends StatelessWidget {
     final isWide = MediaQuery.sizeOf(context).width >= 980;
     final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
 
-    const cards = [
+    final cards = [
       _MenuCard(
-        title: '다과상 A',
-        price: '7,000 원',
+        title: tr('다과상 A', 'Dagwa Set A'),
+        price: tr('7,000 원', '7,000 KRW'),
         asset: _menuDagwasangImage,
-        background: Color(0xFFEEE2E2),
-        border: Color(0xFFE8B3B3),
+        background: const Color(0xFFEEE2E2),
+        border: const Color(0xFFE8B3B3),
       ),
       _MenuCard(
-        title: '녹차빙수',
-        price: '15,000 원',
+        title: tr('녹차빙수', 'Green Tea Bingsu'),
+        price: tr('15,000 원', '15,000 KRW'),
         asset: _menuBingsuImage,
-        background: Color(0xFFE7EBE3),
-        border: Color(0xFF88A77E),
+        background: const Color(0xFFE7EBE3),
+        border: const Color(0xFF88A77E),
       ),
       _MenuCard(
-        title: '행궁약과',
-        price: '2,500 원',
+        title: tr('행궁약과', 'Haenggung Yakgwa'),
+        price: tr('2,500 원', '2,500 KRW'),
         asset: _menuYakgwaImage,
-        background: Color(0xFFEFE7CF),
-        border: Color(0xFFAF915E),
+        background: const Color(0xFFEFE7CF),
+        border: const Color(0xFFAF915E),
       ),
     ];
 
@@ -796,12 +821,13 @@ class _MenuPreviewSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: padding),
                 child: Column(
                   children: [
-                    const _SectionTitle(
+                    _SectionTitle(
                       eyebrow: 'MENU',
-                      eyebrowColor: Color(0xFF99C679),
-                      title: '행궁다과의 대표 메뉴',
-                      description:
+                      eyebrowColor: const Color(0xFF99C679),
+                      title: tr('행궁다과의 대표 메뉴', 'Signature menu of Haenggung Dagwa'),
+                      description: tr(
                           '행궁다과의 대표 메뉴는 약과, 정과, 다식 등 한국 전통 다과를 중심으로 구성됩니다.\n계절의 재료와 차를 곁들여 정갈하게 준비한 한 상은 바쁜 일상 속 잠시 쉬어갈 수 있는 여유를 선물합니다.',
+                          'Our signature menu centers on Korean traditional sweets such as yakgwa, jeonggwa, and dasik.\nElegantly prepared with seasonal ingredients and tea, each setting offers a restful pause within a busy day.'),
                     ),
                     const SizedBox(height: 70),
                     if (isWide)
@@ -847,9 +873,9 @@ class _MenuPreviewSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(50),
                           ),
                         ),
-                        child: const Text(
-                          '메뉴 자세히 보러가기',
-                          style: TextStyle(
+                        child: Text(
+                          tr('메뉴 자세히 보러가기', 'View full menu'),
+                          style: const TextStyle(
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
                             fontSize: 20,
@@ -982,9 +1008,10 @@ class _ExperienceSection extends StatelessWidget {
 
     final cards = [
       _ExpCard(
-        title: '취향 테스트',
-        body: '개인의 취향을 분석해 어울리는 다과와 차를 추천합니다.',
-        action: '시작하기',
+        title: tr('취향 테스트', 'Taste Test'),
+        body: tr('개인의 취향을 분석해 어울리는 다과와 차를 추천합니다.',
+            'We analyze your taste and recommend the dagwa and tea that suit you.'),
+        action: tr('시작하기', 'Start'),
         icon: Icons.account_tree_outlined,
         iconOverlay: Icons.edit_rounded,
         iconColor: const Color(0xFF9B4A59),
@@ -993,9 +1020,10 @@ class _ExperienceSection extends StatelessWidget {
         onTap: onTasteTap,
       ),
       _ExpCard(
-        title: '다과 클래스',
-        body: '직접 빚고 맛보며 한국 다과의 이야기를 배워봅니다.',
-        action: '예약하기',
+        title: tr('다과 클래스', 'Dagwa Class'),
+        body: tr('직접 빚고 맛보며 한국 다과의 이야기를 배워봅니다.',
+            'Shape and taste them yourself while learning the story of Korean dagwa.'),
+        action: tr('예약하기', 'Book'),
         icon: Icons.school_outlined,
         iconColor: const Color(0xFF557057),
         tint: const Color(0xFFDCE9C1),
@@ -1003,9 +1031,10 @@ class _ExperienceSection extends StatelessWidget {
         onTap: onClassTap,
       ),
       _ExpCard(
-        title: '맞춤형 케이터링',
-        body: '행사 성격과 인원에 맞춘 다과 세트를 구성합니다.',
-        action: '문의하기',
+        title: tr('맞춤형 케이터링', 'Custom Catering'),
+        body: tr('행사 성격과 인원에 맞춘 다과 세트를 구성합니다.',
+            'We compose a dagwa set tailored to your event and party size.'),
+        action: tr('문의하기', 'Inquire'),
         icon: Icons.restaurant_rounded,
         iconColor: const Color(0xFF7D5724),
         tint: const Color(0xFFFFDEA7),
@@ -1035,12 +1064,14 @@ class _ExperienceSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: padding),
                 child: Column(
                   children: [
-                    const _SectionTitle(
+                    _SectionTitle(
                       eyebrow: 'Special Experiences',
-                      eyebrowColor: Color(0xFFA38650),
-                      title: '행궁다과의 특별한 경험',
-                      description:
+                      eyebrowColor: const Color(0xFFA38650),
+                      title: tr('행궁다과의 특별한 경험',
+                          'Special experiences at Haenggung Dagwa'),
+                      description: tr(
                           '한 조각의 다과에는 계절의 풍경과 만드는 이의 정성이 담겨 있습니다.\n행궁다과는 취향을 발견하고, 직접 만들고, 함께 나누는 경험을 통해 다과가 가진 이야기를 전합니다.\n맛을 넘어 추억으로 남는 순간을 만나보세요.',
+                          'Each piece of dagwa holds a season\'s scenery and the maker\'s care.\nThrough discovering your taste, making by hand, and sharing together, Haenggung Dagwa tells the story within each sweet.\nMeet moments that linger as memories, beyond taste.'),
                     ),
                     const SizedBox(height: 68),
                     if (isWide)

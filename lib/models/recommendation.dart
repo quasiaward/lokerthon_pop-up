@@ -80,34 +80,44 @@ class RecommendationResult {
   const RecommendationResult({
     required this.productId,
     required this.productName,
+    this.productNameEn = '',
     required this.dagwaType,
     required this.typeDescription,
     required this.profileTitle,
+    this.profileTitleEn = '',
     required this.headline,
     required this.aiSummary,
+    this.aiSummaryEn = '',
     required this.confidence,
     required this.signals,
     required this.analysisSteps,
     required this.reasons,
     required this.teaPairing,
+    this.teaPairingEn = '',
     required this.secondaryMenuName,
+    this.secondaryMenuNameEn = '',
     required this.packagingMessage,
     required this.tags,
   });
 
   final String productId;
   final String productName;
+  final String productNameEn;
   final String dagwaType;
   final String typeDescription;
   final String profileTitle;
+  final String profileTitleEn;
   final String headline;
   final String aiSummary;
+  final String aiSummaryEn;
   final int confidence;
   final List<AiSignal> signals;
   final List<String> analysisSteps;
   final List<String> reasons;
   final String teaPairing;
+  final String teaPairingEn;
   final String secondaryMenuName;
+  final String secondaryMenuNameEn;
   final String packagingMessage;
   final List<String> tags;
 }

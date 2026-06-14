@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/lang.dart';
 import '../models/recommendation.dart';
 import '../services/recommendation_service.dart';
 import 'watercolor_deco.dart';
@@ -17,12 +18,16 @@ const _serifFallback = [
 class _QuizOption {
   const _QuizOption({
     required this.title,
+    required this.titleEn,
     required this.subtitle,
+    required this.subtitleEn,
     required this.bgColor,
     required this.imagePath,
   });
-  final String title;
+  final String title; // 로직 키(영어 표시는 titleEn 사용)
+  final String titleEn;
   final String subtitle;
+  final String subtitleEn;
   final Color bgColor;
   final String imagePath;
 }
@@ -30,15 +35,23 @@ class _QuizOption {
 class _QuizQ {
   const _QuizQ({
     required this.before,
+    required this.beforeEn,
     required this.keyword,
+    required this.keywordEn,
     required this.after,
+    required this.afterEn,
     required this.hint,
+    required this.hintEn,
     required this.options,
   });
   final String before;
+  final String beforeEn;
   final String keyword;
+  final String keywordEn;
   final String after;
+  final String afterEn;
   final String hint;
+  final String hintEn;
   final List<_QuizOption> options;
 }
 
@@ -50,31 +63,43 @@ const _inkBg = Color(0xFFECEFF1);
 const _questions = [
   _QuizQ(
     before: '오늘 당신의 ',
+    beforeEn: 'What color is your ',
     keyword: '기분',
+    keywordEn: 'mood',
     after: '은 어떤 색인가요?',
+    afterEn: ' today?',
     hint: '지금 가장 이끌리는 색감을 골라주세요.',
+    hintEn: 'Pick the color you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '매화 분홍',
+        titleEn: 'Plum Blossom Pink',
         subtitle: '설레고 따뜻한 매화의 온기',
+        subtitleEn: 'The fluttery warmth of plum blossoms',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q1_c1_pink.jpg',
       ),
       _QuizOption(
         title: '소나무 청록',
+        titleEn: 'Pine Teal',
         subtitle: '차분하고 싱그러운 솔바람',
+        subtitleEn: 'A calm, fresh pine breeze',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q1_c2_teal.jpg',
       ),
       _QuizOption(
         title: '유자 노랑',
+        titleEn: 'Yuzu Yellow',
         subtitle: '생기 있고 달콤한 유자의 향',
+        subtitleEn: 'Lively, sweet yuzu scent',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q1_c3_yellow.jpg',
       ),
       _QuizOption(
         title: '먹색',
+        titleEn: 'Ink Black',
         subtitle: '깊고 단단한 전통의 무게',
+        subtitleEn: 'The deep, solid weight of tradition',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q1_c4_ink.jpg',
       ),
@@ -82,31 +107,43 @@ const _questions = [
   ),
   _QuizQ(
     before: '오늘 마음의 ',
+    beforeEn: 'What\'s the ',
     keyword: '날씨',
+    keywordEn: 'weather',
     after: '는 어떤가요?',
+    afterEn: ' in your heart today?',
     hint: '지금 가장 이끌리는 날씨를 골라주세요.',
+    hintEn: 'Pick the weather you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '맑고 활기참',
+        titleEn: 'Sunny & lively',
         subtitle: '설레고 따뜻한 햇빛의 온기',
+        subtitleEn: 'The warm glow of bright sunshine',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q2_c1_sunny.jpg',
       ),
       _QuizOption(
         title: '흐리고 지침',
+        titleEn: 'Cloudy & weary',
         subtitle: '차분하고 조용한 쉬고픈 날',
+        subtitleEn: 'A calm, quiet day for rest',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q2_c2_rainy.jpg',
       ),
       _QuizOption(
         title: '잔잔하고 평온',
+        titleEn: 'Calm & peaceful',
         subtitle: '생기 있고 달콤한 유자의 향',
+        subtitleEn: 'Gentle and serene',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q2_c3_calm.jpg',
       ),
       _QuizOption(
         title: '설레고 두근거려요',
+        titleEn: 'Fluttery & excited',
         subtitle: '깊고 단단한 전통의 무게',
+        subtitleEn: 'Heart racing with anticipation',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q2_c4_excited.jpg',
       ),
@@ -114,31 +151,43 @@ const _questions = [
   ),
   _QuizQ(
     before: '오늘 이 자리, ',
+    beforeEn: 'Who are you ',
     keyword: '누구',
+    keywordEn: 'with',
     after: '와 함께 하셨나요?',
+    afterEn: ' here today?',
     hint: '함께하고 싶은 누군가를 선택해주세요.',
+    hintEn: 'Choose someone you\'d like to be with.',
     options: [
       _QuizOption(
         title: '소중한 사람',
+        titleEn: 'A loved one',
         subtitle: '따뜻하고 늘 곁에 있어주는 사람',
+        subtitleEn: 'Warm, always by your side',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q3_c1_loved.jpg',
       ),
       _QuizOption(
         title: '혼자',
+        titleEn: 'Alone',
         subtitle: '온전한 나와의 시간',
+        subtitleEn: 'Time fully your own',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q3_c2_alone.jpg',
       ),
       _QuizOption(
         title: '가족',
+        titleEn: 'Family',
         subtitle: '평생 함께 있어줄 동반자',
+        subtitleEn: 'Lifelong companions',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q3_c3_family.jpg',
       ),
       _QuizOption(
         title: '친구',
+        titleEn: 'Friends',
         subtitle: '깊고 단단한 우정',
+        subtitleEn: 'Deep, steady friendship',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q3_c4_friend.jpg',
       ),
@@ -146,31 +195,43 @@ const _questions = [
   ),
   _QuizQ(
     before: '오늘 어떤 ',
+    beforeEn: 'Which ',
     keyword: '식감',
+    keywordEn: 'texture',
     after: '이 지금 당신을 달래줄 것 같나요?',
+    afterEn: ' would soothe you right now?',
     hint: '지금 가장 이끌리는 식감을 골라주세요.',
+    hintEn: 'Pick the texture you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '부드러운',
+        titleEn: 'Soft',
         subtitle: '입안에서 부드럽게 녹아내리는 식감',
+        subtitleEn: 'Melts softly in your mouth',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q4_c1_soft.jpg',
       ),
       _QuizOption(
         title: '바삭한',
+        titleEn: 'Crisp',
         subtitle: '가볍게 부서지는 즐거움',
+        subtitleEn: 'The joy of a light, crisp bite',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q4_c2_crispy.jpg',
       ),
       _QuizOption(
         title: '쫀득한',
+        titleEn: 'Chewy',
         subtitle: '천천히 오래 남는 만족감',
+        subtitleEn: 'Slow, lingering satisfaction',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q4_c3_chewy.jpg',
       ),
       _QuizOption(
         title: '촉촉한',
+        titleEn: 'Moist',
         subtitle: '촉촉하고 은은한 식감',
+        subtitleEn: 'Moist with a gentle finish',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q4_c4_moist.jpg',
       ),
@@ -178,31 +239,43 @@ const _questions = [
   ),
   _QuizQ(
     before: '지금 이 순간 어떤 ',
+    beforeEn: 'Which ',
     keyword: '계절',
+    keywordEn: 'season',
     after: '이 느껴지시나요?',
+    afterEn: ' do you feel right now?',
     hint: '지금 가장 이끌리는 계절을 골라주세요.',
+    hintEn: 'Pick the season you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '봄',
+        titleEn: 'Spring',
         subtitle: '설레고 부드러운 꽃향기의 시작',
+        subtitleEn: 'The soft, fluttery start of blossoms',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q5_c1_spring.jpg',
       ),
       _QuizOption(
         title: '여름',
+        titleEn: 'Summer',
         subtitle: '싱그럽고 생기 넘치는 계절의 온기',
+        subtitleEn: 'Fresh, vivid summer warmth',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q5_c2_summer.jpg',
       ),
       _QuizOption(
         title: '가을',
+        titleEn: 'Autumn',
         subtitle: '깊어지는 향과 차분한 여운',
+        subtitleEn: 'Deepening aromas and a calm afterglow',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q5_c3_autumn.jpg',
       ),
       _QuizOption(
         title: '겨울',
+        titleEn: 'Winter',
         subtitle: '고요하고 포근한 휴식의 시간',
+        subtitleEn: 'A still, cozy time of rest',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q5_c4_winter.jpg',
       ),
@@ -210,31 +283,43 @@ const _questions = [
   ),
   _QuizQ(
     before: '어떤 ',
+    beforeEn: 'Which ',
     keyword: '모양',
+    keywordEn: 'shape',
     after: '이 눈길을 끄시나요?',
+    afterEn: ' catches your eye?',
     hint: '지금 가장 이끌리는 모양을 골라주세요.',
+    hintEn: 'Pick the shape you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '둥근 모양',
+        titleEn: 'Round',
         subtitle: '부드럽고 포근한 안정감',
+        subtitleEn: 'Soft, cozy reassurance',
         bgColor: _pinkBg,
         imagePath: 'assets/figma/quiz/q6_c1_round.jpg',
       ),
       _QuizOption(
         title: '물결 모양',
+        titleEn: 'Wavy',
         subtitle: '자연스럽고 유연한 움직임',
+        subtitleEn: 'Natural, flowing movement',
         bgColor: _tealBg,
         imagePath: 'assets/figma/quiz/q6_c2_wave.jpg',
       ),
       _QuizOption(
         title: '직선 모양',
+        titleEn: 'Linear',
         subtitle: '정돈되고 균형 잡힌 아름다움',
+        subtitleEn: 'Tidy, balanced beauty',
         bgColor: _yellowBg,
         imagePath: 'assets/figma/quiz/q6_c3_linear.jpg',
       ),
       _QuizOption(
         title: '별·꽃 모양',
+        titleEn: 'Star or flower',
         subtitle: '개성과 경험이 담긴 모양',
+        subtitleEn: 'A shape full of character and story',
         bgColor: _inkBg,
         imagePath: 'assets/figma/quiz/q6_c4_star.jpg',
       ),
@@ -407,17 +492,23 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
 const _previewCards = [
   (
     subtitle: '겉바속촉 MZ',
+    subtitleEn: 'Crisp-outside, soft-inside',
     title: '행궁약과',
+    titleEn: 'Haenggung Yakgwa',
     image: 'assets/figma/recommend_yakgwa.png',
   ),
   (
     subtitle: '다섯잎 매력둥이',
+    subtitleEn: 'Five-petal charmer',
     title: '진달래 화전',
+    titleEn: 'Azalea Hwajeon',
     image: 'assets/figma/recommend_hwajeon.png',
   ),
   (
     subtitle: '말랑콩떡 사랑둥이',
+    subtitleEn: 'Soft & sweet sweetheart',
     title: '송편',
+    titleEn: 'Songpyeon',
     image: 'assets/figma/recommend_songpyeon.png',
   ),
 ];
@@ -440,10 +531,10 @@ class _LandingView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                const Text(
-                  '나만의 다과 추천',
+                Text(
+                  tr('나만의 다과 추천', 'Find Your Dagwa'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Color(0xFF534344),
                     fontFamily: 'Gowun Batang',
                     fontFamilyFallback: _serifFallback,
@@ -486,11 +577,11 @@ class _LandingView extends StatelessWidget {
                     ),
                     elevation: 4,
                   ),
-                  child: const FittedBox(
+                  child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      '오늘의 다과 추천 받으러 가기',
-                      style: TextStyle(
+                      tr('오늘의 다과 추천 받으러 가기', 'Get today\'s dagwa pick'),
+                      style: const TextStyle(
                         fontFamily: 'Gowun Batang',
                         fontFamilyFallback: _serifFallback,
                         fontSize: 30,
@@ -511,7 +602,14 @@ class _LandingView extends StatelessWidget {
 
 class _PreviewCard extends StatelessWidget {
   const _PreviewCard({required this.card});
-  final ({String subtitle, String title, String image}) card;
+  final ({
+    String subtitle,
+    String subtitleEn,
+    String title,
+    String titleEn,
+    String image,
+  })
+  card;
 
   @override
   Widget build(BuildContext context) {
@@ -533,7 +631,7 @@ class _PreviewCard extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            card.subtitle,
+            tr(card.subtitle, card.subtitleEn),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF9A9285),
@@ -544,7 +642,7 @@ class _PreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            card.title,
+            tr(card.title, card.titleEn),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF534344),
@@ -695,7 +793,7 @@ class _QuizView extends StatelessWidget {
                                   Icons.arrow_back_ios_new_rounded,
                                   size: 14,
                                 ),
-                                label: const Text('이전 질문'),
+                                label: Text(tr('이전 질문', 'Previous')),
                                 style: TextButton.styleFrom(
                                   foregroundColor: const Color(0xFF534344),
                                   textStyle: const TextStyle(
@@ -723,7 +821,7 @@ class _QuizView extends StatelessWidget {
                                       fontSize: 14,
                                     ),
                                   ),
-                                  child: const Text('건너뛰기'),
+                                  child: Text(tr('건너뛰기', 'Skip')),
                                 ),
                                 const SizedBox(width: 8),
                                 FilledButton(
@@ -743,7 +841,9 @@ class _QuizView extends StatelessWidget {
                                     elevation: 1,
                                   ),
                                   child: Text(
-                                    isLast ? '취향 분석하기' : '다음 단계',
+                                    isLast
+                                        ? tr('취향 분석하기', 'Analyze my taste')
+                                        : tr('다음 단계', 'Next'),
                                     style: const TextStyle(
                                       fontFamily: 'Gowun Batang',
                                       fontFamilyFallback: _serifFallback,
@@ -787,7 +887,8 @@ class _ProgressBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '$totalSteps개 중 ${step + 1}번째 질문',
+              tr('$totalSteps개 중 ${step + 1}번째 질문',
+                  'Question ${step + 1} of $totalSteps'),
               style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
@@ -797,7 +898,7 @@ class _ProgressBar extends StatelessWidget {
               ),
             ),
             Text(
-              '$pct% 완료',
+              tr('$pct% 완료', '$pct% done'),
               style: const TextStyle(
                 color: Color(0xFF934753),
                 fontSize: 14,
@@ -845,7 +946,7 @@ class _QuestionHeader extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              question.before,
+              tr(question.before, question.beforeEn),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF1C1C18),
@@ -855,9 +956,9 @@ class _QuestionHeader extends StatelessWidget {
                 height: 1.17,
               ),
             ),
-            _KeywordText(keyword: question.keyword),
+            _KeywordText(keyword: tr(question.keyword, question.keywordEn)),
             Text(
-              question.after,
+              tr(question.after, question.afterEn),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF1C1C18),
@@ -871,7 +972,7 @@ class _QuestionHeader extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          question.hint,
+          tr(question.hint, question.hintEn),
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Color(0xFF534344),
@@ -1024,7 +1125,7 @@ class _OptionCardState extends State<_OptionCard> {
               Padding(
                 padding: const EdgeInsets.only(top: 12, bottom: 2),
                 child: Text(
-                  widget.option.title,
+                  tr(widget.option.title, widget.option.titleEn),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: widget.selected
@@ -1043,7 +1144,7 @@ class _OptionCardState extends State<_OptionCard> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
-                  widget.option.subtitle,
+                  tr(widget.option.subtitle, widget.option.subtitleEn),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF534344),
@@ -1116,11 +1217,11 @@ class _ResultView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Align(
+                  Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      '취향 분석 결과',
-                      style: TextStyle(
+                      tr('취향 분석 결과', 'Your taste result'),
+                      style: const TextStyle(
                         color: Color(0xFF8F7E7B),
                         fontFamily: 'Gowun Batang',
                         fontFamilyFallback: _serifFallback,
@@ -1138,7 +1239,8 @@ class _ResultView extends StatelessWidget {
                   ),
                   const SizedBox(height: 26),
                   Text(
-                    '당신은 ${result.profileTitle}의 매력을 가진 ${result.productName}!',
+                    tr('당신은 ${result.profileTitle}의 매력을 가진 ${result.productName}!',
+                        'You\'re ${result.productNameEn} with the charm of ${result.profileTitleEn}!'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Color(0xFF633B3A),
@@ -1153,7 +1255,7 @@ class _ResultView extends StatelessWidget {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 760),
                     child: Text(
-                      result.aiSummary,
+                      tr(result.aiSummary, result.aiSummaryEn),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF8C7E7B),
@@ -1170,15 +1272,16 @@ class _ResultView extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _PairingBox(
-                            label: '함께 어울리는 메뉴/차',
-                            value: result.teaPairing,
+                            label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
+                            value: tr(result.teaPairing, result.teaPairingEn),
                           ),
                         ),
                         const SizedBox(width: 24),
                         Expanded(
                           child: _PairingBox(
-                            label: '차선 추천',
-                            value: result.secondaryMenuName,
+                            label: tr('차선 추천', 'Runner-up'),
+                            value: tr(result.secondaryMenuName,
+                                result.secondaryMenuNameEn),
                           ),
                         ),
                       ],
@@ -1187,13 +1290,14 @@ class _ResultView extends StatelessWidget {
                     Column(
                       children: [
                         _PairingBox(
-                          label: '함께 어울리는 메뉴/차',
-                          value: result.teaPairing,
+                          label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
+                          value: tr(result.teaPairing, result.teaPairingEn),
                         ),
                         const SizedBox(height: 12),
                         _PairingBox(
-                          label: '차선 추천',
-                          value: result.secondaryMenuName,
+                          label: tr('차선 추천', 'Runner-up'),
+                          value: tr(result.secondaryMenuName,
+                              result.secondaryMenuNameEn),
                         ),
                       ],
                     ),
@@ -1205,14 +1309,17 @@ class _ResultView extends StatelessWidget {
                     onShare: () {
                       Clipboard.setData(
                         ClipboardData(
-                          text:
+                          text: tr(
                               '행궁다과 추천 결과: ${result.profileTitle} - ${result.productName}',
+                              'Haenggung Dagwa result: ${result.profileTitleEn} - ${result.productNameEn}'),
                         ),
                       );
                       ScaffoldMessenger.of(context)
                         ..hideCurrentSnackBar()
                         ..showSnackBar(
-                          const SnackBar(content: Text('추천 결과를 복사했어요.')),
+                          SnackBar(
+                              content: Text(tr('추천 결과를 복사했어요.',
+                                  'Result copied to clipboard.'))),
                         );
                     },
                   ),
@@ -1253,7 +1360,7 @@ class _ResultActions extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-      child: const Text('다시 분석하기'),
+      child: Text(tr('다시 분석하기', 'Try again')),
     );
 
     final buy = FilledButton(
@@ -1264,9 +1371,9 @@ class _ResultActions extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
-      child: const Text(
-        '구매하러 가기',
-        style: TextStyle(
+      child: Text(
+        tr('구매하러 가기', 'Shop now'),
+        style: const TextStyle(
           fontFamily: 'Gowun Batang',
           fontFamilyFallback: _serifFallback,
           fontSize: 25,
@@ -1283,9 +1390,9 @@ class _ResultActions extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
-      child: const Text(
-        '친구한테 공유하기',
-        style: TextStyle(
+      child: Text(
+        tr('친구한테 공유하기', 'Share with a friend'),
+        style: const TextStyle(
           fontFamily: 'Gowun Batang',
           fontFamilyFallback: _serifFallback,
           fontSize: 25,

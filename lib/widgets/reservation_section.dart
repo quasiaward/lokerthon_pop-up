@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/lang.dart';
 import 'common.dart';
 import 'watercolor_deco.dart';
 
@@ -18,19 +19,33 @@ const _unitPrice = 50000;
 const _programs = [
   _Program(
     title: '아름다운 우리 떡 만들기',
+    titleEn: 'Making Beautiful Korean Rice Cakes',
     shortTitle: '떡 만들기',
+    shortTitleEn: 'Rice cake making',
     description: '바람떡, 꽃산병, 사탕절편, 꼬리절편을 직접 빚어보는 체험입니다.',
+    descriptionEn:
+        'Shape baramtteok, kkotsanbyeong, and jeolpyeon rice cakes by hand.',
     detail: '약 1시간 30분 동안 색과 모양을 고르며 전통 떡을 완성합니다.',
+    detailEn:
+        'Over about 90 minutes you choose colors and shapes to complete traditional rice cakes.',
     badge: '인기',
+    badgeEn: 'Popular',
     image: 'assets/figma/experience_rice_cake_class.png',
     color: Color(0xFF779D3B),
   ),
   _Program(
     title: '전통 다식 만들기',
+    titleEn: 'Making Traditional Dasik',
     shortTitle: '다식 만들기',
+    shortTitleEn: 'Dasik making',
     description: '다식판을 사용해 흑임자와 곡물 가루로 차과자를 빚어봅니다.',
+    descriptionEn:
+        'Use a dasik mold to press tea sweets from black sesame and grain flours.',
     detail: '차와 함께 어울리는 전통 다식을 구성하고 포장까지 경험합니다.',
+    detailEn:
+        'Compose traditional dasik to pair with tea, and even box them to take home.',
     badge: '신규',
+    badgeEn: 'New',
     image: 'assets/figma/experience_dasik_class.png',
     color: Color(0xFFD56779),
   ),
@@ -59,16 +74,18 @@ class _ReservationSectionState extends State<ReservationSection> {
 
   _Program get _program => _programs[_programIndex];
   int get _totalPeople => math.max(1, _adultCount + _childCount);
-  String get _feeLabel => '${_formatWon(_unitPrice * _totalPeople)}원';
+  String get _feeLabel => tr(
+      '${_formatWon(_unitPrice * _totalPeople)}원',
+      '${_formatWon(_unitPrice * _totalPeople)} KRW');
 
   String get _dateLabel {
     final date = _date;
-    if (date == null) return '날짜를 선택해주세요.';
+    if (date == null) return tr('날짜를 선택해주세요.', 'Please select a date.');
     return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
   }
 
   String get _summaryDateTime {
-    final date = _dateLabel == '날짜를 선택해주세요.' ? '날짜 미선택' : _dateLabel;
+    final date = _date == null ? tr('날짜 미선택', 'No date') : _dateLabel;
     return '$date, $_time';
   }
 
@@ -146,18 +163,19 @@ class _ReservationSectionState extends State<ReservationSection> {
 
   void _submit() {
     if (_contactController.text.trim().isEmpty) {
-      _showSnack('연락처를 입력해 주세요.');
+      _showSnack(tr('연락처를 입력해 주세요.', 'Please enter your contact.'));
       return;
     }
     if (_date == null) {
-      _showSnack('희망 체험 날짜를 선택해 주세요.');
+      _showSnack(tr('희망 체험 날짜를 선택해 주세요.', 'Please choose your preferred date.'));
       return;
     }
     setState(() => _stage = _ReservationStage.confirm);
   }
 
   void _complete() {
-    _showSnack('체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.');
+    _showSnack(tr('체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.',
+        'Your inquiry has been received. We\'ll contact you after confirming.'));
     setState(() {
       _stage = _ReservationStage.select;
       _hasProgramSelection = false;
@@ -251,7 +269,8 @@ class _ExperienceHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '<${program.title}> 체험 예약',
+                      tr('<${program.title}> 체험 예약',
+                          '<${program.titleEn}> Booking'),
                       style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'Gowun Batang',
@@ -263,7 +282,8 @@ class _ExperienceHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '${program.detail} 간단하게 만들 수 있는 체험입니다.',
+                      tr('${program.detail} 간단하게 만들 수 있는 체험입니다.',
+                          '${program.detailEn} A hands-on experience anyone can enjoy.'),
                       style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'Gowun Batang',
@@ -320,7 +340,7 @@ class _ProgramSelectView extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  '행궁다과 체험 예약',
+                  tr('행궁다과 체험 예약', 'Haenggung Dagwa Experiences'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Color(0xFF534344),
@@ -335,7 +355,7 @@ class _ProgramSelectView extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '현재 진행되는 클래스',
+                    tr('현재 진행되는 클래스', 'Current classes'),
                     style: TextStyle(
                       color: const Color(0xFF675C4F),
                       fontFamily: 'Noto Serif KR',
@@ -482,7 +502,7 @@ class _ProgramCardState extends State<_ProgramCard> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              widget.program.badge,
+                              tr(widget.program.badge, widget.program.badgeEn),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Gowun Batang',
@@ -517,7 +537,7 @@ class _ProgramCardState extends State<_ProgramCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.program.title,
+                          tr(widget.program.title, widget.program.titleEn),
                           style: const TextStyle(
                             color: Color(0xFF1C1C18),
                             fontFamily: 'Noto Serif KR',
@@ -529,7 +549,8 @@ class _ProgramCardState extends State<_ProgramCard> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          widget.program.description,
+                          tr(widget.program.description,
+                              widget.program.descriptionEn),
                           style: const TextStyle(
                             color: Color(0xFF665C58),
                             fontFamily: 'Gowun Batang',
@@ -541,9 +562,9 @@ class _ProgramCardState extends State<_ProgramCard> {
                         const SizedBox(height: 18),
                         Row(
                           children: [
-                            const Text(
-                              '상시 운영',
-                              style: TextStyle(
+                            Text(
+                              tr('상시 운영', 'Always open'),
+                              style: const TextStyle(
                                 color: Color(0xFF566341),
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
@@ -554,7 +575,8 @@ class _ProgramCardState extends State<_ProgramCard> {
                             ),
                             const Spacer(),
                             Text(
-                              '${_formatWon(_unitPrice)}원',
+                              tr('${_formatWon(_unitPrice)}원',
+                                  '${_formatWon(_unitPrice)} KRW'),
                               style: const TextStyle(
                                 color: Color(0xFF1C1C18),
                                 fontFamily: 'Plus Jakarta Sans',
@@ -602,13 +624,14 @@ class _ReservationNotice extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.info_rounded, color: Color(0xFF9B4A59), size: 21),
-                  SizedBox(width: 10),
+                  const Icon(Icons.info_rounded,
+                      color: Color(0xFF9B4A59), size: 21),
+                  const SizedBox(width: 10),
                   Text(
-                    '예약 안내 사항',
-                    style: TextStyle(
+                    tr('예약 안내 사항', 'Booking information'),
+                    style: const TextStyle(
                       color: Color(0xFF1C1C18),
                       fontFamily: 'Noto Serif KR',
                       fontFamilyFallback: _serifFallback,
@@ -624,19 +647,24 @@ class _ReservationNotice extends StatelessWidget {
                 spacing: 24,
                 runSpacing: 18,
                 children:
-                    const [
+                    [
                           _NoticeItem(
-                            title: '환불 규정',
-                            body:
+                            title: tr('환불 규정', 'Refund policy'),
+                            body: tr(
                                 '체험 48시간 전까지 100% 환불 가능합니다. 당일 노쇼는 환불이 불가합니다.',
+                                'Full refunds up to 48 hours before the class. Same-day no-shows are non-refundable.'),
                           ),
                           _NoticeItem(
-                            title: '준비물 안내',
-                            body: '모든 재료와 앞치마가 제공됩니다. 수업 시작 10분 전까지 도착해주세요.',
+                            title: tr('준비물 안내', 'What to bring'),
+                            body: tr(
+                                '모든 재료와 앞치마가 제공됩니다. 수업 시작 10분 전까지 도착해주세요.',
+                                'All ingredients and aprons are provided. Please arrive 10 minutes before the class.'),
                           ),
                           _NoticeItem(
-                            title: '예약 문의',
-                            body: '4인 이상만 예약 가능하며, 개인은 받고 있지 않습니다.',
+                            title: tr('예약 문의', 'Reservations'),
+                            body: tr(
+                                '4인 이상만 예약 가능하며, 개인은 받고 있지 않습니다.',
+                                'Reservations are for groups of 4 or more; individual bookings are not accepted.'),
                           ),
                         ]
                         .map((item) => SizedBox(width: itemWidth, child: item))
@@ -732,9 +760,9 @@ class _ReservationDetailView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '체험 문의',
-                    style: TextStyle(
+                  Text(
+                    tr('체험 문의', 'Experience inquiry'),
+                    style: const TextStyle(
                       color: Color(0xFF1C1C18),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
@@ -774,9 +802,9 @@ class _ReservationDetailView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        '체험 문의 접수하기',
-                        style: TextStyle(
+                      child: Text(
+                        tr('체험 문의 접수하기', 'Submit inquiry'),
+                        style: const TextStyle(
                           fontFamily: 'Gowun Batang',
                           fontFamilyFallback: _serifFallback,
                           fontSize: 23,
@@ -805,25 +833,25 @@ class _ReservationLeftForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _FieldLabel('유형'),
+        _FieldLabel(tr('유형', 'Type')),
         const SizedBox(height: 8),
         Row(
           children: [
             _TypeChip(
-              label: '개인',
+              label: tr('개인', 'Individual'),
               selected: state._type == '개인',
               onTap: () => state._setType('개인'),
             ),
             const SizedBox(width: 10),
             _TypeChip(
-              label: '단체',
+              label: tr('단체', 'Group'),
               selected: state._type == '단체',
               onTap: () => state._setType('단체'),
             ),
           ],
         ),
         const SizedBox(height: 22),
-        const _FieldLabel('인원 수'),
+        _FieldLabel(tr('인원 수', 'Party size')),
         const SizedBox(height: 8),
         _PeopleBox(
           adultCount: state._adultCount,
@@ -836,7 +864,7 @@ class _ReservationLeftForm extends StatelessWidget {
         const SizedBox(height: 20),
         Row(
           children: [
-            const _FieldLabel('체험비'),
+            _FieldLabel(tr('체험비', 'Fee')),
             const Spacer(),
             Text(
               state._feeLabel,
@@ -851,7 +879,7 @@ class _ReservationLeftForm extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        const _FieldLabel('연락처'),
+        _FieldLabel(tr('연락처', 'Contact')),
         const SizedBox(height: 8),
         TextField(
           controller: state._contactController,
@@ -864,7 +892,8 @@ class _ReservationLeftForm extends StatelessWidget {
             fontFamilyFallback: _serifFallback,
             fontSize: 19,
           ),
-          decoration: const InputDecoration(hintText: '연락처를 입력해주세요.'),
+          decoration: InputDecoration(
+              hintText: tr('연락처를 입력해주세요.', 'Enter your contact number.')),
         ),
       ],
     );
@@ -881,7 +910,7 @@ class _ReservationRightForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _FieldLabel('희망 체험 날짜'),
+        _FieldLabel(tr('희망 체험 날짜', 'Preferred date')),
         const SizedBox(height: 8),
         InkWell(
           onTap: state._pickDate,
@@ -910,7 +939,7 @@ class _ReservationRightForm extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 22),
-        const _FieldLabel('희망 체험 시간'),
+        _FieldLabel(tr('희망 체험 시간', 'Preferred time')),
         const SizedBox(height: 12),
         _TimeGrid(selected: state._time, onSelect: state._setTime),
       ],
@@ -986,7 +1015,7 @@ class _PeopleBox extends StatelessWidget {
         children: [
           Expanded(
             child: _CountControl(
-              label: '성인',
+              label: tr('성인', 'Adults'),
               value: adultCount,
               onDown: onAdultDown,
               onUp: onAdultUp,
@@ -995,7 +1024,7 @@ class _PeopleBox extends StatelessWidget {
           Container(width: 1, height: 56, color: const Color(0xFFD7D7D7)),
           Expanded(
             child: _CountControl(
-              label: '어린이',
+              label: tr('어린이', 'Children'),
               value: childCount,
               onDown: onChildDown,
               onUp: onChildUp,
@@ -1045,9 +1074,9 @@ class _CountControl extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const Text(
-              '   명',
-              style: TextStyle(
+            Text(
+              tr('   명', ''),
+              style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
                 fontFamilyFallback: _serifFallback,
@@ -1259,9 +1288,9 @@ class _ReservationConfirmView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '체험 문의 확인',
-                    style: TextStyle(
+                  Text(
+                    tr('체험 문의 확인', 'Confirm your inquiry'),
+                    style: const TextStyle(
                       color: Color(0xFF1C1C18),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
@@ -1271,21 +1300,26 @@ class _ReservationConfirmView extends StatelessWidget {
                   ),
                   const SizedBox(height: 28),
                   _SummaryRow(
-                    label: '인원 수',
-                    value:
+                    label: tr('인원 수', 'Party size'),
+                    value: tr(
                         '${state._type}, 성인 ${state._adultCount}명${state._childCount > 0 ? ', 어린이 ${state._childCount}명' : ''}',
+                        '${state._type == '개인' ? 'Individual' : 'Group'}, ${state._adultCount} adults${state._childCount > 0 ? ', ${state._childCount} children' : ''}'),
                   ),
                   _SummaryRow(
-                    label: '희망 날짜 및 시간',
+                    label: tr('희망 날짜 및 시간', 'Date & time'),
                     value: state._summaryDateTime,
                   ),
-                  _SummaryRow(label: '체험 구성', value: state._program.shortTitle),
                   _SummaryRow(
-                    label: '비용',
-                    value: '${state._feeLabel} (상담을 통해 변경될 수 있습니다.)',
+                      label: tr('체험 구성', 'Class'),
+                      value: tr(state._program.shortTitle,
+                          state._program.shortTitleEn)),
+                  _SummaryRow(
+                    label: tr('비용', 'Fee'),
+                    value: tr('${state._feeLabel} (상담을 통해 변경될 수 있습니다.)',
+                        '${state._feeLabel} (subject to change after consultation)'),
                   ),
                   _SummaryRow(
-                    label: '연락처',
+                    label: tr('연락처', 'Contact'),
                     value: state._contactController.text.trim(),
                   ),
                   const SizedBox(height: 28),
@@ -1303,9 +1337,9 @@ class _ReservationConfirmView extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              '문의 변경 및 취소',
-                              style: TextStyle(
+                            child: Text(
+                              tr('문의 변경 및 취소', 'Edit or cancel'),
+                              style: const TextStyle(
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
                                 fontSize: 23,
@@ -1328,9 +1362,9 @@ class _ReservationConfirmView extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              '확인',
-                              style: TextStyle(
+                            child: Text(
+                              tr('확인', 'Confirm'),
+                              style: const TextStyle(
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
                                 fontSize: 23,
@@ -1343,9 +1377,10 @@ class _ReservationConfirmView extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    '매장에서 일정 및 인원 수 확인 후 카카오톡을 통해 안내가 전송됩니다.',
-                    style: TextStyle(
+                  Text(
+                    tr('매장에서 일정 및 인원 수 확인 후 카카오톡을 통해 안내가 전송됩니다.',
+                        'After the shop confirms the schedule and party size, details will be sent via KakaoTalk.'),
+                    style: const TextStyle(
                       color: Color(0xFFB5B3B3),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
@@ -1438,19 +1473,29 @@ class _FieldLabel extends StatelessWidget {
 class _Program {
   const _Program({
     required this.title,
+    required this.titleEn,
     required this.shortTitle,
+    required this.shortTitleEn,
     required this.description,
+    required this.descriptionEn,
     required this.detail,
+    required this.detailEn,
     required this.badge,
+    required this.badgeEn,
     required this.image,
     required this.color,
   });
 
   final String title;
+  final String titleEn;
   final String shortTitle;
+  final String shortTitleEn;
   final String description;
+  final String descriptionEn;
   final String detail;
+  final String detailEn;
   final String badge;
+  final String badgeEn;
   final String image;
   final Color color;
 }

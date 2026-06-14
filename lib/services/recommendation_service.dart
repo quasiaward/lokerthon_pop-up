@@ -72,6 +72,66 @@ class RecommendationService {
     'warm': '따뜻함',
   };
 
+  static const Map<String, String> _featureLabelsEn = {
+    'balanced': 'balance',
+    'bitter': 'bitter notes',
+    'bright': 'a bright mood',
+    'calm': 'calm',
+    'chewy': 'chewiness',
+    'cool': 'coolness',
+    'crisp': 'crispness',
+    'deep': 'deep aroma',
+    'detail': 'fine detail',
+    'elder': 'sharing with elders',
+    'fresh': 'freshness',
+    'gift': 'giftability',
+    'herbal': 'herbal aroma',
+    'icy': 'icy texture',
+    'local': 'a Suwon keepsake',
+    'novelty': 'novelty',
+    'package': 'easy packaging',
+    'photo': 'photogenic looks',
+    'safe': 'comfort',
+    'share': 'sharing',
+    'signature': 'a signature pick',
+    'solo': 'quiet solo time',
+    'soft': 'softness',
+    'story': 'a good story',
+    'subtle': 'subtle sweetness',
+    'sweet': 'sweetness',
+    'tea': 'tea pairing',
+    'warm': 'warmth',
+  };
+
+  // 표시용 영어 라벨. 키(한국어)는 로직에서 그대로 쓰고, 표시할 때만 변환한다.
+  static const Map<String, String> _answerLabelsEn = {
+    '조용히 머무는 I형': 'quiet, inward',
+    '같이 나누는 E형': 'outgoing, sharing',
+    '차분히 음미하는 감각형': 'calm and sensory',
+    '이야기와 의미를 좋아하는 직관형': 'story-loving',
+    '혼자 쉬고 싶어요': 'time alone',
+    '부모님과 함께해요': 'time with parents',
+    '친구와 디저트를 먹어요': 'dessert with friends',
+    '작은 선물도 고려해요': 'a small gift',
+    '수원 여행 기념이에요': 'a Suwon trip memory',
+    '은은하고 담백한 단맛': 'gentle, clean sweetness',
+    '적당히 달콤한 맛': 'moderate sweetness',
+    '확실히 달콤한 맛': 'definite sweetness',
+    '쌉싸름하고 깊은 맛': 'bittersweet depth',
+    '쫀득한 떡 식감': 'a chewy rice-cake texture',
+    '바삭하고 결 있는 식감': 'a crisp, layered texture',
+    '부드럽고 촉촉한 식감': 'a soft, moist texture',
+    '시원하게 녹는 식감': 'a cool, melting texture',
+    '따뜻한 차와 함께': 'a warm tea',
+    '상큼하고 산뜻하게': 'something fresh and bright',
+    '한방차처럼 깊게': 'a deep herbal tea',
+    '차보다 시원한 메뉴': 'something cool over tea',
+    '대표 메뉴를 고르는 편': 'picking the signature',
+    '익숙하고 안정적인 메뉴': 'familiar, safe choices',
+    '새로운 메뉴도 좋아함': 'openness to new things',
+    '보기 좋은 메뉴가 좋음': 'a pretty plate',
+  };
+
   static const _specificFeatures = [
     'gift',
     'package',
@@ -95,11 +155,16 @@ class RecommendationService {
     _MenuProfile(
       id: 'flower-pancake',
       name: '진달래화전',
+      nameEn: 'Azalea Hwajeon',
       dagwaType: '화전',
       typeDescription: '꽃을 올려 부치는 전통 떡류로 계절감, 색감, 은은한 단맛이 강합니다.',
       profileTitle: '섬세한 계절파',
+      profileTitleEn: 'the Delicate Seasonalist',
       summary: '꽃과 색감, 은은한 단맛처럼 작은 디테일을 즐기는 취향입니다.',
+      summaryEn:
+          'someone who savors small details — blossoms, color, and a gentle sweetness.',
       pairing: '생강차',
+      pairingEn: 'Ginger Tea',
       message: '사진으로 남기기 좋은 색감과 담백한 단맛을 함께 골랐습니다.',
       tags: ['화전', '사진 좋은 메뉴', '담백함'],
       reasons: [
@@ -124,11 +189,16 @@ class RecommendationService {
     _MenuProfile(
       id: 'mango-bingsu',
       name: '망고빙수',
+      nameEn: 'Mango Bingsu',
       dagwaType: '빙수',
       typeDescription: '우유 얼음과 과일 단맛이 또렷해 여럿이 나누기 좋은 시원한 디저트입니다.',
       profileTitle: '밝은 디저트파',
+      profileTitleEn: 'the Bright Dessert Lover',
       summary: '함께 나누는 즐거움과 확실한 달콤함, 시원함을 원하는 취향입니다.',
+      summaryEn:
+          'someone who wants shared joy, clear sweetness, and a cool finish.',
       pairing: '가벼운 차 또는 물',
+      pairingEn: 'a light tea or water',
       message: '산책 끝에 나누기 좋은 달콤하고 시원한 쉼을 골랐습니다.',
       tags: ['달콤함', '시원함', '함께 나누기'],
       reasons: [
@@ -150,11 +220,16 @@ class RecommendationService {
     _MenuProfile(
       id: 'green-tea-bingsu',
       name: '녹차빙수',
+      nameEn: 'Green Tea Bingsu',
       dagwaType: '빙수',
       typeDescription: '빙수의 시원함에 녹차의 쌉싸름함을 더한 절제된 단맛의 디저트입니다.',
       profileTitle: '쌉싸름한 산뜻파',
+      profileTitleEn: 'the Crisp & Bittersweet',
       summary: '시원한 디저트는 좋지만 단맛은 조금 절제하고 싶은 취향입니다.',
+      summaryEn:
+          'someone who loves cool desserts but likes the sweetness kept restrained.',
       pairing: '생강차',
+      pairingEn: 'Ginger Tea',
       message: '녹차의 쌉싸름함과 우유 얼음의 부드러움을 함께 맞췄습니다.',
       tags: ['녹차', '시원함', '담백한 단맛'],
       reasons: [
@@ -176,11 +251,16 @@ class RecommendationService {
     _MenuProfile(
       id: 'yakgwa-story',
       name: '행궁약과',
+      nameEn: 'Haenggung Yakgwa',
       dagwaType: '유밀과·모약과',
       typeDescription: '네모난 약과 계열로 달콤함, 결 있는 식감, 포장성이 강합니다.',
       profileTitle: '로컬 스토리파',
+      profileTitleEn: 'the Local Storyteller',
       summary: '화성행궁 방문의 기억과 지역 이야기를 작은 다과로 남기고 싶은 취향입니다.',
+      summaryEn:
+          'someone who likes to keep the memory of a Hwaseong Palace visit and its local story in a small sweet.',
       pairing: '쌍화차 또는 대추차',
+      pairingEn: 'Ssanghwa or Jujube Tea',
       message: '오늘 추천할 약과 종류는 행궁약과입니다. 작게 나누기 좋고 선물로도 설명이 쉬워요.',
       tags: ['약과 추천', '수원 이야기', '포장 문의', '전통 간식'],
       reasons: [
@@ -229,11 +309,16 @@ class RecommendationService {
     return RecommendationResult(
       productId: selected.id,
       productName: selected.name,
+      productNameEn: selected.nameEn,
       dagwaType: selected.dagwaType,
       typeDescription: selected.typeDescription,
       profileTitle: selected.profileTitle,
+      profileTitleEn: selected.profileTitleEn,
       headline: '${selected.profileTitle}에게 어울리는 오늘의 다과',
       aiSummary: _summaryFor(input, selected, activeFeatures),
+      aiSummaryEn: _summaryForEn(input, selected, activeFeatures),
+      teaPairingEn: selected.pairingEn,
+      secondaryMenuNameEn: secondary.nameEn,
       confidence: _confidenceFor(ranked, selected.id, situation),
       signals: _buildSignals(input, selected, situation, activeFeatures),
       analysisSteps: [
@@ -619,6 +704,45 @@ class RecommendationService {
     return labels.join('·');
   }
 
+  static List<String> _topFeatureKeys(
+    _MenuProfile selected,
+    Map<String, int> features,
+  ) {
+    final matched = [
+      for (final entry in features.entries)
+        if ((selected.features[entry.key] ?? 0) > 0)
+          MapEntry(entry.key, entry.value * selected.features[entry.key]!),
+    ]..sort((a, b) => b.value.compareTo(a.value));
+    return [for (final entry in matched.take(3)) entry.key];
+  }
+
+  static String _featureSummaryEn(
+    _MenuProfile selected,
+    Map<String, int> features,
+  ) {
+    final labels = [
+      for (final key in _topFeatureKeys(selected, features))
+        if (_featureLabelsEn[key] != null) _featureLabelsEn[key]!,
+    ];
+    if (labels.isEmpty) return 'a balanced palate';
+    return labels.join(', ');
+  }
+
+  static String _summaryForEn(
+    RecommendationInput input,
+    _MenuProfile selected,
+    Map<String, int> features,
+  ) {
+    final hasSituation = input.situation.trim().isNotEmpty;
+    final lead = hasSituation
+        ? 'Reading the situation you shared too, your'
+        : 'Your';
+    final personality = _answerLabelsEn[input.personality] ?? input.personality;
+    final texture = _answerLabelsEn[input.texture] ?? input.texture;
+    final featureSummary = _featureSummaryEn(selected, features);
+    return '$lead $personality mood and love of $texture came through most clearly, with a taste for $featureSummary. ${selected.nameEn} is ${selected.summaryEn}';
+  }
+
   static List<String> _promptFeatureLines(Map<String, int> features) {
     final entries = features.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -668,11 +792,15 @@ class _MenuProfile {
   const _MenuProfile({
     required this.id,
     required this.name,
+    required this.nameEn,
     required this.dagwaType,
     required this.typeDescription,
     required this.profileTitle,
+    required this.profileTitleEn,
     required this.summary,
+    required this.summaryEn,
     required this.pairing,
+    required this.pairingEn,
     required this.message,
     required this.tags,
     required this.reasons,
@@ -681,11 +809,15 @@ class _MenuProfile {
 
   final String id;
   final String name;
+  final String nameEn;
   final String dagwaType;
   final String typeDescription;
   final String profileTitle;
+  final String profileTitleEn;
   final String summary;
+  final String summaryEn;
   final String pairing;
+  final String pairingEn;
   final String message;
   final List<String> tags;
   final List<String> reasons;

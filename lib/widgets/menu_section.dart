@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import 'common.dart';
+import 'lang_toggle.dart';
 import 'watercolor_deco.dart';
 
 const _serifFallback = [
@@ -11,7 +13,25 @@ const _serifFallback = [
   'sans-serif',
 ];
 
+// 값(키)은 한국어 그대로 유지하고 표시 라벨만 언어에 맞춘다.
 const _menuCategories = ['모든 메뉴', '대표 다과', '전통차', '음료', '빙수', '다과상'];
+
+String _categoryLabel(String c) => switch (c) {
+  '모든 메뉴' => tr(c, 'All'),
+  '대표 다과' => tr(c, 'Signature'),
+  '전통차' => tr(c, 'Tea'),
+  '음료' => tr(c, 'Drinks'),
+  '빙수' => tr(c, 'Bingsu'),
+  '다과상' => tr(c, 'Tray'),
+  _ => c,
+};
+
+String _tagLabel(String t) => switch (t) {
+  '대표' => tr(t, 'Signature'),
+  '전통차' => tr(t, 'Tea'),
+  '음료' => tr(t, 'Drink'),
+  _ => t,
+};
 
 const _menuItems = [
   _FigmaMenuItem(
@@ -120,9 +140,9 @@ class _MenuSectionState extends State<MenuSection> {
             child: SectionShell(
               child: Column(
                 children: [
-                  const Text(
-                    '행궁다과 메뉴',
-                    style: TextStyle(
+                  Text(
+                    tr('행궁다과 메뉴', 'Haenggung Dagwa Menu'),
+                    style: const TextStyle(
                       color: Color(0xFF534344),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
@@ -202,7 +222,7 @@ class _CategoryPill extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
-            label,
+            _categoryLabel(label),
             style: TextStyle(
               color: selected ? Colors.white : const Color(0xFF806D6D),
               fontFamily: 'Gowun Batang',
@@ -226,34 +246,26 @@ class _MenuToolbar extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 13),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             border: Border.all(color: const Color(0xFFB5B5B5)),
             color: Colors.transparent,
           ),
-          child: const Text(
-            '한국어',
-            style: TextStyle(
-              color: Color(0xFF534344),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              height: 1,
-            ),
-          ),
+          child: const LangToggle(),
         ),
         const Spacer(),
         PopupMenuButton<String>(
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: '추천순', child: Text('추천순')),
-            PopupMenuItem(value: '가격 낮은순', child: Text('가격 낮은순')),
+          itemBuilder: (context) => [
+            PopupMenuItem(value: '추천순', child: Text(tr('추천순', 'Recommended'))),
+            PopupMenuItem(
+                value: '가격 낮은순',
+                child: Text(tr('가격 낮은순', 'Price: low to high'))),
           ],
-          child: const Row(
+          child: Row(
             children: [
               Text(
-                '추천순',
-                style: TextStyle(
+                tr('추천순', 'Recommended'),
+                style: const TextStyle(
                   color: Color(0xFF534344),
                   fontFamily: 'Gowun Batang',
                   fontFamilyFallback: _serifFallback,
@@ -261,8 +273,9 @@ class _MenuToolbar extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(width: 10),
-              Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF534344)),
+              const SizedBox(width: 10),
+              const Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF534344)),
             ],
           ),
         ),
@@ -327,7 +340,7 @@ class _MenuPhotoCard extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.end,
           children: [
             Text(
-              item.name,
+              tr(item.name, item.englishName),
               style: const TextStyle(
                 color: Colors.black,
                 fontFamily: 'Gowun Batang',
@@ -338,9 +351,9 @@ class _MenuPhotoCard extends StatelessWidget {
               ),
             ),
             if (item.tags.contains('대표'))
-              const Text(
-                '대표 다과',
-                style: TextStyle(
+              Text(
+                tr('대표 다과', 'Signature'),
+                style: const TextStyle(
                   color: Color(0xFFE49A78),
                   fontFamily: 'Gowun Batang',
                   fontFamilyFallback: _serifFallback,
@@ -353,7 +366,7 @@ class _MenuPhotoCard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          item.englishName,
+          tr(item.englishName, item.name),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -368,11 +381,13 @@ class _MenuPhotoCard extends StatelessWidget {
           children: [
             Wrap(
               spacing: 5,
-              children: [for (final tag in item.tags) _MiniTag(label: tag)],
+              children: [
+                for (final tag in item.tags) _MiniTag(label: _tagLabel(tag)),
+              ],
             ),
             const Spacer(),
             Text(
-              item.price,
+              tr(item.price, item.price.replaceAll('원', ' KRW')),
               style: const TextStyle(
                 color: Colors.black,
                 fontFamily: 'Gowun Batang',
@@ -429,9 +444,10 @@ class _EmptyCategory extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.wheat),
       ),
-      child: const Text(
-        '해당 카테고리의 메뉴는 준비 중입니다.',
-        style: TextStyle(color: AppColors.muted, fontSize: 15),
+      child: Text(
+        tr('해당 카테고리의 메뉴는 준비 중입니다.',
+            'Items in this category are coming soon.'),
+        style: const TextStyle(color: AppColors.muted, fontSize: 15),
       ),
     );
   }

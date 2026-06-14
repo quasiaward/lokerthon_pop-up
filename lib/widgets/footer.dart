@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
+import '../l10n/lang.dart';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -29,9 +30,9 @@ class AppFooter extends StatelessWidget {
             child: Column(
               children: [
                 isWide
-                    ? Row(
+                    ? const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Expanded(flex: 4, child: _FooterBrandBlock()),
                           SizedBox(width: 44),
                           Expanded(flex: 3, child: _FooterInfoBlock()),
@@ -51,7 +52,8 @@ class AppFooter extends StatelessWidget {
                       ),
                 const SizedBox(height: 54),
                 Text(
-                  '© 2026 행궁다과. 경기 수원시 팔달구 행궁로 25 2층. 사업자등록번호 추후 기재',
+                  tr('© 2026 행궁다과. 경기 수원시 팔달구 행궁로 25 2층. 사업자등록번호 추후 기재',
+                      '© 2026 Haenggung Dagwa. 25 Haenggung-ro 2F, Paldal-gu, Suwon, Gyeonggi. Business reg. no. to be announced.'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFFEEEDE2).withValues(alpha: 0.7),
@@ -74,12 +76,12 @@ class _FooterBrandBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          placeName,
-          style: TextStyle(
+          tr(placeName, placeNameEn),
+          style: const TextStyle(
             color: Color(0xFFFBF2E5),
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
@@ -88,10 +90,11 @@ class _FooterBrandBlock extends StatelessWidget {
             height: 1.2,
           ),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
         Text(
-          '화성행궁 곁에서 다과상, 전통차,\n빙수와 포장 다과를 만나는 공간입니다.',
-          style: TextStyle(
+          tr('화성행궁 곁에서 다과상, 전통차,\n빙수와 포장 다과를 만나는 공간입니다.',
+              'Beside Hwaseong Palace — a space for dagwa trays,\ntraditional teas, bingsu, and sweets to take away.'),
+          style: const TextStyle(
             color: Color(0xFFE3D8C9),
             fontFamily: 'Gowun Batang',
             fontFamilyFallback: _serifFallback,
@@ -110,13 +113,13 @@ class _FooterInfoBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _FooterColumn(
-      title: '운영 안내',
+    return _FooterColumn(
+      title: tr('운영 안내', 'Hours & Info'),
       lines: [
-        placeTodayStatus,
-        placeRegularClosed,
-        placeRoadAddress,
-        placeShortHours,
+        tr(placeTodayStatus, placeTodayStatusEn),
+        tr(placeRegularClosed, placeRegularClosedEn),
+        tr(placeRoadAddress, placeRoadAddressEn),
+        tr(placeShortHours, placeShortHoursEn),
       ],
     );
   }
@@ -127,9 +130,9 @@ class _FooterContactBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _FooterColumn(
-      title: '연락처',
-      lines: [placePhone, placeNaverUrl, '@haenggung_da_gwa_1'],
+    return _FooterColumn(
+      title: tr('연락처', 'Contact'),
+      lines: const [placePhone, placeNaverUrl, '@haenggung_da_gwa_1'],
     );
   }
 }
