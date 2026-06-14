@@ -75,14 +75,12 @@ class _CateringSectionState extends State<CateringSection> {
   }
 
   void _selectSlot(int index) {
+    setState(() => _activeSlot = index);
+  }
+
+  void _removeSlot(int index) {
     setState(() {
-      final prev = _activeSlot;
-      // 채워진 칸이 선택된 상태에서 다른 칸을 누르면 자리를 맞바꾼다(빈 칸이면 이동).
-      if (prev != null && prev != index && _slots[prev] != null) {
-        final moved = _slots[prev];
-        _slots[prev] = _slots[index];
-        _slots[index] = moved;
-      }
+      _slots[index] = null;
       _activeSlot = index;
     });
   }
@@ -167,6 +165,7 @@ class _CateringSectionState extends State<CateringSection> {
                         slots: _slots,
                         activeSlot: _activeSlot,
                         onSlotTap: _selectSlot,
+                        onSlotRemove: _removeSlot,
                       ),
                       SizedBox(height: compact ? 34 : 54),
                       const _SelectorHeading(),
@@ -431,7 +430,7 @@ class _UsageGuideCard extends StatelessWidget {
     final pills = const [
       _GuidePill(icon: Icons.touch_app_outlined, label: '칸 선택'),
       _GuidePill(icon: Icons.add_circle_outline_rounded, label: '다과 담기'),
-      _GuidePill(icon: Icons.refresh_rounded, label: '칸 교체'),
+      _GuidePill(icon: Icons.close_rounded, label: '칸 비우기'),
     ];
 
     return ConstrainedBox(
@@ -463,7 +462,7 @@ class _UsageGuideCard extends StatelessWidget {
                   Flexible(
                     fit: compact ? FlexFit.loose : FlexFit.tight,
                     child: Text(
-                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 채워진 칸을 누른 뒤 다른 칸을 누르면 두 칸의 자리가 서로 바뀝니다.',
+                      '상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 × 버튼으로 비우거나, 다른 다과를 담아 교체할 수 있습니다.',
                       style: TextStyle(
                         color: const Color(0xFF8B7D7A),
                         fontFamily: 'Gowun Batang',
@@ -585,11 +584,13 @@ class _TrayBuilder extends StatelessWidget {
     required this.slots,
     required this.activeSlot,
     required this.onSlotTap,
+    required this.onSlotRemove,
   });
 
   final List<_DagwaOption?> slots;
   final int? activeSlot;
   final ValueChanged<int> onSlotTap;
+  final ValueChanged<int> onSlotRemove;
 
   static const _slotCenters = [
     Offset(0.235, 0.27),
@@ -628,6 +629,7 @@ class _TrayBuilder extends StatelessWidget {
                     ),
                     trayWidth: width,
                     onTap: () => onSlotTap(index),
+                    onRemove: () => onSlotRemove(index),
                   ),
               ],
             );
@@ -646,6 +648,7 @@ class _TraySlot extends StatelessWidget {
     required this.center,
     required this.trayWidth,
     required this.onTap,
+    required this.onRemove,
   });
 
   final int index;
@@ -654,6 +657,7 @@ class _TraySlot extends StatelessWidget {
   final Offset center;
   final double trayWidth;
   final VoidCallback onTap;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -668,11 +672,60 @@ class _TraySlot extends StatelessWidget {
       height: size,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: onTap,
-          child: option == null
-              ? _EmptyTraySlot(active: active, label: '${index + 1}')
-              : _TrayItem(option: option!, active: active),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: onTap,
+                child: option == null
+                    ? _EmptyTraySlot(active: active, label: '${index + 1}')
+                    : _TrayItem(option: option!, active: active),
+              ),
+            ),
+            if (option != null)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: _SlotRemoveButton(onTap: onRemove),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SlotRemoveButton extends StatelessWidget {
+  const _SlotRemoveButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Tooltip(
+          message: '칸 비우기',
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: const Color(0xFF534344),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.close_rounded, color: Colors.white, size: 15),
+          ),
         ),
       ),
     );
