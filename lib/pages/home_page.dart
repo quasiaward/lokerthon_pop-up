@@ -1,20 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/place_info.dart';
 import '../l10n/lang.dart';
+import '../utils/url_opener.dart';
 import '../widgets/brand_logo.dart';
 import '../widgets/floating_chatbot.dart';
 import '../widgets/footer.dart';
 import '../widgets/lang_toggle.dart';
 import '../widgets/watercolor_deco.dart';
 
-const _heroImage = 'assets/figma/home_hero.png';
-const _brandWindowImage = 'assets/figma/brand_window.png';
-const _brandTrayImage = 'assets/figma/brand_tray.png';
-const _brandTableImage = 'assets/figma/brand_table.png';
+// ─── 히어로 캐러셀 슬라이드 (Figma '최종' 디자인의 3장) ────────────────────
+// Figma '최종' 디자인을 assets/figma/ 로 export 한 로컬 에셋(영구 적용).
+const _heroSlides = <String>[
+  'assets/figma/home_hero_1.png',
+  'assets/figma/home_hero_2.png',
+  'assets/figma/home_hero_3.png',
+];
+
+// ─── BRAND 섹션 소셜 카드 이미지 (로컬 에셋) ──────────────────────────────
+const _brandInstagramImage = 'assets/figma/brand_instagram.png';
+const _brandYoutubeImage = 'assets/figma/brand_youtube.png';
+const _brandBlogImage = 'assets/figma/brand_blog.png';
+
 const _menuDagwasangImage = 'assets/figma/menu_dagwasang.png';
 const _menuBingsuImage = 'assets/figma/menu_green_bingsu.png';
-const _menuYakgwaImage = 'assets/figma/menu_yakgwa.png';
+const _menuOmijaSudanImage = 'assets/figma/menu_omija_sudan.png';
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -29,8 +41,6 @@ const _sansFallback = [
   'sans-serif',
 ];
 
-ImageProvider _imgProvider(String asset) => AssetImage(asset);
-
 Widget _img(String asset, {BoxFit fit = BoxFit.cover}) =>
     Image.asset(asset, fit: fit);
 
@@ -42,13 +52,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _brandSectionKey = GlobalKey();
+  final _scrollController = ScrollController();
 
-  void _scrollToBrand() {
-    final brandContext = _brandSectionKey.currentContext;
-    if (brandContext == null) return;
-    Scrollable.ensureVisible(
-      brandContext,
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
       duration: const Duration(milliseconds: 560),
       curve: Curves.easeInOutCubic,
     );
@@ -62,10 +77,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           Positioned.fill(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: Column(
                 children: [
                   _HeroSection(
-                    onAboutTap: _scrollToBrand,
+                    onHomeTap: _scrollToTop,
                     onMenuTap: () =>
                         Navigator.pushReplacementNamed(context, '/menu'),
                     onExperienceTap: () =>
@@ -87,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     onCartTap: () => _showCartSheet(context),
                   ),
-                  _BrandSection(key: _brandSectionKey),
+                  const _BrandSection(),
                   _MenuPreviewSection(
                     onMoreTap: () =>
                         Navigator.pushReplacementNamed(context, '/menu'),
@@ -181,9 +197,9 @@ class _HomePageState extends State<HomePage> {
 
 // ─── Hero Section ───────────────────────────────────────────────────────────
 
-class _HeroSection extends StatelessWidget {
+class _HeroSection extends StatefulWidget {
   const _HeroSection({
-    required this.onAboutTap,
+    required this.onHomeTap,
     required this.onMenuTap,
     required this.onExperienceTap,
     required this.onCateringTap,
@@ -192,13 +208,42 @@ class _HeroSection extends StatelessWidget {
     required this.onCartTap,
   });
 
-  final VoidCallback onAboutTap;
+  final VoidCallback onHomeTap;
   final VoidCallback onMenuTap;
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
   final VoidCallback onAiTap;
   final VoidCallback onLoginTap;
   final VoidCallback onCartTap;
+
+  @override
+  State<_HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<_HeroSection> {
+  int _index = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_heroSlides.length > 1) {
+      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (!mounted) return;
+        setState(() => _index = (_index + 1) % _heroSlides.length);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _goTo(int i) {
+    setState(() => _index = i);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -210,12 +255,11 @@ class _HeroSection extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _imgProvider(_heroImage),
-                  fit: BoxFit.cover,
-                ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 700),
+              child: _HeroSlideImage(
+                key: ValueKey<int>(_index),
+                url: _heroSlides[_index],
               ),
             ),
           ),
@@ -226,9 +270,9 @@ class _HeroSection extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.08),
-                    Colors.black.withValues(alpha: 0),
-                    Colors.black.withValues(alpha: 0.16),
+                    Colors.black.withValues(alpha: 0.18),
+                    Colors.black.withValues(alpha: 0.04),
+                    Colors.black.withValues(alpha: 0.22),
                   ],
                 ),
               ),
@@ -241,13 +285,13 @@ class _HeroSection extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: _HeroNav(
-                onAboutTap: onAboutTap,
-                onMenuTap: onMenuTap,
-                onExperienceTap: onExperienceTap,
-                onCateringTap: onCateringTap,
-                onAiTap: onAiTap,
-                onLoginTap: onLoginTap,
-                onCartTap: onCartTap,
+                onHomeTap: widget.onHomeTap,
+                onMenuTap: widget.onMenuTap,
+                onExperienceTap: widget.onExperienceTap,
+                onCateringTap: widget.onCateringTap,
+                onAiTap: widget.onAiTap,
+                onLoginTap: widget.onLoginTap,
+                onCartTap: widget.onCartTap,
               ),
             ),
           ),
@@ -263,12 +307,11 @@ class _HeroSection extends StatelessWidget {
             bottom: 30,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                _HeroDot(active: true),
-                SizedBox(width: 14),
-                _HeroDot(active: false),
-                SizedBox(width: 14),
-                _HeroDot(active: false),
+              children: [
+                for (var i = 0; i < _heroSlides.length; i++) ...[
+                  if (i != 0) const SizedBox(width: 14),
+                  _HeroDot(active: i == _index, onTap: () => _goTo(i)),
+                ],
               ],
             ),
           ),
@@ -278,9 +321,29 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
+/// 히어로 배경 슬라이드 한 장. Figma '최종' 디자인을 로컬 에셋으로 로드하고,
+/// 실패 시에는 브랜드 톤의 단색으로 자연스럽게 대체한다.
+class _HeroSlideImage extends StatelessWidget {
+  const _HeroSlideImage({super.key, required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      url,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (context, error, stack) =>
+          const ColoredBox(color: Color(0xFF4A3A33)),
+    );
+  }
+}
+
 class _HeroNav extends StatelessWidget {
   const _HeroNav({
-    required this.onAboutTap,
+    required this.onHomeTap,
     required this.onMenuTap,
     required this.onExperienceTap,
     required this.onCateringTap,
@@ -289,7 +352,7 @@ class _HeroNav extends StatelessWidget {
     required this.onCartTap,
   });
 
-  final VoidCallback onAboutTap;
+  final VoidCallback onHomeTap;
   final VoidCallback onMenuTap;
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
@@ -315,12 +378,16 @@ class _HeroNav extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _HeroNavBtn(tr('소개', 'About'), onTap: onAboutTap),
+                  _HeroNavBtn(tr('홈', 'Home'), onTap: onHomeTap, active: true),
                   _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
-                  _HeroNavBtn(tr('체험', 'Experience'), onTap: onExperienceTap),
-                  _HeroNavBtn(tr('케이터링', 'Catering'), onTap: onCateringTap),
-                  _HeroNavBtn(tr('나만의 다과 추천', 'Find Your Dagwa'),
+                  _HeroNavBtn(tr('원데이 클래스', 'One-day Class'),
+                      onTap: onExperienceTap),
+                  _HeroNavBtn(tr('퍼스널 다과 추천', 'Personal Picks'),
                       onTap: onAiTap),
+                  _HeroNavBtn(tr('다과 상자 주문', 'Gift Box Order'),
+                      onTap: onCateringTap),
+                  _HeroNavBtn(tr('주문 / 예약확인', 'Order / Booking'),
+                      onTap: onLoginTap),
                   const SizedBox(width: 4),
                   const LangToggle(light: true),
                 ],
@@ -344,14 +411,22 @@ class _HeroNav extends StatelessWidget {
               onTap: () => Navigator.pushReplacementNamed(context, '/'),
             ),
             const Spacer(),
-            _HeroNavBtn(tr('소개', 'About'), onTap: onAboutTap),
+            _HeroNavBtn(tr('홈', 'Home'), onTap: onHomeTap, active: true),
             _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
-            _HeroNavBtn(tr('체험', 'Experience'), onTap: onExperienceTap),
-            _HeroNavBtn(tr('케이터링', 'Catering'), onTap: onCateringTap),
-            _HeroNavBtn(tr('나만의 다과 추천', 'Find Your Dagwa'), onTap: onAiTap),
+            _HeroNavBtn(tr('원데이 클래스', 'One-day Class'),
+                onTap: onExperienceTap),
+            _HeroNavBtn(tr('퍼스널 다과 추천', 'Personal Picks'), onTap: onAiTap),
+            _HeroNavBtn(tr('다과 상자 주문', 'Gift Box Order'),
+                onTap: onCateringTap),
             const Spacer(),
-            _HeroNavBtn(tr('로그인', 'Log in'), onTap: onLoginTap),
-            _HeroNavBtn(tr('장바구니', 'Cart'), onTap: onCartTap),
+            _HeroNavBtn(tr('주문 / 예약확인', 'Order / Booking'),
+                onTap: onLoginTap),
+            IconButton(
+              onPressed: onCartTap,
+              icon: const Icon(Icons.shopping_bag_outlined),
+              color: Colors.white,
+              tooltip: tr('장바구니', 'Cart'),
+            ),
             const SizedBox(width: 6),
             const LangToggle(light: true),
           ],
@@ -381,10 +456,11 @@ class _HeroLogoButton extends StatelessWidget {
 }
 
 class _HeroNavBtn extends StatelessWidget {
-  const _HeroNavBtn(this.label, {required this.onTap});
+  const _HeroNavBtn(this.label, {required this.onTap, this.active = false});
 
   final String label;
   final VoidCallback onTap;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -404,8 +480,11 @@ class _HeroNavBtn extends StatelessWidget {
           fontFamily: 'Inter',
           fontFamilyFallback: _sansFallback,
           fontSize: 17,
-          fontWeight: FontWeight.w400,
+          fontWeight: active ? FontWeight.w700 : FontWeight.w400,
           height: 1,
+          decoration: active ? TextDecoration.underline : TextDecoration.none,
+          decorationColor: Colors.white,
+          decorationThickness: 2,
         ),
       ),
     );
@@ -574,17 +653,22 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _HeroDot extends StatelessWidget {
-  const _HeroDot({required this.active});
+  const _HeroDot({required this.active, this.onTap});
   final bool active;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 12,
-      height: 12,
-      decoration: BoxDecoration(
-        color: active ? Colors.white : Colors.white.withValues(alpha: 0.38),
-        shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.white.withValues(alpha: 0.38),
+          shape: BoxShape.circle,
+        ),
       ),
     );
   }
@@ -639,10 +723,11 @@ class _BrandSection extends StatelessWidget {
                             children: [
                               SizedBox(
                                 width: col,
-                                child: _CaptionedImage(
-                                  asset: _brandWindowImage,
-                                  caption: tr('화성행궁 산책길의 찻집',
-                                      'A tea house on the Hwaseong Palace walk'),
+                                child: _SocialCard(
+                                  image: _brandInstagramImage,
+                                  caption: tr('인스타그램 바로가기 →',
+                                      'Go to Instagram →'),
+                                  url: placeInstagramUrl,
                                   aspectRatio: 559 / 498,
                                 ),
                               ),
@@ -651,17 +736,19 @@ class _BrandSection extends StatelessWidget {
                                 width: col,
                                 child: Column(
                                   children: [
-                                    _CaptionedImage(
-                                      asset: _brandTrayImage,
-                                      caption: tr('떡과 다과를 정갈하게',
-                                          'Rice cakes and sweets, elegantly set'),
+                                    _SocialCard(
+                                      image: _brandYoutubeImage,
+                                      caption: tr('유튜브 바로가기 →',
+                                          'Go to YouTube →'),
+                                      url: placeYoutubeUrl,
                                       aspectRatio: 559 / 234,
                                     ),
                                     const SizedBox(height: 30),
-                                    _CaptionedImage(
-                                      asset: _brandTableImage,
-                                      caption: tr('계절 메뉴와 작은 경험들',
-                                          'Seasonal menus and small experiences'),
+                                    _SocialCard(
+                                      image: _brandBlogImage,
+                                      caption: tr('블로그 바로가기 →',
+                                          'Go to Blog →'),
+                                      url: placeBlogUrl,
                                       aspectRatio: 559 / 234,
                                     ),
                                   ],
@@ -674,24 +761,25 @@ class _BrandSection extends StatelessWidget {
                     else
                       Column(
                         children: [
-                          _CaptionedImage(
-                            asset: _brandWindowImage,
-                            caption: tr('화성행궁 산책길의 찻집',
-                                'A tea house on the Hwaseong Palace walk'),
+                          _SocialCard(
+                            image: _brandInstagramImage,
+                            caption:
+                                tr('인스타그램 바로가기 →', 'Go to Instagram →'),
+                            url: placeInstagramUrl,
                             aspectRatio: 559 / 498,
                           ),
                           const SizedBox(height: 20),
-                          _CaptionedImage(
-                            asset: _brandTrayImage,
-                            caption: tr('떡과 다과를 정갈하게',
-                                'Rice cakes and sweets, elegantly set'),
+                          _SocialCard(
+                            image: _brandYoutubeImage,
+                            caption: tr('유튜브 바로가기 →', 'Go to YouTube →'),
+                            url: placeYoutubeUrl,
                             aspectRatio: 559 / 234,
                           ),
                           const SizedBox(height: 20),
-                          _CaptionedImage(
-                            asset: _brandTableImage,
-                            caption: tr('계절 메뉴와 작은 경험들',
-                                'Seasonal menus and small experiences'),
+                          _SocialCard(
+                            image: _brandBlogImage,
+                            caption: tr('블로그 바로가기 →', 'Go to Blog →'),
+                            url: placeBlogUrl,
                             aspectRatio: 559 / 234,
                           ),
                         ],
@@ -707,58 +795,94 @@ class _BrandSection extends StatelessWidget {
   }
 }
 
-class _CaptionedImage extends StatelessWidget {
-  const _CaptionedImage({
-    required this.asset,
+/// BRAND 섹션의 소셜(인스타/유튜브/블로그) 바로가기 카드.
+/// 이미지는 로컬 에셋(assets/figma/)을 사용하며, 탭하면 [url]을 새 탭으로 연다.
+/// [url]이 비어 있으면(링크 미정) 안내 스낵바를 띄운다.
+class _SocialCard extends StatelessWidget {
+  const _SocialCard({
+    required this.image,
     required this.caption,
+    required this.url,
     required this.aspectRatio,
   });
-  final String asset;
+  final String image;
   final String caption;
+  final String url;
   final double aspectRatio;
+
+  void _handleTap(BuildContext context) {
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(tr('링크가 곧 연결될 예정입니다.',
+                'This link will be connected soon.')),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF534344),
+          ),
+        );
+      return;
+    }
+    openExternalUrl(url);
+  }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: aspectRatio,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: Stack(
-          children: [
-            Positioned.fill(child: _img(asset)),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      const Color(0xFF462B30).withValues(alpha: 0.54),
-                    ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _handleTap(context),
+          borderRadius: BorderRadius.circular(5),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stack) =>
+                        const ColoredBox(color: Color(0xFF8C6B6B)),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              left: 24,
-              bottom: 20,
-              right: 24,
-              child: Text(
-                caption,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Gowun Batang',
-                  fontFamilyFallback: _serifFallback,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFF462B30).withValues(alpha: 0.62),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  left: 24,
+                  bottom: 20,
+                  right: 24,
+                  child: Text(
+                    caption,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -792,9 +916,9 @@ class _MenuPreviewSection extends StatelessWidget {
         border: const Color(0xFF88A77E),
       ),
       _MenuCard(
-        title: tr('행궁약과', 'Haenggung Yakgwa'),
-        price: tr('2,500 원', '2,500 KRW'),
-        asset: _menuYakgwaImage,
+        title: tr('오미자 수단', 'Omija Sudan'),
+        price: tr('6,500 원', '6,500 KRW'),
+        asset: _menuOmijaSudanImage,
         background: const Color(0xFFEFE7CF),
         border: const Color(0xFFAF915E),
       ),
@@ -824,7 +948,7 @@ class _MenuPreviewSection extends StatelessWidget {
                     _SectionTitle(
                       eyebrow: 'MENU',
                       eyebrowColor: const Color(0xFF99C679),
-                      title: tr('행궁다과의 대표 메뉴', 'Signature menu of Haenggung Dagwa'),
+                      title: tr('행궁다과 대표 메뉴', 'Signature menu of Haenggung Dagwa'),
                       description: tr(
                           '행궁다과의 대표 메뉴는 약과, 정과, 다식 등 한국 전통 다과를 중심으로 구성됩니다.\n계절의 재료와 차를 곁들여 정갈하게 준비한 한 상은 바쁜 일상 속 잠시 쉬어갈 수 있는 여유를 선물합니다.',
                           'Our signature menu centers on Korean traditional sweets such as yakgwa, jeonggwa, and dasik.\nElegantly prepared with seasonal ingredients and tea, each setting offers a restful pause within a busy day.'),
@@ -1008,10 +1132,10 @@ class _ExperienceSection extends StatelessWidget {
 
     final cards = [
       _ExpCard(
-        title: tr('취향 테스트', 'Taste Test'),
-        body: tr('개인의 취향을 분석해 어울리는 다과와 차를 추천합니다.',
-            'We analyze your taste and recommend the dagwa and tea that suit you.'),
-        action: tr('시작하기', 'Start'),
+        title: tr('나만의 다과 추천', 'Personal Dagwa Picks'),
+        body: tr('취향에 맞는 다과를 탐색해보세요',
+            'Discover the dagwa that suits your taste.'),
+        action: tr('테스트 바로가기', 'Take the test'),
         icon: Icons.account_tree_outlined,
         iconOverlay: Icons.edit_rounded,
         iconColor: const Color(0xFF9B4A59),
@@ -1020,9 +1144,9 @@ class _ExperienceSection extends StatelessWidget {
         onTap: onTasteTap,
       ),
       _ExpCard(
-        title: tr('다과 클래스', 'Dagwa Class'),
-        body: tr('직접 빚고 맛보며 한국 다과의 이야기를 배워봅니다.',
-            'Shape and taste them yourself while learning the story of Korean dagwa.'),
+        title: tr('원데이 클래스', 'One-day Class'),
+        body: tr('명인과 함께하는 힐링타임',
+            'A healing time together with the master.'),
         action: tr('예약하기', 'Book'),
         icon: Icons.school_outlined,
         iconColor: const Color(0xFF557057),
@@ -1031,11 +1155,11 @@ class _ExperienceSection extends StatelessWidget {
         onTap: onClassTap,
       ),
       _ExpCard(
-        title: tr('맞춤형 케이터링', 'Custom Catering'),
-        body: tr('행사 성격과 인원에 맞춘 다과 세트를 구성합니다.',
-            'We compose a dagwa set tailored to your event and party size.'),
-        action: tr('문의하기', 'Inquire'),
-        icon: Icons.restaurant_rounded,
+        title: tr('커스텀 다과상자', 'Custom Dagwa Box'),
+        body: tr('취향대로 구성하는 나만의 다과상자',
+            'Compose your own dagwa box, just the way you like.'),
+        action: tr('주문하기', 'Order'),
+        icon: Icons.card_giftcard_rounded,
         iconColor: const Color(0xFF7D5724),
         tint: const Color(0xFFFFDEA7),
         cornerAsset: decoCardYellow,
@@ -1067,7 +1191,7 @@ class _ExperienceSection extends StatelessWidget {
                     _SectionTitle(
                       eyebrow: 'Special Experiences',
                       eyebrowColor: const Color(0xFFA38650),
-                      title: tr('행궁다과의 특별한 경험',
+                      title: tr('행궁다과만의 특별한 경험',
                           'Special experiences at Haenggung Dagwa'),
                       description: tr(
                           '한 조각의 다과에는 계절의 풍경과 만드는 이의 정성이 담겨 있습니다.\n행궁다과는 취향을 발견하고, 직접 만들고, 함께 나누는 경험을 통해 다과가 가진 이야기를 전합니다.\n맛을 넘어 추억으로 남는 순간을 만나보세요.',

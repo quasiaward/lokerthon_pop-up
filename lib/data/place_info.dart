@@ -65,7 +65,13 @@ const placeRoadAddressEn = '25 Haenggung-ro, 2F, Paldal-gu, Suwon, Gyeonggi';
 const placeLotAddress = '경기 수원시 팔달구 남창동 26-1';
 const placePhone = '031-251-9030';
 const placeNaverUrl = 'https://naver.me/Fy2FI8D4';
+
+// ─── 소셜 바로가기 링크 ───────────────────────────────────────────────
+// 홈 BRAND 섹션의 인스타그램/유튜브/블로그 카드가 사용하는 링크.
+// 링크가 정해지면 아래 값만 채워 넣으면 된다. (빈 문자열이면 "준비 중" 안내)
 const placeInstagramUrl = 'https://www.instagram.com/haenggung_da_gwa_1';
+const placeYoutubeUrl = ''; // TODO: 유튜브 채널 링크 입력
+const placeBlogUrl = ''; // TODO: 블로그 링크 입력
 const placeVisitorReviewText = '방문자 리뷰 1,074';
 const placeBlogReviewText = '블로그 리뷰 181';
 const placeTodayStatus = '월·수·목·금·일 10:00-21:00 / 토 10:00-22:00';
