@@ -188,7 +188,7 @@ class _ReservationSectionState extends State<ReservationSection> {
         Uri.parse('$_apiBase/email/experience'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'type': _program.name,
+          'type': _program.title,
           'adults': _adultCount,
           'children': _childCount,
           'date': _dateLabel,
