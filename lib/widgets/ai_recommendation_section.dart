@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../data/dagwa_results.dart';
 import '../l10n/lang.dart';
-import '../models/recommendation.dart';
 import '../services/recommendation_service.dart';
 import 'watercolor_deco.dart';
 
@@ -327,61 +327,7 @@ const _questions = [
   ),
 ];
 
-RecommendationInput _buildInput(List<String?> answers) {
-  final personality = switch (answers[0]) {
-    '매화 분홍' => '차분히 음미하는 감각형',
-    '소나무 청록' => '조용히 머무는 I형',
-    '유자 노랑' => '같이 나누는 E형',
-    '먹색' => '이야기와 의미를 좋아하는 직관형',
-    _ => personalityTypes[0],
-  };
-  final moment = switch (answers[1]) {
-    '맑고 활기참' => '친구와 디저트를 먹어요',
-    '흐리고 지침' => '혼자 쉬고 싶어요',
-    '잔잔하고 평온' => '부모님과 함께해요',
-    '설레고 두근거려요' => '수원 여행 기념이에요',
-    _ => visitMoments[0],
-  };
-  final tea = switch (answers[2]) {
-    '소중한 사람' => '따뜻한 차와 함께',
-    '혼자' => '한방차처럼 깊게',
-    '가족' => '따뜻한 차와 함께',
-    '친구' => '상큼하고 산뜻하게',
-    _ => teaPreferences[0],
-  };
-  final texture = switch (answers[3]) {
-    '부드러운' => '부드럽고 촉촉한 식감',
-    '바삭한' => '바삭하고 결 있는 식감',
-    '쫀득한' => '쫀득한 떡 식감',
-    '촉촉한' => '부드럽고 촉촉한 식감',
-    _ => texturePreferences[0],
-  };
-  final sweetness = switch (answers[4]) {
-    '봄' => '은은하고 담백한 단맛',
-    '여름' => '확실히 달콤한 맛',
-    '가을' => '적당히 달콤한 맛',
-    '겨울' => '쌉싸름하고 깊은 맛',
-    _ => sweetnessPreferences[0],
-  };
-  final choiceStyle = switch (answers[5]) {
-    '둥근 모양' => '익숙하고 안정적인 메뉴',
-    '물결 모양' => '새로운 메뉴도 좋아함',
-    '직선 모양' => '대표 메뉴를 고르는 편',
-    '별·꽃 모양' => '보기 좋은 메뉴가 좋음',
-    _ => choiceStyles[0],
-  };
-  return RecommendationInput(
-    personality: personality,
-    moment: moment,
-    sweetness: sweetness,
-    texture: texture,
-    tea: tea,
-    choiceStyle: choiceStyle,
-    situation: '',
-  );
-}
-
-enum _Phase { landing, quiz, result }
+enum _Phase { landing, quiz, loading, result }
 
 // ── Main widget ────────────────────────────────────────────────────────────────
 
@@ -398,7 +344,8 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   _Phase _phase = _Phase.landing;
   int _step = 0;
   final _answers = <String?>[null, null, null, null, null, null];
-  RecommendationResult? _result;
+  String? _menuName;
+  String? _errorMessage;
 
   void _start() => setState(() {
     _phase = _Phase.quiz;
@@ -406,7 +353,8 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
     for (var i = 0; i < _answers.length; i++) {
       _answers[i] = null;
     }
-    _result = null;
+    _menuName = null;
+    _errorMessage = null;
   });
 
   void _pick(String title) {
@@ -419,10 +367,7 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
     } else {
       Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
-        setState(() {
-          _result = _service.getRecommendation(_buildInput(_answers));
-          _phase = _Phase.result;
-        });
+        _fetchRecommendation();
       });
     }
   }
@@ -433,9 +378,25 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
     if (_step < _questions.length - 1) {
       setState(() => _step++);
     } else {
+      _fetchRecommendation();
+    }
+  }
+
+  Future<void> _fetchRecommendation() async {
+    setState(() => _phase = _Phase.loading);
+    try {
+      final answers = _answers.map((a) => a ?? '').toList();
+      final menu = await _service.getRecommendation(answers);
+      if (!mounted) return;
       setState(() {
-        _result = _service.getRecommendation(_buildInput(_answers));
+        _menuName = menu;
         _phase = _Phase.result;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.toString();
+        _phase = _Phase.quiz;
       });
     }
   }
@@ -445,7 +406,8 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
     for (var i = 0; i < _answers.length; i++) {
       _answers[i] = null;
     }
-    _result = null;
+    _menuName = null;
+    _errorMessage = null;
   });
 
   @override
@@ -477,9 +439,10 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
           onSkip: _skip,
           isLast: _step == _questions.length - 1,
         ),
+        _Phase.loading => const _LoadingView(key: ValueKey('loading')),
         _Phase.result => _ResultView(
           key: const ValueKey('result'),
-          result: _result!,
+          menuName: _menuName!,
           onHome: _restart,
         ),
       },
@@ -1163,127 +1126,135 @@ class _OptionCardState extends State<_OptionCard> {
   }
 }
 
-// ── Result ─────────────────────────────────────────────────────────────────────
+// ── Loading ────────────────────────────────────────────────────────────────────
 
-class _ResultView extends StatelessWidget {
-  const _ResultView({super.key, required this.result, required this.onHome});
-  final RecommendationResult result;
-  final VoidCallback onHome;
-
-  String get _imagePath {
-    if (result.productName.contains('화전')) {
-      return 'assets/figma/recommend_hwajeon.png';
-    }
-    if (result.productName.contains('송편')) {
-      return 'assets/figma/recommend_songpyeon.png';
-    }
-    if (result.productName.contains('빙수')) {
-      return 'assets/figma/menu_green_bingsu.png';
-    }
-    return 'assets/figma/recommend_yakgwa.png';
-  }
+class _LoadingView extends StatelessWidget {
+  const _LoadingView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFFCF7F5),
+      padding: const EdgeInsets.symmetric(vertical: 120),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF934753)),
+            const SizedBox(height: 32),
+            Text(
+              tr('취향을 분석하는 중이에요...', 'Analysing your taste…'),
+              style: const TextStyle(
+                color: Color(0xFF8F7E7B),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Result ─────────────────────────────────────────────────────────────────────
+
+class _ResultView extends StatelessWidget {
+  const _ResultView({
+    super.key,
+    required this.menuName,
+    required this.onHome,
+  });
+  final String menuName;
+  final VoidCallback onHome;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = dagwaResults[menuName];
     final isWide = MediaQuery.sizeOf(context).width >= 780;
 
     return Container(
-      color: const Color(0xFFDDDAD9),
-      padding: const EdgeInsets.symmetric(vertical: 42),
+      color: const Color(0xFFF5F0ED),
+      padding: const EdgeInsets.symmetric(vertical: 60),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1030),
+          constraints: const BoxConstraints(maxWidth: 900),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(
-                isWide ? 34 : 22,
-                isWide ? 30 : 24,
-                isWide ? 34 : 22,
-                isWide ? 28 : 24,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEFAF9),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.11),
-                    blurRadius: 26,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr('취향 분석 결과', 'Your taste result'),
+                  style: const TextStyle(
+                    color: Color(0xFF8F7E7B),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      tr('취향 분석 결과', 'Your taste result'),
-                      style: const TextStyle(
-                        color: Color(0xFF8F7E7B),
-                        fontFamily: 'Gowun Batang',
-                        fontFamilyFallback: _serifFallback,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        height: 1.25,
-                      ),
-                    ),
+                ),
+                const SizedBox(height: 40),
+                Center(
+                  child: SizedBox(
+                    width: isWide ? 260 : 200,
+                    height: isWide ? 260 : 200,
+                    child: data != null
+                        ? Image.asset(data.imagePath, fit: BoxFit.contain)
+                        : const SizedBox(),
                   ),
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    width: isWide ? 250 : 210,
-                    height: isWide ? 250 : 210,
-                    child: Image.asset(_imagePath, fit: BoxFit.contain),
-                  ),
-                  const SizedBox(height: 26),
-                  Text(
-                    tr('당신은 ${result.profileTitle}의 매력을 가진 ${result.productName}!',
-                        'You\'re ${result.productNameEn} with the charm of ${result.profileTitleEn}!'),
+                ),
+                const SizedBox(height: 32),
+                Center(
+                  child: Text(
+                    data?.title ?? '오늘의 추천 다과는 $menuName 입니다!',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Color(0xFF633B3A),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
-                      height: 1.35,
+                      height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 760),
-                    child: Text(
-                      tr(result.aiSummary, result.aiSummaryEn),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF8C7E7B),
-                        fontFamily: 'Gowun Batang',
-                        fontFamilyFallback: _serifFallback,
-                        fontSize: 17,
-                        height: 1.78,
+                ),
+                if (data != null) ...[
+                  const SizedBox(height: 24),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 720),
+                      child: Text(
+                        data.description,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF6B5B5A),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 15,
+                          height: 1.85,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 34),
+                  const SizedBox(height: 40),
                   if (isWide)
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: _PairingBox(
-                            label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
-                            value: tr(result.teaPairing, result.teaPairingEn),
-                          ),
-                        ),
-                        const SizedBox(width: 24),
-                        Expanded(
-                          child: _PairingBox(
-                            label: tr('차선 추천', 'Runner-up'),
-                            value: tr(result.secondaryMenuName,
-                                result.secondaryMenuNameEn),
-                          ),
-                        ),
+                        Expanded(child: _PairingBox(
+                          label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
+                          value: data.pairing,
+                          desc: data.pairingDesc,
+                        )),
+                        const SizedBox(width: 20),
+                        Expanded(child: _PairingBox(
+                          label: tr('차선 추천', 'Runner-up'),
+                          value: data.runnerUp,
+                          desc: data.runnerUpDesc,
+                        )),
                       ],
                     )
                   else
@@ -1291,40 +1262,34 @@ class _ResultView extends StatelessWidget {
                       children: [
                         _PairingBox(
                           label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
-                          value: tr(result.teaPairing, result.teaPairingEn),
+                          value: data.pairing,
+                          desc: data.pairingDesc,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         _PairingBox(
                           label: tr('차선 추천', 'Runner-up'),
-                          value: tr(result.secondaryMenuName,
-                              result.secondaryMenuNameEn),
+                          value: data.runnerUp,
+                          desc: data.runnerUpDesc,
                         ),
                       ],
                     ),
-                  const SizedBox(height: 30),
-                  _ResultActions(
-                    onRetry: onHome,
-                    onBuy: () =>
-                        Navigator.pushReplacementNamed(context, '/menu'),
-                    onShare: () {
-                      Clipboard.setData(
-                        ClipboardData(
-                          text: tr(
-                              '행궁다과 추천 결과: ${result.profileTitle} - ${result.productName}',
-                              'Haenggung Dagwa result: ${result.profileTitleEn} - ${result.productNameEn}'),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(
-                          SnackBar(
-                              content: Text(tr('추천 결과를 복사했어요.',
-                                  'Result copied to clipboard.'))),
-                        );
-                    },
-                  ),
                 ],
-              ),
+                const SizedBox(height: 40),
+                _ResultActions(
+                  onRetry: onHome,
+                  onBuy: () => Navigator.pushReplacementNamed(context, '/menu'),
+                  onShare: () {
+                    Clipboard.setData(ClipboardData(
+                      text: '행궁다과 추천 결과: ${data?.title ?? menuName}',
+                    ));
+                    ScaffoldMessenger.of(context)
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(SnackBar(
+                        content: Text(tr('추천 결과를 복사했어요.', 'Result copied to clipboard.')),
+                      ));
+                  },
+                ),
+              ],
             ),
           ),
         ),
@@ -1427,22 +1392,25 @@ class _ResultActions extends StatelessWidget {
 }
 
 class _PairingBox extends StatelessWidget {
-  const _PairingBox({required this.label, required this.value});
+  const _PairingBox({
+    required this.label,
+    required this.value,
+    required this.desc,
+  });
   final String label;
   final String value;
+  final String desc;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 112),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: const Color(0xFFF2ECEC),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             label,
@@ -1450,20 +1418,29 @@ class _PairingBox extends StatelessWidget {
               color: Color(0xFF5F5552),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 19,
+              fontSize: 13,
             ),
           ),
-          const SizedBox(height: 18),
-          Center(
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFC85F65),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 25,
-              ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Color(0xFFC85F65),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            desc,
+            style: const TextStyle(
+              color: Color(0xFF8C7E7B),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 13,
+              height: 1.7,
             ),
           ),
         ],

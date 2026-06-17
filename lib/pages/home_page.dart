@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                     onExperienceTap: () =>
                         Navigator.pushReplacementNamed(context, '/experience'),
                     onCateringTap: () =>
-                        Navigator.pushReplacementNamed(context, '/catering'),
+                        Navigator.pushReplacementNamed(context, '/custom'),
                     onAiTap: () =>
                         Navigator.pushReplacementNamed(context, '/ai'),
                     onLoginTap: () => ScaffoldMessenger.of(context)
@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                     onClassTap: () =>
                         Navigator.pushReplacementNamed(context, '/experience'),
                     onCateringTap: () =>
-                        Navigator.pushReplacementNamed(context, '/catering'),
+                        Navigator.pushReplacementNamed(context, '/custom'),
                   ),
                   const AppFooter(),
                 ],
@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage> {
                 FilledButton(
                   onPressed: () {
                     Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/catering');
+                    Navigator.pushReplacementNamed(context, '/custom');
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF934753),

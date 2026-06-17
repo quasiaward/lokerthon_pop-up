@@ -75,9 +75,9 @@ class _WideNav extends StatelessWidget {
             ),
             _NavItem(
               tr('케이터링', 'Catering'),
-              '/catering',
+              '/custom',
               currentRoute,
-              onTap: () => _navigate(context, '/catering'),
+              onTap: () => _navigate(context, '/custom'),
             ),
             _NavItem(
               tr('나만의 다과 추천', 'Find Your Dagwa'),
@@ -151,9 +151,9 @@ class _CompactNav extends StatelessWidget {
               ),
               _NavItem(
                 tr('케이터링', 'Catering'),
-                '/catering',
+                '/custom',
                 currentRoute,
-                onTap: () => _navigate(context, '/catering'),
+                onTap: () => _navigate(context, '/custom'),
               ),
               _NavItem(
                 tr('나만의 다과 추천', 'Find Your Dagwa'),
@@ -231,7 +231,7 @@ void _showCartSheet(BuildContext context) {
                 FilledButton(
                   onPressed: () {
                     Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/catering');
+                    Navigator.pushReplacementNamed(context, '/custom');
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF934753),

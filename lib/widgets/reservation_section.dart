@@ -1,11 +1,18 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import '../l10n/lang.dart';
 import 'common.dart';
 import 'watercolor_deco.dart';
+
+const _apiBase = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:8000',
+);
 
 const _serifFallback = [
   'Apple SD Gothic Neo',
@@ -66,6 +73,7 @@ class _ReservationSectionState extends State<ReservationSection> {
   _ReservationStage _stage = _ReservationStage.select;
   int _programIndex = 0;
   bool _hasProgramSelection = false;
+  bool _isSubmitting = false;
   String _type = '개인';
   int _adultCount = 4;
   int _childCount = 0;
@@ -173,13 +181,38 @@ class _ReservationSectionState extends State<ReservationSection> {
     setState(() => _stage = _ReservationStage.confirm);
   }
 
-  void _complete() {
-    _showSnack(tr('체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.',
-        'Your inquiry has been received. We\'ll contact you after confirming.'));
-    setState(() {
-      _stage = _ReservationStage.select;
-      _hasProgramSelection = false;
-    });
+  Future<void> _complete() async {
+    setState(() => _isSubmitting = true);
+    try {
+      final res = await http.post(
+        Uri.parse('$_apiBase/email/experience'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'type': _program.name,
+          'adults': _adultCount,
+          'children': _childCount,
+          'date': _dateLabel,
+          'time': _time,
+          'total_price': _unitPrice * _totalPeople,
+        }),
+      );
+      if (res.statusCode == 200) {
+        _showSnack(tr(
+          '체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.',
+          'Your inquiry has been received. We\'ll contact you after confirming.',
+        ));
+        setState(() {
+          _stage = _ReservationStage.select;
+          _hasProgramSelection = false;
+        });
+      } else {
+        _showSnack(tr('전송에 실패했습니다. 다시 시도해 주세요.', 'Submission failed. Please try again.'));
+      }
+    } catch (_) {
+      _showSnack(tr('네트워크 오류가 발생했습니다.', 'A network error occurred.'));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   void _showSnack(String message) {
@@ -1354,7 +1387,7 @@ class _ReservationConfirmView extends StatelessWidget {
                         child: SizedBox(
                           height: 70,
                           child: FilledButton(
-                            onPressed: state._complete,
+                            onPressed: state._isSubmitting ? null : state._complete,
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF9B4A59),
                               foregroundColor: Colors.white,
@@ -1362,15 +1395,24 @@ class _ReservationConfirmView extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(
-                              tr('확인', 'Confirm'),
-                              style: const TextStyle(
-                                fontFamily: 'Gowun Batang',
-                                fontFamilyFallback: _serifFallback,
-                                fontSize: 23,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            child: state._isSubmitting
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Text(
+                                    tr('확인', 'Confirm'),
+                                    style: const TextStyle(
+                                      fontFamily: 'Gowun Batang',
+                                      fontFamilyFallback: _serifFallback,
+                                      fontSize: 23,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),

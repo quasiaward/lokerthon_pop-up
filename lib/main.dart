@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/lang.dart';
 import 'pages/ai_recommendation_page.dart';
-import 'pages/catering_page.dart';
+import 'pages/custom_page.dart';
 import 'pages/experience_page.dart';
 import 'pages/home_page.dart';
 import 'pages/menu_page.dart';
@@ -68,7 +68,7 @@ class HaenggungDagwaApp extends StatelessWidget {
             '/': (context) => const HomePage(),
             '/menu': (context) => const MenuPage(),
             '/experience': (context) => const ExperiencePage(),
-            '/catering': (context) => const CateringPage(),
+            '/custom': (context) => const CustomPage(),
             '/ai': (context) => const AiRecommendationPage(),
           },
         );

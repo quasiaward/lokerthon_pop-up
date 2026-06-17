@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../l10n/lang.dart';
-import 'common.dart';
 import 'watercolor_deco.dart';
 
 const _serifFallback = [
@@ -11,49 +13,61 @@ const _serifFallback = [
   'sans-serif',
 ];
 
-const _trayAsset = 'assets/figma/catering_figma_tray_6_display.png';
-
-const _yakgwa = _DagwaOption(
-  name: '행궁약과',
-  nameEn: 'Haenggung Yakgwa',
-  price: '5,000',
-  priceValue: 5000,
-  image: 'assets/figma/catering_figma_yakgwa.png',
-  trayScale: 0.23,
-  cardImageSize: 228,
+const _packagingFee = 1500;
+const _apiBase = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://localhost:8000',
 );
 
-const _hwajeon = _DagwaOption(
-  name: '진달래 화전',
-  nameEn: 'Azalea Hwajeon',
-  price: '5,000',
-  priceValue: 5000,
-  image: 'assets/figma/catering_figma_hwajeon.png',
-  trayScale: 0.29,
-  cardImageSize: 225,
-);
+// ── 상자 크기 ──────────────────────────────────────────────────────────────────
 
-const _songpyeon = _DagwaOption(
-  name: '송편',
-  nameEn: 'Songpyeon',
-  price: '5,000',
-  priceValue: 5000,
-  image: 'assets/figma/catering_figma_songpyeon.png',
-  trayScale: 0.25,
-  cardImageSize: 190,
-);
+class _BoxSize {
+  const _BoxSize({required this.slots, required this.price, required this.label});
+  final int slots;
+  final int price;
+  final String label;
+}
 
-const _osakgyeongdan = _DagwaOption(
-  name: '오색경단',
-  nameEn: 'Five-color Gyeongdan',
-  price: '5,000',
-  priceValue: 5000,
-  image: 'assets/figma/catering_figma_osakgyeongdan.png',
-  trayScale: 0.26,
-  cardImageSize: 198,
-);
+const _boxSizes = [
+  _BoxSize(slots: 4, price: 8000, label: '4구'),
+  _BoxSize(slots: 6, price: 12000, label: '6구'),
+  _BoxSize(slots: 9, price: 18000, label: '9구'),
+];
 
-const _selectorOptions = [_yakgwa, _hwajeon, _songpyeon, _osakgyeongdan];
+// ── 다과 목록 ──────────────────────────────────────────────────────────────────
+
+class _DagwaItem {
+  const _DagwaItem({required this.name, required this.imagePath});
+  final String name;
+  final String imagePath;
+}
+
+const _dagwaItems = [
+  _DagwaItem(name: '영양찰떡', imagePath: 'assets/figma/result_영양찰떡.png'),
+  _DagwaItem(name: '도라지정과', imagePath: 'assets/figma/result_도라지정과.png'),
+  _DagwaItem(name: '수원약과', imagePath: 'assets/figma/result_행궁약과.png'),
+  _DagwaItem(name: '흑임자다식', imagePath: 'assets/figma/result_흑임자다식.png'),
+  _DagwaItem(name: '곶감 호두말이', imagePath: 'assets/figma/result_곶감호두말이.png'),
+  _DagwaItem(name: '육포다식', imagePath: 'assets/figma/result_육포다식.png'),
+  _DagwaItem(name: '콩고물 도라지정과', imagePath: 'assets/figma/result_콩고물도라지정과.png'),
+  _DagwaItem(name: '금귤정과', imagePath: 'assets/figma/result_금귤정과.png'),
+  _DagwaItem(name: '양갱', imagePath: 'assets/figma/result_양갱.png'),
+  _DagwaItem(name: '구움 견과 강정', imagePath: 'assets/figma/result_견과류.png'),
+  _DagwaItem(name: '매작과', imagePath: 'assets/figma/result_매작과.png'),
+  _DagwaItem(name: '깨강정', imagePath: 'assets/figma/result_깨강정.png'),
+];
+
+const _timeSlots = [
+  '11:00', '12:00', '13:00', '14:00',
+  '15:00', '16:00', '17:00', '18:00',
+  '19:00', '20:00',
+];
+
+// ── 단계 ──────────────────────────────────────────────────────────────────────
+
+enum _Stage { sizeSelect, select, form, complete }
+
+// ── 메인 위젯 ─────────────────────────────────────────────────────────────────
 
 class CateringSection extends StatefulWidget {
   const CateringSection({super.key});
@@ -63,604 +77,206 @@ class CateringSection extends StatefulWidget {
 }
 
 class _CateringSectionState extends State<CateringSection> {
-  late final List<_DagwaOption?> _slots;
-  int? _activeSlot;
+  _Stage _stage = _Stage.sizeSelect;
+  int _boxSizeIndex = 0;
+  late List<_DagwaItem?> _slots;
 
-  int get _filledCount => _slots.whereType<_DagwaOption>().length;
-  int get _totalPrice => _slots.whereType<_DagwaOption>().fold(
-    0,
-    (sum, item) => sum + item.priceValue,
-  );
+  // 주문 폼
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  DateTime? _pickupDate;
+  String? _pickupTime;
+  int _quantity = 1;
+  bool _isSubmitting = false;
+
+  _BoxSize get _box => _boxSizes[_boxSizeIndex];
+  int get _totalPrice => _box.price * _quantity + _packagingFee;
+  bool get _isFull => _slots.whereType<_DagwaItem>().length == _box.slots;
 
   @override
   void initState() {
     super.initState();
-    _slots = List<_DagwaOption?>.filled(6, null);
-    _activeSlot = 0;
+    _slots = List.filled(_boxSizes[0].slots, null);
   }
 
-  void _selectSlot(int index) {
-    setState(() => _activeSlot = index);
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
   }
 
-  // 빈 공간을 누르면 상자 칸 선택을 해제한다(아이폰에서 빈 곳을 눌러 키보드를 내리듯).
-  void _deselect() {
-    if (_activeSlot == null) return;
-    setState(() => _activeSlot = null);
-  }
-
-  void _swapSlots(int from, int to) {
-    if (from == to) return;
+  void _changeBoxSize(int index) {
     setState(() {
-      final moved = _slots[from];
-      _slots[from] = _slots[to];
-      _slots[to] = moved;
-      _activeSlot = to;
+      _boxSizeIndex = index;
+      _slots = List.filled(_boxSizes[index].slots, null);
     });
   }
 
-  void _addDagwa(_DagwaOption option) {
-    setState(() {
-      final targetIndex =
-          _activeSlot ?? _slots.indexWhere((slot) => slot == null);
-      final resolvedIndex = targetIndex == -1 ? 0 : targetIndex;
-      _slots[resolvedIndex] = option;
+  void _addDagwa(_DagwaItem item) {
+    final idx = _slots.indexWhere((s) => s == null);
+    if (idx == -1) return;
+    setState(() => _slots[idx] = item);
+  }
 
-      final nextEmpty = _slots.indexWhere((slot) => slot == null);
-      _activeSlot = nextEmpty == -1 ? resolvedIndex : nextEmpty;
-    });
+  void _removeSlot(int idx) {
+    setState(() => _slots[idx] = null);
+  }
+
+  void _goToSizeSelect() => setState(() => _stage = _Stage.sizeSelect);
+  void _goToSelect() => setState(() => _stage = _Stage.select);
+  void _goToForm() => setState(() => _stage = _Stage.form);
+  void _backToSelect() => setState(() => _stage = _Stage.select);
+
+  Future<void> _submitOrder() async {
+    if (_nameCtrl.text.trim().isEmpty ||
+        _phoneCtrl.text.trim().isEmpty ||
+        _pickupDate == null ||
+        _pickupTime == null) {
+      _showSnack(tr('모든 항목을 입력해 주세요.', 'Please fill in all fields.'));
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      final dateStr =
+          '${_pickupDate!.year}/${_pickupDate!.month.toString().padLeft(2, '0')}/${_pickupDate!.day.toString().padLeft(2, '0')}';
+      final res = await http.post(
+        Uri.parse('$_apiBase/email/custom'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': _nameCtrl.text.trim(),
+          'phone': _phoneCtrl.text.trim(),
+          'box_size': _box.slots,
+          'quantity': _quantity,
+          'items': _slots.whereType<_DagwaItem>().map((d) => d.name).toList(),
+          'pickup_date': dateStr,
+          'pickup_time': _pickupTime,
+          'total_price': _totalPrice,
+        }),
+      );
+      if (res.statusCode == 200) {
+        setState(() => _stage = _Stage.complete);
+      } else {
+        _showSnack(tr('전송에 실패했습니다. 다시 시도해 주세요.', 'Submission failed. Please try again.'));
+      }
+    } catch (_) {
+      _showSnack(tr('네트워크 오류가 발생했습니다.', 'A network error occurred.'));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF7A3B47),
+      ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 720;
-
-        final deco = decoScaleOf(context, designWidth: 1409);
-
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _deselect,
-          child: Container(
-            color: const Color(0xFFFFF9F6),
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-            children: [
-              Positioned(
-                right: 0,
-                top: 470 * deco,
-                child: WatercolorDeco(decoClusterSoft, width: 535 * deco),
-              ),
-              SectionShell(
-                maxWidth: 1040,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    0,
-                    compact ? 58 : 97,
-                    0,
-                    compact ? 72 : 96,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        tr('6구 다과 상자', '6-Piece Dagwa Box'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF534344),
-                          fontFamily: 'Gowun Batang',
-                          fontFamilyFallback: _serifFallback,
-                          fontSize: compact ? 36 : 50,
-                          fontWeight: FontWeight.w700,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        tr('원하는 다과로 상자를 구성해주세요.',
-                            'Compose your box with the dagwa you like.'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF534344),
-                          fontFamily: 'Gowun Batang',
-                          fontFamilyFallback: _serifFallback,
-                          fontSize: compact ? 16 : 18,
-                          height: 1.55,
-                        ),
-                      ),
-                      SizedBox(height: compact ? 22 : 28),
-                      _CompositionStatus(
-                        slots: _slots,
-                        activeSlot: _activeSlot,
-                        filledCount: _filledCount,
-                        totalPrice: _totalPrice,
-                        onSlotTap: _selectSlot,
-                      ),
-                      SizedBox(height: compact ? 14 : 18),
-                      const _UsageGuideCard(),
-                      SizedBox(height: compact ? 24 : 32),
-                      _TrayBuilder(
-                        slots: _slots,
-                        activeSlot: _activeSlot,
-                        onSlotTap: _selectSlot,
-                        onSwap: _swapSlots,
-                      ),
-                      SizedBox(height: compact ? 34 : 54),
-                      const _SelectorHeading(),
-                      const SizedBox(height: 18),
-                      _DagwaSelector(
-                        options: _selectorOptions,
-                        onSelected: _addDagwa,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      transitionBuilder: (child, anim) => FadeTransition(
+        opacity: anim,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero)
+              .animate(anim),
+          child: child,
+        ),
+      ),
+      child: switch (_stage) {
+        _Stage.sizeSelect => _SizeSelectView(
+            key: const ValueKey('sizeSelect'),
+            state: this,
           ),
+        _Stage.select => _SelectView(
+            key: const ValueKey('select'),
+            state: this,
           ),
-        );
+        _Stage.form => _FormView(
+            key: const ValueKey('form'),
+            state: this,
+          ),
+        _Stage.complete => _CompleteView(
+            key: const ValueKey('complete'),
+            state: this,
+          ),
       },
     );
   }
 }
 
-class _CompositionStatus extends StatelessWidget {
-  const _CompositionStatus({
-    required this.slots,
-    required this.activeSlot,
-    required this.filledCount,
-    required this.totalPrice,
-    required this.onSlotTap,
-  });
+// ── 헬퍼: 가격 포맷 ────────────────────────────────────────────────────────────
 
-  final List<_DagwaOption?> slots;
-  final int? activeSlot;
-  final int filledCount;
-  final int totalPrice;
-  final ValueChanged<int> onSlotTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 720;
-
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 760),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE8DCD6)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFB99A90).withValues(alpha: 0.10),
-              blurRadius: 24,
-              spreadRadius: -10,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          child: compact
-              ? Column(
-                  children: [
-                    _StatusText(
-                      filledCount: filledCount,
-                      totalPrice: totalPrice,
-                      activeSlot: activeSlot,
-                    ),
-                    const SizedBox(height: 14),
-                    _SlotChipRow(
-                      slots: slots,
-                      activeSlot: activeSlot,
-                      onSlotTap: onSlotTap,
-                    ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    _StatusText(
-                      filledCount: filledCount,
-                      totalPrice: totalPrice,
-                      activeSlot: activeSlot,
-                    ),
-                    const Spacer(),
-                    _SlotChipRow(
-                      slots: slots,
-                      activeSlot: activeSlot,
-                      onSlotTap: onSlotTap,
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
+String _won(int v) {
+  final s = v.toString();
+  final buf = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+    buf.write(s[i]);
   }
+  return '${buf.toString()}원';
 }
 
-class _StatusText extends StatelessWidget {
-  const _StatusText({
-    required this.filledCount,
-    required this.totalPrice,
-    required this.activeSlot,
-  });
+// ── 상자 미리보기 위젯 ────────────────────────────────────────────────────────
 
-  final int filledCount;
-  final int totalPrice;
-  final int? activeSlot;
+class _BoxPreview extends StatelessWidget {
+  const _BoxPreview({required this.slots, required this.onRemove, this.size = 300});
+  final List<_DagwaItem?> slots;
+  final void Function(int)? onRemove;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    final String activeLabel;
-    if (activeSlot != null) {
-      activeLabel = tr('${activeSlot! + 1}번 칸 선택',
-          'Slot ${activeSlot! + 1} selected');
-    } else if (filledCount >= 6) {
-      activeLabel = tr('구성 완료', 'Box complete');
-    } else {
-      activeLabel = tr('칸을 선택하세요', 'Tap a slot to select');
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              tr('상자 구성', 'Your box'),
-              style: const TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                height: 1,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              '$filledCount / 6',
-              style: const TextStyle(
-                color: Color(0xFF934753),
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                height: 1,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Text(
-              tr('${_formatWon(totalPrice)}원', '${_formatWon(totalPrice)} KRW'),
-              style: const TextStyle(
-                color: Color(0xFF837777),
-                fontFamily: 'Plus Jakarta Sans',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          activeLabel,
-          style: const TextStyle(
-            color: Color(0xFF9A9285),
-            fontFamily: 'Gowun Batang',
-            fontFamilyFallback: _serifFallback,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            height: 1,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SlotChipRow extends StatelessWidget {
-  const _SlotChipRow({
-    required this.slots,
-    required this.activeSlot,
-    required this.onSlotTap,
-  });
-
-  final List<_DagwaOption?> slots;
-  final int? activeSlot;
-  final ValueChanged<int> onSlotTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (var index = 0; index < slots.length; index++)
-          _SlotChip(
-            index: index,
-            option: slots[index],
-            active: activeSlot == index,
-            onTap: () => onSlotTap(index),
-          ),
-      ],
-    );
-  }
-}
-
-class _SlotChip extends StatelessWidget {
-  const _SlotChip({
-    required this.index,
-    required this.option,
-    required this.active,
-    required this.onTap,
-  });
-
-  final int index;
-  final _DagwaOption? option;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 40,
-          height: 40,
-          padding: EdgeInsets.all(option == null ? 0 : 4),
-          decoration: BoxDecoration(
-            color: active ? const Color(0xFF934753) : const Color(0xFFFFFCFA),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: active ? const Color(0xFF934753) : const Color(0xFFE5D6D0),
-              width: active ? 2 : 1,
-            ),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF934753).withValues(alpha: 0.18),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: option == null
-              ? Icon(
-                  Icons.add_rounded,
-                  color: active ? Colors.white : const Color(0xFFB79B95),
-                  size: 21,
-                )
-              : ClipOval(
-                  child: Image.asset(option!.image, fit: BoxFit.contain),
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class _UsageGuideCard extends StatelessWidget {
-  const _UsageGuideCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 720;
-    final pills = [
-      _GuidePill(icon: Icons.touch_app_outlined, label: tr('칸 선택', 'Select slot')),
-      _GuidePill(
-          icon: Icons.add_circle_outline_rounded, label: tr('다과 담기', 'Add dagwa')),
-      _GuidePill(
-          icon: Icons.open_with_rounded, label: tr('끌어서 칸 교체', 'Drag to swap')),
-    ];
-
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 760),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.66),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE9DDD8)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            compact ? 16 : 20,
-            compact ? 14 : 16,
-            compact ? 16 : 20,
-            compact ? 14 : 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flex(
-                direction: compact ? Axis.vertical : Axis.horizontal,
-                crossAxisAlignment: compact
-                    ? CrossAxisAlignment.start
-                    : CrossAxisAlignment.center,
-                children: [
-                  const _GuideTitle(),
-                  SizedBox(width: compact ? 0 : 14, height: compact ? 8 : 0),
-                  Flexible(
-                    fit: compact ? FlexFit.loose : FlexFit.tight,
-                    child: Text(
-                      tr('상자 칸을 먼저 누르고 아래 다과 카드의 담기를 선택하세요. 담은 다과는 다른 칸으로 끌어다 놓아 자리를 바꿀 수 있습니다.',
-                          'Tap a box slot first, then choose Add on a dagwa card below. Drag a placed dagwa onto another slot to swap their positions.'),
-                      style: TextStyle(
-                        color: const Color(0xFF8B7D7A),
-                        fontFamily: 'Gowun Batang',
-                        fontFamilyFallback: _serifFallback,
-                        fontSize: compact ? 13 : 14,
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: pills),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GuideTitle extends StatelessWidget {
-  const _GuideTitle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(Icons.auto_awesome_rounded,
-            color: Color(0xFF934753), size: 18),
-        const SizedBox(width: 7),
-        Text(
-          tr('상자 구성 방법', 'How to build your box'),
-          style: const TextStyle(
-            color: Color(0xFF534344),
-            fontFamily: 'Gowun Batang',
-            fontFamilyFallback: _serifFallback,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            height: 1.2,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GuidePill extends StatelessWidget {
-  const _GuidePill({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
+    final cols = slots.length <= 4 ? 2 : 3;
+    return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
-        color: const Color(0xFFF4ECE9),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE5D6D0)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(11, 8, 6, 8),
-            child: Icon(icon, color: const Color(0xFF934753), size: 16),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 13, 8),
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                height: 1,
-              ),
-            ),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE0D5D0), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SelectorHeading extends StatelessWidget {
-  const _SelectorHeading();
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 760),
-      child: Row(
-        children: [
-          Text(
-            tr('다과 선택', 'Choose dagwa'),
-            style: const TextStyle(
-              color: Color(0xFF534344),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-            ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 6,
           ),
-          const SizedBox(width: 14),
-          const Expanded(child: Divider(color: Color(0xFFE9DDD8))),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrayBuilder extends StatelessWidget {
-  const _TrayBuilder({
-    required this.slots,
-    required this.activeSlot,
-    required this.onSlotTap,
-    required this.onSwap,
-  });
-
-  final List<_DagwaOption?> slots;
-  final int? activeSlot;
-  final ValueChanged<int> onSlotTap;
-  final void Function(int from, int to) onSwap;
-
-  static const _slotCenters = [
-    Offset(0.235, 0.27),
-    Offset(0.49, 0.27),
-    Offset(0.745, 0.27),
-    Offset(0.235, 0.745),
-    Offset(0.49, 0.745),
-    Offset(0.745, 0.745),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 727),
-      child: AspectRatio(
-        aspectRatio: 1024 / 560,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final height = constraints.maxHeight;
-
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned.fill(
-                  child: Image.asset(_trayAsset, fit: BoxFit.contain),
+          itemCount: slots.length,
+          itemBuilder: (_, i) {
+            final item = slots[i];
+            return GestureDetector(
+              onTap: onRemove != null && item != null ? () => onRemove!(i) : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: item != null
+                      ? const Color(0xFFFFF5F0)
+                      : const Color(0xFFF5F0ED),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFE8DDD8)),
                 ),
-                for (var index = 0; index < slots.length; index++)
-                  _TraySlot(
-                    index: index,
-                    option: slots[index],
-                    active: activeSlot == index,
-                    center: Offset(
-                      width * _slotCenters[index].dx,
-                      height * _slotCenters[index].dy,
-                    ),
-                    trayWidth: width,
-                    onTap: () => onSlotTap(index),
-                    onSwap: onSwap,
-                  ),
-              ],
+                child: item != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Image.asset(item.imagePath, fit: BoxFit.contain),
+                      )
+                    : const Icon(Icons.add, color: Color(0xFFCFC4C0), size: 20),
+              ),
             );
           },
         ),
@@ -669,348 +285,465 @@ class _TrayBuilder extends StatelessWidget {
   }
 }
 
-class _TraySlot extends StatelessWidget {
-  const _TraySlot({
-    required this.index,
-    required this.option,
-    required this.active,
-    required this.center,
-    required this.trayWidth,
-    required this.onTap,
-    required this.onSwap,
-  });
+// ── 0단계: 상자 크기 선택 ────────────────────────────────────────────────────
 
-  final int index;
-  final _DagwaOption? option;
-  final bool active;
-  final Offset center;
-  final double trayWidth;
-  final VoidCallback onTap;
-  final void Function(int from, int to) onSwap;
+class _SizeSelectView extends StatelessWidget {
+  const _SizeSelectView({super.key, required this.state});
+  final _CateringSectionState state;
 
   @override
   Widget build(BuildContext context) {
-    final size = option == null
-        ? trayWidth * 0.22
-        : trayWidth * option!.trayScale;
-
-    return Positioned(
-      left: center.dx - size / 2,
-      top: center.dy - size / 2,
-      width: size,
-      height: size,
-      child: DragTarget<int>(
-        onWillAcceptWithDetails: (details) => details.data != index,
-        onAcceptWithDetails: (details) => onSwap(details.data, index),
-        builder: (context, candidate, rejected) {
-          final hovering = candidate.isNotEmpty;
-          final content = option == null
-              ? _EmptyTraySlot(active: active || hovering, label: '${index + 1}')
-              : _TrayItem(option: option!, active: active || hovering);
-
-          final tappable = GestureDetector(onTap: onTap, child: content);
-
-          if (option == null) {
-            return MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: tappable,
-            );
-          }
-
-          return MouseRegion(
-            cursor: SystemMouseCursors.grab,
-            child: Draggable<int>(
-              data: index,
-              feedback: _TrayDragFeedback(option: option!, size: size),
-              childWhenDragging: IgnorePointer(
-                child: _EmptyTraySlot(active: false, label: '${index + 1}'),
-              ),
-              child: tappable,
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _TrayDragFeedback extends StatelessWidget {
-  const _TrayDragFeedback({required this.option, required this.size});
-
-  final _DagwaOption option;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size * 1.12,
-      height: size * 1.12,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.32),
-              blurRadius: 32,
-              offset: const Offset(0, 14),
-            ),
-          ],
+    return Container(
+      color: const Color(0xFFFFF9F6),
+      child: Stack(children: [
+        Positioned(
+          right: 0,
+          top: 200,
+          child: WatercolorDeco(decoClusterSoft, width: 380),
         ),
-        child: Image.asset(option.image, fit: BoxFit.contain),
-      ),
-    );
-  }
-}
-
-class _TrayItem extends StatelessWidget {
-  const _TrayItem({required this.option, required this.active});
-
-  final _DagwaOption option;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    // 선택 시: 딱딱한 테두리 대신 살짝 떠오르며 은은한 자두빛 광이 번진다.
-    return AnimatedScale(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      scale: active ? 1.1 : 1,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: active ? 0.24 : 0.2),
-              blurRadius: active ? 28 : 18,
-              offset: Offset(0, active ? 9 : 4),
-            ),
-            if (active)
-              BoxShadow(
-                color: const Color(0xFF934753).withValues(alpha: 0.5),
-                blurRadius: 34,
-                spreadRadius: 1,
-              ),
-          ],
-        ),
-        child: Image.asset(option.image, fit: BoxFit.contain),
-      ),
-    );
-  }
-}
-
-class _EmptyTraySlot extends StatelessWidget {
-  const _EmptyTraySlot({required this.active, required this.label});
-
-  final bool active;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      decoration: BoxDecoration(
-        color: active
-            ? Colors.white.withValues(alpha: 0.54)
-            : Colors.white.withValues(alpha: 0.22),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: active
-              ? const Color(0xFF934753).withValues(alpha: 0.45)
-              : const Color(0xFFD9C9C4).withValues(alpha: 0.62),
-          width: active ? 1.5 : 1,
-        ),
-        boxShadow: active
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF934753).withValues(alpha: 0.22),
-                  blurRadius: 24,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : null,
-      ),
-      child: Center(
-        child: active
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.add_rounded,
-                    color: Color(0xFF934753),
-                    size: 28,
-                  ),
+        SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 64),
+                child: Column(children: [
+                  // 타이틀
                   Text(
-                    label,
+                    tr('나만의 다과 상자 주문하기', 'Order My Own Dagwa Box'),
                     style: const TextStyle(
-                      color: Color(0xFF934753),
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: 12,
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 38,
                       fontWeight: FontWeight.w700,
-                      height: 1,
                     ),
                   ),
-                ],
-              )
-            : Icon(
-                Icons.add_rounded,
-                color: const Color(0xFFBCA7A1).withValues(alpha: 0.72),
-                size: 26,
-              ),
-      ),
-    );
-  }
-}
-
-class _DagwaSelector extends StatelessWidget {
-  const _DagwaSelector({required this.options, required this.onSelected});
-
-  final List<_DagwaOption> options;
-  final ValueChanged<_DagwaOption> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 920
-            ? 4
-            : (constraints.maxWidth >= 560 ? 2 : 1);
-        final gap = columns == 1 ? 18.0 : (columns == 4 ? 20.0 : 28.0);
-        final maxGridWidth = columns == 4
-            ? 1000.0
-            : (columns == 2 ? 660.0 : 314.0);
-        final gridWidth = constraints.maxWidth < maxGridWidth
-            ? constraints.maxWidth
-            : maxGridWidth;
-        final cardWidth = (gridWidth - gap * (columns - 1)) / columns;
-
-        return Center(
-          child: SizedBox(
-            width: gridWidth,
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: gap,
-              runSpacing: 18,
-              children: [
-                for (final option in options)
-                  SizedBox(
-                    width: cardWidth,
-                    child: _DagwaCard(
-                      option: option,
-                      onTap: () => onSelected(option),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _DagwaCard extends StatefulWidget {
-  const _DagwaCard({required this.option, required this.onTap});
-
-  final _DagwaOption option;
-  final VoidCallback onTap;
-
-  @override
-  State<_DagwaCard> createState() => _DagwaCardState();
-}
-
-class _DagwaCardState extends State<_DagwaCard> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          height: 342,
-          padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
-          decoration: BoxDecoration(
-            color: _hovered ? const Color(0xFFFFFEFD) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: _hovered ? const Color(0xFFE0C7C2) : Colors.transparent,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(
-                  0xFF995959,
-                ).withValues(alpha: _hovered ? 0.16 : 0.06),
-                blurRadius: _hovered ? 24 : 12,
-                spreadRadius: -6,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final imageSize = (constraints.maxWidth - 44).clamp(
-                142.0,
-                widget.option.cardImageSize,
-              );
-              final titleSize = constraints.maxWidth < 210 ? 25.0 : 28.0;
-
-              return Column(
-                children: [
+                  const SizedBox(height: 10),
                   Text(
-                    tr(widget.option.price, '${widget.option.price} KRW'),
-                    textAlign: TextAlign.center,
+                    tr(
+                      '원하는 다과를 담아 나만의 다과상자를 구성해보세요.',
+                      'Fill your box with your favourite dagwa.',
+                    ),
                     style: const TextStyle(
-                      color: Color(0xFF4A3D3A),
+                      color: Color(0xFF8C7E7B),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
                       fontSize: 16,
-                      height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    tr(widget.option.name, widget.option.nameEn),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: _hovered ? const Color(0xFF934753) : Colors.black,
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.w700,
-                      height: 1.05,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: Center(
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 150),
-                        scale: _hovered ? 1.04 : 1,
-                        child: SizedBox(
-                          width: imageSize.toDouble(),
-                          height: imageSize.toDouble(),
-                          child: Image.asset(
-                            widget.option.image,
-                            fit: BoxFit.contain,
+                  const SizedBox(height: 52),
+
+                  // 3개 상자 카드
+                  Wrap(
+                    spacing: 24,
+                    runSpacing: 24,
+                    alignment: WrapAlignment.center,
+                    children: List.generate(_boxSizes.length, (i) {
+                      final box = _boxSizes[i];
+                      final selected = state._boxSizeIndex == i;
+                      return GestureDetector(
+                        onTap: () => state._changeBoxSize(i),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 260,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF7A3B47)
+                                  : const Color(0xFFE0D5D0),
+                              width: selected ? 2.5 : 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: selected
+                                    ? const Color(0xFF7A3B47).withValues(alpha: 0.12)
+                                    : Colors.black.withValues(alpha: 0.06),
+                                blurRadius: selected ? 24 : 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
+                          child: Column(children: [
+                            _BoxPreview(
+                              slots: List.filled(box.slots, null),
+                              onRemove: null,
+                              size: 180,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              tr('${box.label} 다과 상자', '${box.label} Box'),
+                              style: TextStyle(
+                                color: selected
+                                    ? const Color(0xFF7A3B47)
+                                    : const Color(0xFF534344),
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _won(box.price),
+                              style: TextStyle(
+                                color: selected
+                                    ? const Color(0xFF7A3B47)
+                                    : const Color(0xFF8C7E7B),
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ]),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 52),
+
+                  // 다과 담으러 가기 버튼
+                  SizedBox(
+                    width: 280,
+                    height: 56,
+                    child: FilledButton(
+                      onPressed: state._goToSelect,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF7A3B47),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                      ),
+                      child: Text(
+                        tr('다과 담으러 가기', 'Fill My Box'),
+                        style: const TextStyle(
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _AddDagwaButton(hovered: _hovered),
-                ],
-              );
-            },
+                  const SizedBox(height: 64),
+
+                  // 예약 안내 사항
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFEDE4E0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tr('예약 안내 사항', 'Ordering Guide'),
+                          style: const TextStyle(
+                            color: Color(0xFF534344),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ...[
+                          tr(
+                            '주문 가능 상자  4구 (8,000원) / 6구 (12,000원) / 9구 (18,000원)',
+                            'Box sizes: 4-slot (₩8,000) / 6-slot (₩12,000) / 9-slot (₩18,000)',
+                          ),
+                          tr(
+                            '포장비  1,500원 고정',
+                            'Packaging fee: ₩1,500 (fixed)',
+                          ),
+                          tr(
+                            '같은 구수의 상자만 복수 주문 가능하며, 혼합 주문은 불가합니다.',
+                            'Multiple boxes of the same size only. Mixed sizes are not available.',
+                          ),
+                          tr(
+                            '주문 접수 후 매장에서 확인 연락을 드립니다.',
+                            'We will contact you to confirm your order after receipt.',
+                          ),
+                          tr(
+                            '픽업 당일 매장을 방문해 결제 및 수령해주세요.',
+                            'Please visit the store on the pickup day to pay and collect.',
+                          ),
+                        ].map((t) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• ',
+                                      style: TextStyle(
+                                        color: Color(0xFF7A3B47),
+                                        fontFamily: 'Gowun Batang',
+                                        fontSize: 14,
+                                      )),
+                                  Expanded(
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(
+                                        color: Color(0xFF6B5B5A),
+                                        fontFamily: 'Gowun Batang',
+                                        fontFamilyFallback: _serifFallback,
+                                        fontSize: 14,
+                                        height: 1.6,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ]),
+              ),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+// ── 1단계: 다과 선택 ──────────────────────────────────────────────────────────
+
+class _SelectView extends StatelessWidget {
+  const _SelectView({super.key, required this.state});
+  final _CateringSectionState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = state._slots.whereType<_DagwaItem>().length;
+    final total = state._box.slots;
+    final isWide = MediaQuery.sizeOf(context).width >= 860;
+
+    return Container(
+      color: const Color(0xFFFFF9F6),
+      child: Stack(children: [
+        Positioned(
+          right: 0,
+          top: 300,
+          child: WatercolorDeco(decoClusterSoft, width: 420),
+        ),
+        SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 64),
+                child: Column(children: [
+                  // 뒤로 가기
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: state._goToSizeSelect,
+                      icon: const Icon(Icons.arrow_back_ios, size: 14, color: Color(0xFF8C7E7B)),
+                      label: Text(
+                        tr('상자 크기 다시 선택', 'Change box size'),
+                        style: const TextStyle(
+                          color: Color(0xFF8C7E7B),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 타이틀
+                  Text(
+                    tr('${state._box.label} 다과 상자', '${state._box.label} Dagwa Box'),
+                    style: const TextStyle(
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr('원하는 다과를 선택해 상자를 구성해보세요.',
+                        'Select dagwa to compose your box.'),
+                    style: const TextStyle(
+                      color: Color(0xFF8C7E7B),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // 상자 크기 탭
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_boxSizes.length, (i) {
+                      final selected = state._boxSizeIndex == i;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: GestureDetector(
+                          onTap: () => state._changeBoxSize(i),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: selected ? const Color(0xFF7A3B47) : Colors.white,
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(
+                                color: selected ? const Color(0xFF7A3B47) : const Color(0xFFD9CCC8),
+                              ),
+                            ),
+                            child: Text(
+                              '${_boxSizes[i].label} · ${_won(_boxSizes[i].price)}',
+                              style: TextStyle(
+                                color: selected ? Colors.white : const Color(0xFF6B5B5A),
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // 상자 미리보기
+                  _BoxPreview(
+                    slots: state._slots,
+                    onRemove: state._removeSlot,
+                    size: isWide ? 280 : 220,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    tr('$filled / $total 선택됨  (슬롯을 눌러 제거)',
+                        '$filled / $total selected  (tap slot to remove)'),
+                    style: const TextStyle(
+                      color: Color(0xFFAA9A96),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // 다과 그리드
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isWide ? 4 : 3,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.85,
+                    ),
+                    itemCount: _dagwaItems.length,
+                    itemBuilder: (_, i) => _DagwaCard(
+                      item: _dagwaItems[i],
+                      isFull: state._isFull,
+                      onTap: () => state._addDagwa(_dagwaItems[i]),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // 구매하러 가기 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: FilledButton(
+                      onPressed: state._isFull ? state._goToForm : null,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF7A3B47),
+                        disabledBackgroundColor: const Color(0xFFD9CCC8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        tr('구매하러 가기', 'Proceed to Order'),
+                        style: const TextStyle(
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+class _DagwaCard extends StatelessWidget {
+  const _DagwaCard({required this.item, required this.isFull, required this.onTap});
+  final _DagwaItem item;
+  final bool isFull;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isFull ? null : onTap,
+      child: Opacity(
+        opacity: isFull ? 0.4 : 1.0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFEDE4E0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+                  child: Image.asset(item.imagePath, fit: BoxFit.contain),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+                child: Text(
+                  item.name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1018,77 +751,532 @@ class _DagwaCardState extends State<_DagwaCard> {
   }
 }
 
-class _AddDagwaButton extends StatelessWidget {
-  const _AddDagwaButton({required this.hovered});
+// ── 2단계: 주문 폼 ────────────────────────────────────────────────────────────
 
-  final bool hovered;
+class _FormView extends StatefulWidget {
+  const _FormView({super.key, required this.state});
+  final _CateringSectionState state;
+
+  @override
+  State<_FormView> createState() => _FormViewState();
+}
+
+class _FormViewState extends State<_FormView> {
+  _CateringSectionState get s => widget.state;
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: s._pickupDate ?? now.add(const Duration(days: 1)),
+      firstDate: now.add(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 90)),
+      locale: const Locale('ko', 'KR'),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF7A3B47),
+            onPrimary: Colors.white,
+            surface: Color(0xFFFFF9F6),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked == null) return;
+    s.setState(() => s._pickupDate = picked);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      decoration: BoxDecoration(
-        color: hovered ? const Color(0xFF934753) : const Color(0xFFF4ECE9),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.add_rounded,
-            color: hovered ? Colors.white : const Color(0xFF934753),
-            size: 20,
+    final dateLabel = s._pickupDate == null
+        ? tr('날짜를 선택해주세요', 'Select a date')
+        : '${s._pickupDate!.year}/${s._pickupDate!.month.toString().padLeft(2, '0')}/${s._pickupDate!.day.toString().padLeft(2, '0')}';
+
+    return Container(
+      color: const Color(0xFFFFF9F6),
+      child: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 64),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // 타이틀
+                Center(
+                  child: Text(
+                    tr('${s._box.label} 다과 상자 예약하기',
+                        '${s._box.label} Dagwa Box Order'),
+                    style: const TextStyle(
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    tr('구성한 상자의 아래 날짜 및 상자 정보를 기입해주세요.',
+                        'Please fill in the pickup date and order information.'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF8C7E7B),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                // 상자 미리보기 + 수정 버튼
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _BoxPreview(slots: s._slots, onRemove: null, size: 260),
+                      Positioned(
+                        right: -16,
+                        bottom: -16,
+                        child: OutlinedButton(
+                          onPressed: s._backToSelect,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF7A3B47),
+                            side: const BorderSide(color: Color(0xFF7A3B47)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            tr('다과 상자 수정하기', 'Edit box'),
+                            style: const TextStyle(
+                              fontFamily: 'Gowun Batang',
+                              fontFamilyFallback: _serifFallback,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+
+                // 폼
+                _FormField(
+                  label: tr('성함', 'Name'),
+                  child: TextField(
+                    controller: s._nameCtrl,
+                    decoration: _inputDeco(tr('성함을 입력해주세요.', 'Enter your name')),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _FormField(
+                  label: tr('연락처', 'Phone'),
+                  child: TextField(
+                    controller: s._phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: _inputDeco(tr('연락처를 입력해주세요.', 'Enter your phone number')),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _FormField(
+                  label: tr('희망 픽업 날짜', 'Pickup Date'),
+                  child: GestureDetector(
+                    onTap: _pickDate,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFD9CCC8)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        dateLabel,
+                        style: TextStyle(
+                          color: s._pickupDate == null
+                              ? const Color(0xFFBBAFAC)
+                              : const Color(0xFF534344),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _FormField(
+                  label: tr('희망 픽업 시간', 'Pickup Time'),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _timeSlots.map((t) {
+                      final sel = s._pickupTime == t;
+                      return GestureDetector(
+                        onTap: () => s.setState(() => s._pickupTime = t),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: sel ? const Color(0xFF7A3B47) : Colors.white,
+                            border: Border.all(
+                              color: sel ? const Color(0xFF7A3B47) : const Color(0xFFD9CCC8),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            t,
+                            style: TextStyle(
+                              color: sel ? Colors.white : const Color(0xFF6B5B5A),
+                              fontFamily: 'Gowun Batang',
+                              fontFamilyFallback: _serifFallback,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _FormField(
+                  label: tr('다과 상자 수량', 'Quantity'),
+                  child: Row(children: [
+                    _CountBtn(icon: Icons.remove, onTap: () {
+                      if (s._quantity > 1) s.setState(() => s._quantity--);
+                    }),
+                    const SizedBox(width: 16),
+                    Text(
+                      '${s._quantity} ${tr('개', 'box(es)')}',
+                      style: const TextStyle(
+                        color: Color(0xFF534344),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    _CountBtn(icon: Icons.add, onTap: () => s.setState(() => s._quantity++)),
+                  ]),
+                ),
+                const SizedBox(height: 32),
+
+                // 가격
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      tr('총 금액', 'Total'),
+                      style: const TextStyle(
+                        color: Color(0xFF8C7E7B),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      _won(s._totalPrice),
+                      style: const TextStyle(
+                        color: Color(0xFF7A3B47),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    tr('(포장비 1,500원 포함)', '(incl. packaging ₩1,500)'),
+                    style: const TextStyle(
+                      color: Color(0xFFAA9A96),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // 예약하기 버튼
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: FilledButton(
+                    onPressed: s._isSubmitting ? null : s._submitOrder,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF7A3B47),
+                      disabledBackgroundColor: const Color(0xFFD9CCC8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: s._isSubmitting
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            tr('다과 상자 예약하기', 'Place Order'),
+                            style: const TextStyle(
+                              fontFamily: 'Gowun Batang',
+                              fontFamilyFallback: _serifFallback,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+              ]),
+            ),
           ),
-          const SizedBox(width: 4),
+        ),
+      ),
+    );
+  }
+}
+
+InputDecoration _inputDeco(String hint) => InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Color(0xFFBBAFAC), fontFamily: 'Gowun Batang'),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFD9CCC8)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFFD9CCC8)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF7A3B47)),
+      ),
+    );
+
+class _FormField extends StatelessWidget {
+  const _FormField({required this.label, required this.child});
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF6B5B5A),
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 8),
+      child,
+    ]);
+  }
+}
+
+class _CountBtn extends StatelessWidget {
+  const _CountBtn({required this.icon, required this.onTap});
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0E8E5),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18, color: const Color(0xFF7A3B47)),
+      ),
+    );
+  }
+}
+
+// ── 3단계: 완료 ───────────────────────────────────────────────────────────────
+
+class _CompleteView extends StatelessWidget {
+  const _CompleteView({super.key, required this.state});
+  final _CateringSectionState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = state;
+    final dateStr = s._pickupDate == null
+        ? '-'
+        : '${s._pickupDate!.year}/${s._pickupDate!.month.toString().padLeft(2, '0')}/${s._pickupDate!.day.toString().padLeft(2, '0')}';
+
+    return Container(
+      color: const Color(0xFFFFF9F6),
+      child: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 64),
+              child: Column(children: [
+                // 상자 미리보기
+                _BoxPreview(slots: s._slots, onRemove: null, size: 260),
+                const SizedBox(height: 32),
+
+                // 체크 아이콘
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF7A3B47),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 30),
+                ),
+                const SizedBox(height: 20),
+
+                Text(
+                  tr(
+                    '나만의 다과 상자 (${s._box.label})\n예약 주문이 완료되었습니다.',
+                    'Your ${s._box.label} Dagwa Box\norder has been placed.',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF534344),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                // 주문 요약
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFEDE4E0)),
+                  ),
+                  child: Column(children: [
+                    _SummaryRow(label: tr('예약 성함', 'Name'), value: s._nameCtrl.text),
+                    _SummaryRow(label: tr('연락처', 'Phone'), value: s._phoneCtrl.text),
+                    _SummaryRow(label: tr('다과상자 수량', 'Qty'), value: '${s._quantity}${tr('개', ' box(es)')}'),
+                    _SummaryRow(
+                      label: tr('희망 픽업 날짜 및 시간', 'Pickup'),
+                      value: '$dateStr ${s._pickupTime ?? ''}',
+                    ),
+                    _SummaryRow(label: tr('가격', 'Total'), value: _won(s._totalPrice), highlight: true),
+                  ]),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  tr(
+                    '예약 확인 후 연락처로 안내드립니다.\n픽업 당일 매장을 방문해 주세요.',
+                    'We will contact you after confirming.\nPlease visit the store on the pickup day.',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFFAA9A96),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 13,
+                    height: 1.7,
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF7A3B47),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      tr('홈 화면으로 돌아가기', 'Back to Home'),
+                      style: const TextStyle(
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.label, required this.value, this.highlight = false});
+  final String label;
+  final String value;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Text(
-            tr('담기', 'Add'),
-            style: TextStyle(
-              color: hovered ? Colors.white : const Color(0xFF934753),
+            label,
+            style: const TextStyle(
+              color: Color(0xFF8C7E7B),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
               fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 1,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: highlight ? const Color(0xFF7A3B47) : const Color(0xFF534344),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: highlight ? 18 : 14,
+              fontWeight: highlight ? FontWeight.w700 : FontWeight.normal,
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class _DagwaOption {
-  const _DagwaOption({
-    required this.name,
-    required this.nameEn,
-    required this.price,
-    required this.priceValue,
-    required this.image,
-    required this.trayScale,
-    required this.cardImageSize,
-  });
-
-  final String name;
-  final String nameEn;
-  final String price;
-  final int priceValue;
-  final String image;
-  final double trayScale;
-  final double cardImageSize;
-}
-
-String _formatWon(int value) {
-  final raw = value.toString();
-  final buffer = StringBuffer();
-  for (var i = 0; i < raw.length; i++) {
-    final remaining = raw.length - i;
-    buffer.write(raw[i]);
-    if (remaining > 1 && remaining % 3 == 1) {
-      buffer.write(',');
-    }
-  }
-  return buffer.toString();
 }
