@@ -8,6 +8,7 @@ router = APIRouter()
 
 class ExperienceRequest(BaseModel):
     type: str
+    phone: str
     adults: int
     children: int
     date: str
@@ -36,6 +37,7 @@ async def email_experience(body: ExperienceRequest):
     content = f"""원데이클래스 체험 문의가 접수되었습니다.
 
 체험 종류: {body.type}
+연락처: {body.phone}
 성인 인원: {body.adults}명
 어린이 인원: {body.children}명
 희망 날짜: {body.date}

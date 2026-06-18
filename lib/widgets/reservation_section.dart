@@ -189,6 +189,7 @@ class _ReservationSectionState extends State<ReservationSection> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'type': _program.title,
+          'phone': _contactController.text.trim(),
           'adults': _adultCount,
           'children': _childCount,
           'date': _dateLabel,
