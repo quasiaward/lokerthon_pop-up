@@ -78,7 +78,7 @@ class _WideNav extends StatelessWidget {
               onTap: () => _navigate(context, '/ai'),
             ),
             _NavItem(
-              tr('다과 상자 주문', 'Gift Box Order'),
+              tr('다과 상자 만들기', 'Gift Box Builder'),
               '/custom',
               currentRoute,
               onTap: () => _navigate(context, '/custom'),
@@ -138,7 +138,7 @@ class _CompactNav extends StatelessWidget {
                 onTap: () => _navigate(context, '/ai'),
               ),
               _NavItem(
-                tr('다과 상자 주문', 'Gift Box Order'),
+                tr('다과 상자 만들기', 'Gift Box Builder'),
                 '/custom',
                 currentRoute,
                 onTap: () => _navigate(context, '/custom'),

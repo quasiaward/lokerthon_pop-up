@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../l10n/lang.dart';
 import 'common.dart';
@@ -32,6 +33,14 @@ class _Price {
   int get value => int.parse(amount.replaceAll(',', ''));
 }
 
+class _RowCrop {
+  const _RowCrop({required this.left});
+
+  final double left;
+}
+
+enum _SpecialArt { none, mugwortLatte }
+
 class _MenuItem {
   const _MenuItem({
     required this.name,
@@ -39,6 +48,12 @@ class _MenuItem {
     required this.image,
     required this.prices,
     this.signature = false,
+    this.badgeKo,
+    this.badgeEn,
+    this.rowCrop,
+    this.specialArt = _SpecialArt.none,
+    this.imagePadding = const EdgeInsets.fromLTRB(20, 22, 20, 14),
+    this.imageAlignment = Alignment.bottomCenter,
   });
 
   final String name;
@@ -46,6 +61,12 @@ class _MenuItem {
   final String image; // asset 경로
   final List<_Price> prices; // 1~2개 (HOT/ICE)
   final bool signature; // '대표' 태그
+  final String? badgeKo;
+  final String? badgeEn;
+  final _RowCrop? rowCrop;
+  final _SpecialArt specialArt;
+  final EdgeInsets imagePadding;
+  final Alignment imageAlignment;
 
   int get minValue =>
       prices.map((p) => p.value).reduce((a, b) => a < b ? a : b);
@@ -69,13 +90,14 @@ class _MenuCategory {
   final int pageSize;
 }
 
-// ─── 음료 (Beverage) — Figma 1페이지 16종 ─────────────────────────────────
+// ─── 음료 (Beverage) — Figma 1~2페이지 26종 ───────────────────────────────
 const _beverages = <_MenuItem>[
   _MenuItem(
     name: '대추차',
     nameEn: 'Jujube Tea',
     image: 'assets/figma/menu/jujube_tea.png',
     prices: [_Price('HOT', '8,000')],
+    signature: true,
   ),
   _MenuItem(
     name: '쌍화차',
@@ -168,9 +190,178 @@ const _beverages = <_MenuItem>[
     image: 'assets/figma/menu/green_grape_ade.png',
     prices: [_Price('ICE', '5,000')],
   ),
+  _MenuItem(
+    name: '초코 라떼',
+    nameEn: 'Chocolate Latte',
+    image: 'assets/figma/menu/choco_latte.svg',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '녹차 라떼',
+    nameEn: 'Green Tea Latte',
+    image: 'assets/figma/menu/green_tea_latte.svg',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '자색고구마 라떼',
+    nameEn: 'Purple Sweet Potato Latte',
+    image: 'assets/figma/menu/purple_sweet_potato_latte.svg',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '쑥 라떼',
+    nameEn: 'Mugwort Latte',
+    image: '',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    specialArt: _SpecialArt.mugwortLatte,
+    imagePadding: EdgeInsets.fromLTRB(48, 12, 48, 0),
+  ),
+  _MenuItem(
+    name: '흑임자 라떼',
+    nameEn: 'Black Sesame Latte',
+    image: 'assets/figma/menu/black_sesame_latte_figma.svg',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '벚꽃 라떼',
+    nameEn: 'Cherry Blossom Latte',
+    image: 'assets/figma/menu/cherry_blossom_latte.svg',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '도라지 라떼',
+    nameEn: 'Bellflower Latte',
+    image: 'assets/figma/menu/bellflower_latte.svg',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+    imagePadding: EdgeInsets.fromLTRB(42, 18, 42, 0),
+  ),
+  _MenuItem(
+    name: '아메리카노',
+    nameEn: 'Americano',
+    image: 'assets/figma/menu/americano.svg',
+    prices: [_Price('HOT', '3,500'), _Price('ICE', '3,500')],
+    imagePadding: EdgeInsets.fromLTRB(38, 8, 38, 0),
+  ),
+  _MenuItem(
+    name: '카페 라떼',
+    nameEn: 'Cafe Latte',
+    image: 'assets/figma/menu/cafe_latte.svg',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
+    imagePadding: EdgeInsets.fromLTRB(38, 8, 38, 0),
+  ),
+  _MenuItem(
+    name: '바닐라 라떼',
+    nameEn: 'Vanilla Latte',
+    image: 'assets/figma/menu/vanilla_latte.svg',
+    prices: [_Price('HOT', '5,000'), _Price('ICE', '5,500')],
+    imagePadding: EdgeInsets.fromLTRB(38, 8, 38, 0),
+  ),
 ];
 
-// 다과 / 빙수는 Figma 프레임을 추가로 받아 채울 예정(일러스트·배경색 대기 중).
+const _desserts = <_MenuItem>[
+  _MenuItem(
+    name: '단팥죽',
+    nameEn: 'Sweet Red Bean Porridge',
+    image: 'assets/figma/menu/dessert_row_1.svg',
+    prices: [_Price('', '7,000')],
+    rowCrop: _RowCrop(left: 568),
+  ),
+  _MenuItem(
+    name: '구운영양찰떡',
+    nameEn: 'Roasted Nutritious Rice Cake',
+    image: 'assets/figma/menu/dessert_row_1.svg',
+    prices: [_Price('', '3,000')],
+    rowCrop: _RowCrop(left: 852),
+  ),
+  _MenuItem(
+    name: '쑥떡와플',
+    nameEn: 'Mugwort Rice Cake Waffle',
+    image: 'assets/figma/menu/mugwort_waffle.svg',
+    prices: [_Price('', '6,000')],
+    signature: true,
+    imagePadding: EdgeInsets.fromLTRB(36, 32, 36, 32),
+    imageAlignment: Alignment.center,
+  ),
+  _MenuItem(
+    name: '다과상 A',
+    nameEn: 'Dagwa Set A',
+    image: 'assets/figma/menu/dessert_set_a.svg',
+    prices: [_Price('', '7,000')],
+    imagePadding: EdgeInsets.fromLTRB(15, 54, 15, 54),
+    imageAlignment: Alignment.center,
+  ),
+  _MenuItem(
+    name: '다과상 B',
+    nameEn: 'Dagwa Set B',
+    image: 'assets/figma/menu/dessert_set_b.svg',
+    prices: [_Price('', '9,500')],
+    imagePadding: EdgeInsets.fromLTRB(15, 44, 15, 44),
+    imageAlignment: Alignment.center,
+  ),
+  _MenuItem(
+    name: '다과상 C',
+    nameEn: 'Dagwa Set C',
+    image: 'assets/figma/menu/dessert_set_c.svg',
+    prices: [_Price('', '15,000')],
+    imagePadding: EdgeInsets.fromLTRB(15, 26, 15, 29),
+    imageAlignment: Alignment.center,
+  ),
+];
+
+const _bingsu = <_MenuItem>[
+  _MenuItem(
+    name: '그냥 빙수',
+    nameEn: 'Original Bingsu',
+    image: 'assets/figma/menu/bingsu_row_1.svg',
+    prices: [_Price('', '15,000')],
+    rowCrop: _RowCrop(left: 0),
+  ),
+  _MenuItem(
+    name: '녹차 빙수',
+    nameEn: 'Green Tea Bingsu',
+    image: 'assets/figma/menu/bingsu_row_1.svg',
+    prices: [_Price('', '15,000')],
+    rowCrop: _RowCrop(left: 284),
+  ),
+  _MenuItem(
+    name: '흑임자 빙수',
+    nameEn: 'Black Sesame Bingsu',
+    image: 'assets/figma/menu/bingsu_row_1.svg',
+    prices: [_Price('', '15,000')],
+    rowCrop: _RowCrop(left: 568),
+  ),
+  _MenuItem(
+    name: '망고 빙수',
+    nameEn: 'Mango Bingsu',
+    image: 'assets/figma/menu/bingsu_row_1.svg',
+    prices: [_Price('', '15,000')],
+    rowCrop: _RowCrop(left: 852),
+  ),
+  _MenuItem(
+    name: '블루베리 빙수',
+    nameEn: 'Blueberry Bingsu',
+    image: 'assets/figma/menu/blueberry_bingsu.svg',
+    prices: [_Price('', '15,000')],
+    imagePadding: EdgeInsets.fromLTRB(24, 20, 24, 20),
+    imageAlignment: Alignment.center,
+  ),
+  _MenuItem(
+    name: '벚꽃베리 빙수',
+    nameEn: 'Cherry Berry Bingsu',
+    image: 'assets/figma/menu/cherry_berry_bingsu.svg',
+    prices: [_Price('', '15,000')],
+    badgeKo: '시즌',
+    badgeEn: 'Season',
+    imagePadding: EdgeInsets.fromLTRB(20, 14, 20, 18),
+    imageAlignment: Alignment.center,
+  ),
+];
+
 const _categories = <_MenuCategory>[
   _MenuCategory(
     key: '음료',
@@ -184,15 +375,15 @@ const _categories = <_MenuCategory>[
     key: '다과',
     labelKo: '다과',
     labelEn: 'Dessert',
-    items: [],
-    cardColor: Color(0xFFE7EBE3),
+    items: _desserts,
+    cardColor: _maroon,
   ),
   _MenuCategory(
     key: '빙수',
     labelKo: '빙수',
     labelEn: 'Bingsu',
-    items: [],
-    cardColor: Color(0xFFEDE6DC),
+    items: _bingsu,
+    cardColor: _maroon,
   ),
 ];
 
@@ -454,7 +645,7 @@ class _MenuGrid extends StatelessWidget {
 
         return Wrap(
           spacing: gap,
-          runSpacing: 40,
+          runSpacing: 54,
           children: [
             for (final item in items)
               SizedBox(
@@ -476,34 +667,18 @@ class _MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badgeKo = item.badgeKo ?? (item.signature ? '대표' : null);
+    final badgeEn = item.badgeEn ?? (item.signature ? 'Best' : null);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AspectRatio(
           aspectRatio: 260 / 263,
-          child: Container(
-            decoration: BoxDecoration(
-              color: cardColor,
-              border: Border.all(color: _cardBorder, width: 3),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Image.asset(
-                  item.image,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, error, stack) =>
-                      const SizedBox.shrink(),
-                ),
-              ),
-            ),
-          ),
+          child: _MenuArtCard(item: item, cardColor: cardColor),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 22),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -514,35 +689,22 @@ class _MenuItemCard extends StatelessWidget {
                   color: Color(0xFF1C1C18),
                   fontFamily: 'Gowun Batang',
                   fontFamilyFallback: _serifFallback,
-                  fontSize: 22,
+                  fontSize: 28,
                   fontWeight: FontWeight.w700,
-                  height: 1.2,
+                  height: 1,
                 ),
               ),
             ),
-            if (item.signature) ...[
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(
-                  tr('대표', 'Best'),
-                  style: const TextStyle(
-                    color: _signatureColor,
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    height: 1,
-                  ),
-                ),
-              ),
+            if (badgeKo != null && badgeEn != null) ...[
+              const SizedBox(width: 10),
+              _MenuBadge(label: tr(badgeKo, badgeEn)),
             ],
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         for (final price in item.prices)
           Padding(
-            padding: const EdgeInsets.only(bottom: 3),
+            padding: const EdgeInsets.only(bottom: 4),
             child: Row(
               children: [
                 if (price.temp.isNotEmpty)
@@ -562,18 +724,282 @@ class _MenuItemCard extends StatelessWidget {
                 Text(
                   tr('${price.amount}원', '${price.amount}W'),
                   style: const TextStyle(
-                    color: Color(0xFF2A2320),
+                    color: _titleColor,
                     fontFamily: 'Gowun Batang',
                     fontFamilyFallback: _serifFallback,
-                    fontSize: 16,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    height: 1.2,
+                    height: 1.25,
                   ),
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MenuArtCard extends StatelessWidget {
+  const _MenuArtCard({required this.item, required this.cardColor});
+
+  final _MenuItem item;
+  final Color cardColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (item.rowCrop case final crop?) {
+      return _CroppedSvgCard(asset: item.image, crop: crop);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        border: Border.all(color: _cardBorder, width: 3),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: item.imagePadding,
+        child: Align(
+          alignment: item.imageAlignment,
+          child: switch (item.specialArt) {
+            _SpecialArt.mugwortLatte => const _MugwortLatteArt(),
+            _SpecialArt.none => _MenuAsset(
+              path: item.image,
+              fit: BoxFit.contain,
+            ),
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuAsset extends StatelessWidget {
+  const _MenuAsset({required this.path, required this.fit});
+
+  final String path;
+  final BoxFit fit;
+
+  @override
+  Widget build(BuildContext context) {
+    if (path.isEmpty) return const SizedBox.shrink();
+    if (path.endsWith('.svg')) {
+      return SvgPicture.asset(path, fit: fit, clipBehavior: Clip.none);
+    }
+    return Image.asset(
+      path,
+      fit: fit,
+      filterQuality: FilterQuality.high,
+      errorBuilder: (context, error, stack) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _CroppedSvgCard extends StatelessWidget {
+  const _CroppedSvgCard({required this.asset, required this.crop});
+
+  final String asset;
+  final _RowCrop crop;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final scale = constraints.maxWidth / 260;
+          return ClipRect(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: -crop.left * scale,
+                  top: 0,
+                  width: 1112 * scale,
+                  height: constraints.maxHeight,
+                  child: SvgPicture.asset(
+                    asset,
+                    fit: BoxFit.fill,
+                    clipBehavior: Clip.none,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MugwortLatteArt extends StatelessWidget {
+  const _MugwortLatteArt();
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      alignment: Alignment.bottomCenter,
+      child: SizedBox(
+        width: 154,
+        height: 262,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: 30,
+              top: -6,
+              width: 10,
+              height: 230,
+              child: Transform.rotate(
+                angle: -0.2,
+                alignment: Alignment.topCenter,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.78),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 11,
+              top: 44,
+              width: 116,
+              height: 202,
+              child: _MenuAsset(
+                path: 'assets/figma/menu/mugwort_latte_back.svg',
+                fit: BoxFit.fill,
+              ),
+            ),
+            for (final foam in _mugwortFoam)
+              Positioned(
+                left: foam.left,
+                top: foam.top,
+                width: foam.size,
+                height: foam.size,
+                child: Transform.rotate(
+                  angle: foam.angle,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: foam.opacity),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: foam.opacity),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            for (final leaf in _mugwortLeaves)
+              Positioned(
+                left: leaf.left,
+                top: leaf.top,
+                width: leaf.width,
+                height: leaf.height,
+                child: Transform.rotate(
+                  angle: leaf.angle,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF566341),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            const Positioned(
+              left: 0,
+              top: 34,
+              width: 138,
+              height: 228,
+              child: _MenuAsset(
+                path: 'assets/figma/menu/mugwort_latte_body.svg',
+                fit: BoxFit.fill,
+              ),
+            ),
+            const Positioned(
+              left: 0,
+              top: 34,
+              width: 138,
+              height: 228,
+              child: _MenuAsset(
+                path: 'assets/figma/menu/mugwort_latte_highlight.svg',
+                fit: BoxFit.fill,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MugwortFoam {
+  const _MugwortFoam(this.left, this.top, this.size, this.angle, this.opacity);
+
+  final double left;
+  final double top;
+  final double size;
+  final double angle;
+  final double opacity;
+}
+
+class _MugwortLeaf {
+  const _MugwortLeaf(this.left, this.top, this.width, this.height, this.angle);
+
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final double angle;
+}
+
+const _mugwortFoam = <_MugwortFoam>[
+  _MugwortFoam(28, 62, 39, -0.26, 0.57),
+  _MugwortFoam(60, 76, 39, 0.25, 0.98),
+  _MugwortFoam(34, 127, 39, -0.16, 0.41),
+  _MugwortFoam(58, 138, 39, -0.53, 0.59),
+  _MugwortFoam(41, 190, 39, 0.23, 0.86),
+];
+
+const _mugwortLeaves = <_MugwortLeaf>[
+  _MugwortLeaf(84, 39, 5, 30, -0.01),
+  _MugwortLeaf(88, 8, 5, 30, 0.37),
+  _MugwortLeaf(99, 8, 5, 41, 0.77),
+  _MugwortLeaf(71, 38, 5, 30, 0.85),
+];
+
+class _MenuBadge extends StatelessWidget {
+  const _MenuBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 1),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          border: Border.all(color: _maroon),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: _signatureColor,
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            height: 1,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -603,7 +1029,11 @@ class _Pagination extends StatelessWidget {
         const SizedBox(width: 12),
         for (var i = 0; i < count; i++) ...[
           if (i != 0) const SizedBox(width: 10),
-          _PageDot(active: i == active, onTap: () => onChanged(i)),
+          _PageDot(
+            index: i + 1,
+            active: i == active,
+            onTap: () => onChanged(i),
+          ),
         ],
         const SizedBox(width: 12),
         _PageArrow(
@@ -617,8 +1047,13 @@ class _Pagination extends StatelessWidget {
 }
 
 class _PageDot extends StatelessWidget {
-  const _PageDot({required this.active, required this.onTap});
+  const _PageDot({
+    required this.index,
+    required this.active,
+    required this.onTap,
+  });
 
+  final int index;
   final bool active;
   final VoidCallback onTap;
 
@@ -628,11 +1063,25 @@ class _PageDot extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 11,
-        height: 11,
+        width: 48,
+        height: 48,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? _maroon : const Color(0xFFD3C8C8),
+          color: active ? _maroon : Colors.transparent,
           shape: BoxShape.circle,
+          border: active
+              ? null
+              : Border.all(color: const Color(0xFFCDC2C2), width: 2),
+        ),
+        child: Text(
+          '$index',
+          style: TextStyle(
+            color: active ? Colors.white : const Color(0xFFCDC2C2),
+            fontFamily: 'Pretendard',
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            height: 1,
+          ),
         ),
       ),
     );

@@ -23,6 +23,12 @@ class _QuizOption {
     required this.subtitleEn,
     required this.bgColor,
     required this.imagePath,
+    this.displayTitle,
+    this.displayTitleEn,
+    this.displaySubtitle,
+    this.displaySubtitleEn,
+    this.imageStyle = _QuizImageStyle.square,
+    this.imageFit = BoxFit.cover,
   });
   final String title; // 로직 키(영어 표시는 titleEn 사용)
   final String titleEn;
@@ -30,7 +36,15 @@ class _QuizOption {
   final String subtitleEn;
   final Color bgColor;
   final String imagePath;
+  final String? displayTitle;
+  final String? displayTitleEn;
+  final String? displaySubtitle;
+  final String? displaySubtitleEn;
+  final _QuizImageStyle imageStyle;
+  final BoxFit imageFit;
 }
+
+enum _QuizImageStyle { circle, square }
 
 class _QuizQ {
   const _QuizQ({
@@ -77,7 +91,11 @@ const _questions = [
         subtitle: '설레고 따뜻한 매화의 온기',
         subtitleEn: 'The fluttery warmth of plum blossoms',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q1_c1_pink.jpg',
+        imagePath: 'assets/figma/quiz/figma_q1_c1.png',
+        displaySubtitle: '설레고 따뜻한 매화 분홍',
+        displaySubtitleEn: 'A fluttering, warm plum pink',
+        imageStyle: _QuizImageStyle.circle,
+        imageFit: BoxFit.contain,
       ),
       _QuizOption(
         title: '소나무 청록',
@@ -85,7 +103,11 @@ const _questions = [
         subtitle: '차분하고 싱그러운 솔바람',
         subtitleEn: 'A calm, fresh pine breeze',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q1_c2_teal.jpg',
+        imagePath: 'assets/figma/quiz/figma_q1_c2.png',
+        displaySubtitle: '활동적이고 상쾌한 청록색의 솔바람',
+        displaySubtitleEn: 'An active, refreshing pine teal breeze',
+        imageStyle: _QuizImageStyle.circle,
+        imageFit: BoxFit.contain,
       ),
       _QuizOption(
         title: '유자 노랑',
@@ -93,7 +115,11 @@ const _questions = [
         subtitle: '생기 있고 달콤한 유자의 향',
         subtitleEn: 'Lively, sweet yuzu scent',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q1_c3_yellow.jpg',
+        imagePath: 'assets/figma/quiz/figma_q1_c3.png',
+        displaySubtitle: '생기 있고 발랄한 유자 노랑',
+        displaySubtitleEn: 'A bright and lively yuzu yellow',
+        imageStyle: _QuizImageStyle.circle,
+        imageFit: BoxFit.contain,
       ),
       _QuizOption(
         title: '먹색',
@@ -101,7 +127,11 @@ const _questions = [
         subtitle: '깊고 단단한 전통의 무게',
         subtitleEn: 'The deep, solid weight of tradition',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q1_c4_ink.jpg',
+        imagePath: 'assets/figma/quiz/figma_q1_c4.png',
+        displaySubtitle: '깊고 단단한 먹색의 무게',
+        displaySubtitleEn: 'The deep, steady weight of ink black',
+        imageStyle: _QuizImageStyle.circle,
+        imageFit: BoxFit.contain,
       ),
     ],
   ),
@@ -121,7 +151,9 @@ const _questions = [
         subtitle: '설레고 따뜻한 햇빛의 온기',
         subtitleEn: 'The warm glow of bright sunshine',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q2_c1_sunny.jpg',
+        imagePath: 'assets/figma/quiz/figma_q2_c1.png',
+        displaySubtitle: '에너지 가득, 생기 가득',
+        displaySubtitleEn: 'Full of energy and liveliness',
       ),
       _QuizOption(
         title: '흐리고 지침',
@@ -129,7 +161,9 @@ const _questions = [
         subtitle: '차분하고 조용한 쉬고픈 날',
         subtitleEn: 'A calm, quiet day for rest',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q2_c2_rainy.jpg',
+        imagePath: 'assets/figma/quiz/figma_q2_c2.png',
+        displaySubtitle: '잠시 쉬어갈 시간',
+        displaySubtitleEn: 'A moment to pause and rest',
       ),
       _QuizOption(
         title: '잔잔하고 평온',
@@ -137,7 +171,11 @@ const _questions = [
         subtitle: '생기 있고 달콤한 유자의 향',
         subtitleEn: 'Gentle and serene',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q2_c3_calm.jpg',
+        imagePath: 'assets/figma/quiz/figma_q2_c3.png',
+        displayTitle: '선선하고 평온',
+        displayTitleEn: 'Cool & peaceful',
+        displaySubtitle: '마음의 안정과 평화',
+        displaySubtitleEn: 'A quiet peace of mind',
       ),
       _QuizOption(
         title: '설레고 두근거려요',
@@ -145,7 +183,11 @@ const _questions = [
         subtitle: '깊고 단단한 전통의 무게',
         subtitleEn: 'Heart racing with anticipation',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q2_c4_excited.jpg',
+        imagePath: 'assets/figma/quiz/figma_q2_c4.png',
+        displayTitle: '따뜻하고 두근거림',
+        displayTitleEn: 'Warm & fluttering',
+        displaySubtitle: '새로운 시작의 설레임',
+        displaySubtitleEn: 'The flutter of a new beginning',
       ),
     ],
   ),
@@ -165,7 +207,7 @@ const _questions = [
         subtitle: '따뜻하고 늘 곁에 있어주는 사람',
         subtitleEn: 'Warm, always by your side',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q3_c1_loved.jpg',
+        imagePath: 'assets/figma/quiz/figma_q3_c1.png',
       ),
       _QuizOption(
         title: '혼자',
@@ -173,7 +215,7 @@ const _questions = [
         subtitle: '온전한 나와의 시간',
         subtitleEn: 'Time fully your own',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q3_c2_alone.jpg',
+        imagePath: 'assets/figma/quiz/figma_q3_c2.png',
       ),
       _QuizOption(
         title: '가족',
@@ -181,7 +223,9 @@ const _questions = [
         subtitle: '평생 함께 있어줄 동반자',
         subtitleEn: 'Lifelong companions',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q3_c3_family.jpg',
+        imagePath: 'assets/figma/quiz/figma_q3_c3.png',
+        displaySubtitle: '평생 함께 함께할 동반자',
+        displaySubtitleEn: 'Lifelong companions by your side',
       ),
       _QuizOption(
         title: '친구',
@@ -189,7 +233,7 @@ const _questions = [
         subtitle: '깊고 단단한 우정',
         subtitleEn: 'Deep, steady friendship',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q3_c4_friend.jpg',
+        imagePath: 'assets/figma/quiz/figma_q3_c4.png',
       ),
     ],
   ),
@@ -209,7 +253,7 @@ const _questions = [
         subtitle: '입안에서 부드럽게 녹아내리는 식감',
         subtitleEn: 'Melts softly in your mouth',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q4_c1_soft.jpg',
+        imagePath: 'assets/figma/quiz/figma_q4_c1.png',
       ),
       _QuizOption(
         title: '바삭한',
@@ -217,7 +261,7 @@ const _questions = [
         subtitle: '가볍게 부서지는 즐거움',
         subtitleEn: 'The joy of a light, crisp bite',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q4_c2_crispy.jpg',
+        imagePath: 'assets/figma/quiz/figma_q4_c2.png',
       ),
       _QuizOption(
         title: '쫀득한',
@@ -225,7 +269,7 @@ const _questions = [
         subtitle: '천천히 오래 남는 만족감',
         subtitleEn: 'Slow, lingering satisfaction',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q4_c3_chewy.jpg',
+        imagePath: 'assets/figma/quiz/figma_q4_c3.png',
       ),
       _QuizOption(
         title: '촉촉한',
@@ -233,7 +277,7 @@ const _questions = [
         subtitle: '촉촉하고 은은한 식감',
         subtitleEn: 'Moist with a gentle finish',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q4_c4_moist.jpg',
+        imagePath: 'assets/figma/quiz/figma_q4_c4.png',
       ),
     ],
   ),
@@ -253,7 +297,7 @@ const _questions = [
         subtitle: '설레고 부드러운 꽃향기의 시작',
         subtitleEn: 'The soft, fluttery start of blossoms',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q5_c1_spring.jpg',
+        imagePath: 'assets/figma/quiz/figma_q5_c1.png',
       ),
       _QuizOption(
         title: '여름',
@@ -261,7 +305,7 @@ const _questions = [
         subtitle: '싱그럽고 생기 넘치는 계절의 온기',
         subtitleEn: 'Fresh, vivid summer warmth',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q5_c2_summer.jpg',
+        imagePath: 'assets/figma/quiz/figma_q5_c2.png',
       ),
       _QuizOption(
         title: '가을',
@@ -269,7 +313,7 @@ const _questions = [
         subtitle: '깊어지는 향과 차분한 여운',
         subtitleEn: 'Deepening aromas and a calm afterglow',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q5_c3_autumn.jpg',
+        imagePath: 'assets/figma/quiz/figma_q5_c3.png',
       ),
       _QuizOption(
         title: '겨울',
@@ -277,19 +321,19 @@ const _questions = [
         subtitle: '고요하고 포근한 휴식의 시간',
         subtitleEn: 'A still, cozy time of rest',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q5_c4_winter.jpg',
+        imagePath: 'assets/figma/quiz/figma_q5_c4.png',
       ),
     ],
   ),
   _QuizQ(
     before: '어떤 ',
     beforeEn: 'Which ',
-    keyword: '모양',
-    keywordEn: 'shape',
+    keyword: '문양',
+    keywordEn: 'pattern',
     after: '이 눈길을 끄시나요?',
     afterEn: ' catches your eye?',
-    hint: '지금 가장 이끌리는 모양을 골라주세요.',
-    hintEn: 'Pick the shape you\'re drawn to right now.',
+    hint: '지금 가장 이끌리는 문양을 골라주세요.',
+    hintEn: 'Pick the pattern you\'re drawn to right now.',
     options: [
       _QuizOption(
         title: '둥근 모양',
@@ -297,7 +341,7 @@ const _questions = [
         subtitle: '부드럽고 포근한 안정감',
         subtitleEn: 'Soft, cozy reassurance',
         bgColor: _pinkBg,
-        imagePath: 'assets/figma/quiz/q6_c1_round.jpg',
+        imagePath: 'assets/figma/quiz/figma_q6_c1.png',
       ),
       _QuizOption(
         title: '물결 모양',
@@ -305,7 +349,9 @@ const _questions = [
         subtitle: '자연스럽고 유연한 움직임',
         subtitleEn: 'Natural, flowing movement',
         bgColor: _tealBg,
-        imagePath: 'assets/figma/quiz/q6_c2_wave.jpg',
+        imagePath: 'assets/figma/quiz/figma_q6_c2.png',
+        displayTitle: '물결 문양',
+        displayTitleEn: 'Wave pattern',
       ),
       _QuizOption(
         title: '직선 모양',
@@ -313,7 +359,9 @@ const _questions = [
         subtitle: '정돈되고 균형 잡힌 아름다움',
         subtitleEn: 'Tidy, balanced beauty',
         bgColor: _yellowBg,
-        imagePath: 'assets/figma/quiz/q6_c3_linear.jpg',
+        imagePath: 'assets/figma/quiz/figma_q6_c3.png',
+        displayTitle: '곧은 문양',
+        displayTitleEn: 'Straight pattern',
       ),
       _QuizOption(
         title: '별·꽃 모양',
@@ -321,7 +369,11 @@ const _questions = [
         subtitle: '개성과 경험이 담긴 모양',
         subtitleEn: 'A shape full of character and story',
         bgColor: _inkBg,
-        imagePath: 'assets/figma/quiz/q6_c4_star.jpg',
+        imagePath: 'assets/figma/quiz/figma_q6_c4.png',
+        displayTitle: '별·꽃 문양',
+        displayTitleEn: 'Star & flower pattern',
+        displaySubtitle: '개성있고 창의적인 새로움',
+        displaySubtitleEn: 'A creative, characterful newness',
       ),
     ],
   ),
@@ -790,12 +842,14 @@ class _QuizView extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalSteps = _questions.length;
     final pct = totalSteps <= 1 ? 100 : (step / (totalSteps - 1) * 100).round();
-    final isWide = MediaQuery.sizeOf(context).width >= 1100;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isWide = screenWidth >= 1100;
+    final topPadding = screenWidth >= 900 ? 78.0 : 44.0;
     final deco = decoScaleOf(context, designWidth: 1409);
 
     return Container(
       color: const Color(0xFFFCF7F5),
-      constraints: const BoxConstraints(minHeight: 700),
+      constraints: const BoxConstraints(minHeight: 944),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -810,8 +864,9 @@ class _QuizView extends StatelessWidget {
             child: WatercolorDeco(decoQuizBlob, width: 422 * deco),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 48),
-            child: Center(
+            padding: EdgeInsets.only(top: topPadding, bottom: 48),
+            child: Align(
+              alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1100),
                 child: Padding(
@@ -819,7 +874,7 @@ class _QuizView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Progress indicator
+                      const _QuizEyebrow(),
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 672),
                         child: _ProgressBar(
@@ -830,11 +885,9 @@ class _QuizView extends StatelessWidget {
                       ),
                       const SizedBox(height: 48),
 
-                      // Question header
                       _QuestionHeader(question: question),
                       const SizedBox(height: 48),
 
-                      // Card grid
                       if (isWide)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -878,78 +931,24 @@ class _QuizView extends StatelessWidget {
                         ),
                       const SizedBox(height: 48),
 
-                      // Navigation
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1024),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            if (onBack != null)
-                              TextButton.icon(
-                                onPressed: onBack,
-                                icon: const Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  size: 14,
-                                ),
-                                label: Text(tr('이전 질문', 'Previous')),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF534344),
-                                  textStyle: const TextStyle(
-                                    fontFamily: 'Gowun Batang',
-                                    fontFamilyFallback: _serifFallback,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              )
-                            else
-                              const SizedBox(width: 100),
-                            Row(
-                              children: [
-                                TextButton(
-                                  onPressed: onSkip,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: const Color(0xFF566341),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontFamily: 'Gowun Batang',
-                                      fontFamilyFallback: _serifFallback,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  child: Text(tr('건너뛰기', 'Skip')),
-                                ),
-                                const SizedBox(width: 8),
-                                FilledButton(
-                                  onPressed: selected != null
-                                      ? () => onPick(selected!)
-                                      : onSkip,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF934753),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 32,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    elevation: 1,
-                                  ),
-                                  child: Text(
-                                    isLast
-                                        ? tr('취향 분석하기', 'Analyze my taste')
-                                        : tr('다음 단계', 'Next'),
-                                    style: const TextStyle(
-                                      fontFamily: 'Gowun Batang',
-                                      fontFamilyFallback: _serifFallback,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            _QuizNavButton(
+                              label: tr('이전 질문', 'Previous'),
+                              onPressed: onBack ?? () {},
+                              primary: false,
+                            ),
+                            _QuizNavButton(
+                              label: isLast
+                                  ? tr('취향 분석하기', 'Analyze my taste')
+                                  : tr('다음 단계', 'Next'),
+                              onPressed: selected != null
+                                  ? () => onPick(selected!)
+                                  : onSkip,
+                              primary: true,
                             ),
                           ],
                         ),
@@ -961,6 +960,24 @@ class _QuizView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _QuizEyebrow extends StatelessWidget {
+  const _QuizEyebrow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      'ATMOSPHERIC SELECTION',
+      style: TextStyle(
+        color: Color(0xFFBECCA3),
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.4,
+        height: 20 / 14,
       ),
     );
   }
@@ -1012,7 +1029,7 @@ class _ProgressBar extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(9999),
           child: LinearProgressIndicator(
-            value: totalSteps <= 1 ? 1 : step / (totalSteps - 1),
+            value: totalSteps <= 0 ? 1 : (step + 1) / totalSteps,
             backgroundColor: const Color(0xFFE5E2DC),
             valueColor: const AlwaysStoppedAnimation(Color(0xFFD9808C)),
             minHeight: 6,
@@ -1031,16 +1048,6 @@ class _QuestionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
-          'ATMOSPHERIC SELECTION',
-          style: TextStyle(
-            color: Color(0xFFBECCA3),
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.4,
-          ),
-        ),
-        const SizedBox(height: 8),
         Wrap(
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -1124,6 +1131,54 @@ class _KeywordText extends StatelessWidget {
   }
 }
 
+class _QuizNavButton extends StatelessWidget {
+  const _QuizNavButton({
+    required this.label,
+    required this.onPressed,
+    required this.primary,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final bool primary;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF934753).withValues(alpha: 0.30),
+            blurRadius: 1,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          backgroundColor: primary ? const Color(0xFF934753) : Colors.white,
+          foregroundColor: primary ? Colors.white : const Color(0xFF934753),
+          minimumSize: Size(primary && label.length > 5 ? 178 : 153, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: const TextStyle(
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.14,
+            height: 20 / 14,
+          ),
+        ),
+        child: Text(label, maxLines: 1),
+      ),
+    );
+  }
+}
+
 class _OptionCard extends StatefulWidget {
   const _OptionCard({
     required this.option,
@@ -1149,6 +1204,15 @@ class _OptionCardState extends State<_OptionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final title = tr(
+      widget.option.displayTitle ?? widget.option.title,
+      widget.option.displayTitleEn ?? widget.option.titleEn,
+    );
+    final subtitle = tr(
+      widget.option.displaySubtitle ?? widget.option.subtitle,
+      widget.option.displaySubtitleEn ?? widget.option.subtitleEn,
+    );
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -1171,71 +1235,173 @@ class _OptionCardState extends State<_OptionCard> {
                     ? const Color(0xFF934753).withValues(alpha: 0.16)
                     : _hovered
                     ? const Color(0xFF934753).withValues(alpha: 0.10)
-                    : Colors.black.withValues(alpha: 0.04),
-                blurRadius: widget.selected ? 18 : (_hovered ? 12 : 4),
-                offset: const Offset(0, 4),
+                    : const Color(0xFF934753).withValues(alpha: 0.05),
+                blurRadius: widget.selected ? 18 : (_hovered ? 12 : 1),
+                offset: Offset(0, widget.selected || _hovered ? 4 : 1),
               ),
             ],
           ),
-          child: Column(
+          child: Stack(
             children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: Image.asset(
-                  widget.option.imagePath,
-                  height: 196,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stack) => Container(
-                    height: 196,
-                    color: const Color(0xFFF1EAE8),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.image_outlined,
-                      color: Color(0xFFCBB8B4),
-                      size: 36,
+              Positioned(
+                left: 0,
+                right: 0,
+                top: widget.option.imageStyle == _QuizImageStyle.circle
+                    ? 38
+                    : 24,
+                child: Center(child: _OptionCardImage(option: widget.option)),
+              ),
+              Positioned(
+                left: 12,
+                right: 12,
+                top: widget.option.imageStyle == _QuizImageStyle.circle
+                    ? 242
+                    : 239,
+                child: SizedBox(
+                  height: 34,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: widget.selected
+                            ? const Color(0xFF934753)
+                            : const Color(0xFF1C1C18),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 24,
+                        fontWeight: widget.selected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
+                        height: 32 / 24,
+                      ),
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
-                child: Text(
-                  tr(widget.option.title, widget.option.titleEn),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: widget.selected
-                        ? const Color(0xFF934753)
-                        : const Color(0xFF1C1C18),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 20,
-                    fontWeight: widget.selected
-                        ? FontWeight.w700
-                        : FontWeight.w400,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
-                child: Text(
-                  tr(widget.option.subtitle, widget.option.subtitleEn),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF534344),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 13,
-                    height: 1.38,
+              Positioned(
+                left: 12,
+                right: 12,
+                top: widget.option.imageStyle == _QuizImageStyle.circle
+                    ? 280
+                    : 278,
+                child: SizedBox(
+                  height: 34,
+                  child: Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 12,
+                      height: 16 / 12,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _OptionCardImage extends StatelessWidget {
+  const _OptionCardImage({required this.option});
+
+  final _QuizOption option;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCircle = option.imageStyle == _QuizImageStyle.circle;
+    final size = isCircle ? 178.0 : 194.0;
+    final image = _QuizAssetImage(
+      path: option.imagePath,
+      fit: option.imageFit,
+      size: size,
+      fallbackColor: option.bgColor,
+    );
+
+    if (isCircle) {
+      return SizedBox(width: size, height: size, child: image);
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: option.bgColor,
+        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFD9808C).withValues(alpha: 0.08),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: option.imageFit == BoxFit.contain
+            ? const EdgeInsets.all(18)
+            : EdgeInsets.zero,
+        child: image,
+      ),
+    );
+  }
+}
+
+class _QuizAssetImage extends StatelessWidget {
+  const _QuizAssetImage({
+    required this.path,
+    required this.fit,
+    required this.size,
+    required this.fallbackColor,
+  });
+
+  final String path;
+  final BoxFit fit;
+  final double size;
+  final Color fallbackColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      path,
+      width: size,
+      height: size,
+      fit: fit,
+      filterQuality: FilterQuality.high,
+      errorBuilder: (context, error, stack) =>
+          _QuizImageFallback(size: size, color: fallbackColor),
+    );
+  }
+}
+
+class _QuizImageFallback extends StatelessWidget {
+  const _QuizImageFallback({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      color: color.withValues(alpha: 0.45),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.image_outlined,
+        color: Color(0xFFCBB8B4),
+        size: 36,
       ),
     );
   }
