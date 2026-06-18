@@ -19,6 +19,6 @@ app.include_router(ai.router)
 app.include_router(email.router, prefix="/email")
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
