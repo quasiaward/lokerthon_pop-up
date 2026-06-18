@@ -345,7 +345,6 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   int _step = 0;
   final _answers = <String?>[null, null, null, null, null, null];
   String? _menuName;
-  String? _errorMessage;
 
   void _start() => setState(() {
     _phase = _Phase.quiz;
@@ -354,7 +353,6 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       _answers[i] = null;
     }
     _menuName = null;
-    _errorMessage = null;
   });
 
   void _pick(String title) {
@@ -394,10 +392,7 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _errorMessage = e.toString();
-        _phase = _Phase.quiz;
-      });
+      setState(() => _phase = _Phase.quiz);
     }
   }
 
@@ -407,7 +402,6 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       _answers[i] = null;
     }
     _menuName = null;
-    _errorMessage = null;
   });
 
   @override
@@ -454,25 +448,88 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
 
 const _previewCards = [
   (
+    subtitle: '언제나 든든해',
+    subtitleEn: 'Always reliable',
+    title: '영양찰떡',
+    titleEn: 'Nutritious Rice Cake',
+    image: 'assets/figma/recommend/nutrition_rice_cake.png',
+  ),
+  (
+    subtitle: '은근한 반전 매력',
+    subtitleEn: 'Subtle bittersweet charm',
+    title: '도라지정과',
+    titleEn: 'Bellflower Jeonggwa',
+    image: 'assets/figma/recommend/bellflower_jeonggwa.png',
+  ),
+  (
     subtitle: '겉바속촉 MZ',
-    subtitleEn: 'Crisp-outside, soft-inside',
-    title: '행궁약과',
-    titleEn: 'Haenggung Yakgwa',
-    image: 'assets/figma/recommend_yakgwa.png',
+    subtitleEn: 'Modern crisp-soft',
+    title: '수원약과',
+    titleEn: 'Suwon Yakgwa',
+    image: 'assets/figma/recommend/suwon_yakgwa.png',
   ),
   (
-    subtitle: '다섯잎 매력둥이',
-    subtitleEn: 'Five-petal charmer',
-    title: '진달래 화전',
-    titleEn: 'Azalea Hwajeon',
-    image: 'assets/figma/recommend_hwajeon.png',
+    subtitle: '고소함의 정석',
+    subtitleEn: 'Nutty classic',
+    title: '흑임자다식',
+    titleEn: 'Black Sesame Dasik',
+    image: 'assets/figma/recommend/black_sesame_dasik.png',
   ),
   (
-    subtitle: '말랑콩떡 사랑둥이',
-    subtitleEn: 'Soft & sweet sweetheart',
-    title: '송편',
-    titleEn: 'Songpyeon',
-    image: 'assets/figma/recommend_songpyeon.png',
+    subtitle: '다과계의 브레인',
+    subtitleEn: 'The thoughtful one',
+    title: '곶감 호두말이',
+    titleEn: 'Persimmon Walnut Roll',
+    image: 'assets/figma/recommend/persimmon_walnut_roll.png',
+  ),
+  (
+    subtitle: '단단한 내공',
+    subtitleEn: 'Quiet strength',
+    title: '육포다식',
+    titleEn: 'Yukpo Dasik',
+    image: 'assets/figma/recommend/yukpo_jeonggwa.png',
+  ),
+  (
+    subtitle: '구수한 다정함',
+    subtitleEn: 'Warm and nutty',
+    title: '콩고물 도라지정과',
+    titleEn: 'Soybean Bellflower Jeonggwa',
+    image: 'assets/figma/recommend/soybean_bellflower_jeonggwa.png',
+  ),
+  (
+    subtitle: '상큼 발랄',
+    subtitleEn: 'Bright and zesty',
+    title: '금귤정과',
+    titleEn: 'Kumquat Jeonggwa',
+    image: 'assets/figma/recommend/kumquat_jeonggwa.png',
+  ),
+  (
+    subtitle: '할매입맛',
+    subtitleEn: 'Old soul palate',
+    title: '양갱',
+    titleEn: 'Yanggaeng',
+    image: 'assets/figma/recommend/yanggaeng.png',
+  ),
+  (
+    subtitle: '바삭한 부지런쟁이',
+    subtitleEn: 'Crunchy go-getter',
+    title: '견과류',
+    titleEn: 'Mixed Nuts',
+    image: 'assets/figma/recommend/roasted_nuts.png',
+  ),
+  (
+    subtitle: '귀염둥이',
+    subtitleEn: 'Little charmer',
+    title: '매작과',
+    titleEn: 'Maejakgwa',
+    image: 'assets/figma/recommend/maejakgwa.png',
+  ),
+  (
+    subtitle: '달콤 바삭 매력',
+    subtitleEn: 'Sweet & crunchy',
+    title: '깨강정',
+    titleEn: 'Sesame Gangjeong',
+    image: 'assets/figma/recommend/sesame_crunch.png',
   ),
 ];
 
@@ -482,78 +539,169 @@ class _LandingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 980;
+    final deco = decoScaleOf(context, designWidth: 1409);
 
     return Container(
       color: const Color(0xFFFCF7F5),
-      padding: const EdgeInsets.symmetric(vertical: 96),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1100),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                Text(
-                  tr('나만의 다과 추천', 'Find Your Dagwa'),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF534344),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 50,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 64),
-                if (isWide)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (var i = 0; i < _previewCards.length; i++) ...[
-                        Expanded(child: _PreviewCard(card: _previewCards[i])),
-                        if (i != _previewCards.length - 1)
-                          const SizedBox(width: 32),
-                      ],
-                    ],
-                  )
-                else
-                  Column(
-                    children: [
-                      for (final card in _previewCards) ...[
-                        _PreviewCard(card: card),
-                        const SizedBox(height: 20),
-                      ],
-                    ],
-                  ),
-                const SizedBox(height: 54),
-                FilledButton(
-                  onPressed: onStart,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF934753),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(0, 60),
-                    padding: const EdgeInsets.symmetric(horizontal: 38),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    elevation: 4,
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      tr('오늘의 다과 추천 받으러 가기', 'Get today\'s dagwa pick'),
+      constraints: const BoxConstraints(minHeight: 944),
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            left: -420 * deco,
+            bottom: -210 * deco,
+            child: WatercolorDeco(decoQuizPink, width: 980 * deco),
+          ),
+          Positioned(
+            right: -34 * deco,
+            top: -270 * deco,
+            child: WatercolorDeco(decoQuizBlob, width: 690 * deco),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 108, 24, 88),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1180),
+                child: Column(
+                  children: [
+                    Text(
+                      tr('퍼스널 다과 추천', 'Personal Dagwa Recommendation'),
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
+                        color: Color(0xFF534344),
                         fontFamily: 'Gowun Batang',
                         fontFamilyFallback: _serifFallback,
-                        fontSize: 30,
+                        fontSize: 50,
                         fontWeight: FontWeight.w700,
-                        height: 60 / 30,
+                        height: 1.2,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 28),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 960),
+                      child: Text(
+                        tr(
+                          '6가지 간단한 질문으로 이루어진 취향 테스트를 통해\n오늘의 당신에게 어울리는 다과를 만나보세요!',
+                          'Take a simple 6-question taste test and meet the dagwa that suits you today.',
+                        ),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF786A6A),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 20,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 58),
+                    const _PreviewMarquee(cards: _previewCards),
+                    const SizedBox(height: 58),
+                    FilledButton(
+                      onPressed: onStart,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF934753),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(0, 60),
+                        padding: const EdgeInsets.symmetric(horizontal: 38),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          tr('오늘의 다과 추천 받으러 가기', 'Get today\'s dagwa pick'),
+                          style: const TextStyle(
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            height: 60 / 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewMarquee extends StatefulWidget {
+  const _PreviewMarquee({required this.cards});
+
+  final List<
+    ({
+      String subtitle,
+      String subtitleEn,
+      String title,
+      String titleEn,
+      String image,
+    })
+  >
+  cards;
+
+  @override
+  State<_PreviewMarquee> createState() => _PreviewMarqueeState();
+}
+
+class _PreviewMarqueeState extends State<_PreviewMarquee>
+    with SingleTickerProviderStateMixin {
+  static const double _itemWidth = 205;
+  static const double _gap = 22;
+
+  late final AnimationController _controller;
+
+  double get _setWidth => widget.cards.length * (_itemWidth + _gap);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.cards.length * 5000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loop = [...widget.cards, ...widget.cards, ...widget.cards];
+
+    return SizedBox(
+      height: 318,
+      width: double.infinity,
+      child: ClipRect(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) => Transform.translate(
+            offset: Offset(-_controller.value * _setWidth, 0),
+            child: child,
+          ),
+          child: SizedBox(
+            width: _setWidth * 3,
+            child: Row(
+              children: [
+                for (final card in loop)
+                  Padding(
+                    padding: const EdgeInsets.only(right: _gap),
+                    child: SizedBox(
+                      width: _itemWidth,
+                      child: _PreviewCard(card: card),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -576,34 +724,29 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 314),
-      height: 458,
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFE7A9A0).withValues(alpha: 0.55),
-            blurRadius: 31,
-            spreadRadius: -6,
-          ),
-        ],
-      ),
+    return SizedBox(
+      height: 318,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          SizedBox(
+            width: 205,
+            height: 205,
+            child: Image.asset(card.image, fit: BoxFit.contain),
+          ),
+          const SizedBox(height: 8),
           Text(
             tr(card.subtitle, card.subtitleEn),
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF9A9285),
+              color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 16,
+              fontSize: 20,
+              height: 1.25,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 2),
           Text(
             tr(card.title, card.titleEn),
             textAlign: TextAlign.center,
@@ -611,18 +754,10 @@ class _PreviewCard extends StatelessWidget {
               color: Color(0xFF534344),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 30,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
+              fontSize: 24,
+              height: 1.25,
             ),
           ),
-          const Spacer(),
-          SizedBox(
-            width: 258,
-            height: 258,
-            child: Image.asset(card.image, fit: BoxFit.contain),
-          ),
-          const Spacer(),
         ],
       ),
     );
@@ -654,7 +789,7 @@ class _QuizView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalSteps = _questions.length;
-    final pct = (step / totalSteps * 100).round();
+    final pct = totalSteps <= 1 ? 100 : (step / (totalSteps - 1) * 100).round();
     final isWide = MediaQuery.sizeOf(context).width >= 1100;
     final deco = decoScaleOf(context, designWidth: 1409);
 
@@ -850,8 +985,10 @@ class _ProgressBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              tr('$totalSteps개 중 ${step + 1}번째 질문',
-                  'Question ${step + 1} of $totalSteps'),
+              tr(
+                '$totalSteps개 중 ${step + 1}번째 질문',
+                'Question ${step + 1} of $totalSteps',
+              ),
               style: const TextStyle(
                 color: Color(0xFF534344),
                 fontFamily: 'Gowun Batang',
@@ -875,7 +1012,7 @@ class _ProgressBar extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(9999),
           child: LinearProgressIndicator(
-            value: step / totalSteps,
+            value: totalSteps <= 1 ? 1 : step / (totalSteps - 1),
             backgroundColor: const Color(0xFFE5E2DC),
             valueColor: const AlwaysStoppedAnimation(Color(0xFFD9808C)),
             minHeight: 6,
@@ -1004,24 +1141,11 @@ class _OptionCard extends StatefulWidget {
 class _OptionCardState extends State<_OptionCard> {
   bool _hovered = false;
 
-  Color get _gradientStart {
-    if (widget.option.bgColor == _pinkBg) return const Color(0xFFD9808C);
-    if (widget.option.bgColor == _tealBg) return const Color(0xFFD7E5BA);
-    if (widget.option.bgColor == _yellowBg) return const Color(0xFFBF923A);
-    return const Color(0xFF867274);
-  }
-
-  Color get _cardBg {
-    if (widget.selected) return widget.option.bgColor.withValues(alpha: 0.28);
-    if (_hovered) return widget.option.bgColor.withValues(alpha: 0.13);
-    return Colors.white;
-  }
-
-  Color get _borderColor {
-    if (widget.selected) return const Color(0xFF934753);
-    if (_hovered) return const Color(0xFF934753).withValues(alpha: 0.45);
-    return Colors.transparent;
-  }
+  Color get _borderColor => widget.selected
+      ? const Color(0xFF934753)
+      : _hovered
+      ? const Color(0xFF934753).withValues(alpha: 0.28)
+      : Colors.transparent;
 
   @override
   Widget build(BuildContext context) {
@@ -1035,58 +1159,49 @@ class _OptionCardState extends State<_OptionCard> {
           duration: const Duration(milliseconds: 150),
           height: 320,
           decoration: BoxDecoration(
-            color: _cardBg,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _borderColor, width: 2),
+            border: Border.all(
+              color: _borderColor,
+              width: widget.selected ? 1.5 : 1,
+            ),
             boxShadow: [
               BoxShadow(
                 color: widget.selected
-                    ? const Color(0xFF934753).withValues(alpha: 0.18)
+                    ? const Color(0xFF934753).withValues(alpha: 0.16)
                     : _hovered
                     ? const Color(0xFF934753).withValues(alpha: 0.10)
-                    : const Color(0xFF934753).withValues(alpha: 0.05),
-                blurRadius: widget.selected ? 14 : (_hovered ? 8 : 2),
-                offset: const Offset(0, 1),
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: widget.selected ? 18 : (_hovered ? 12 : 4),
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Column(
             children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      color: widget.option.bgColor,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomLeft,
-                                end: Alignment.topRight,
-                                colors: [
-                                  _gradientStart.withValues(alpha: 0.2),
-                                  _gradientStart.withValues(alpha: 0),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Image.asset(
-                            widget.option.imagePath,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: Image.asset(
+                  widget.option.imagePath,
+                  height: 196,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) => Container(
+                    height: 196,
+                    color: const Color(0xFFF1EAE8),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.image_outlined,
+                      color: Color(0xFFCBB8B4),
+                      size: 36,
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 2),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 2),
                 child: Text(
                   tr(widget.option.title, widget.option.titleEn),
                   textAlign: TextAlign.center,
@@ -1105,7 +1220,7 @@ class _OptionCardState extends State<_OptionCard> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
                 child: Text(
                   tr(widget.option.subtitle, widget.option.subtitleEn),
                   textAlign: TextAlign.center,
@@ -1113,8 +1228,8 @@ class _OptionCardState extends State<_OptionCard> {
                     color: Color(0xFF534344),
                     fontFamily: 'Gowun Batang',
                     fontFamilyFallback: _serifFallback,
-                    fontSize: 11,
-                    height: 1.45,
+                    fontSize: 13,
+                    height: 1.38,
                   ),
                 ),
               ),
@@ -1162,11 +1277,7 @@ class _LoadingView extends StatelessWidget {
 // ── Result ─────────────────────────────────────────────────────────────────────
 
 class _ResultView extends StatelessWidget {
-  const _ResultView({
-    super.key,
-    required this.menuName,
-    required this.onHome,
-  });
+  const _ResultView({super.key, required this.menuName, required this.onHome});
   final String menuName;
   final VoidCallback onHome;
 
@@ -1174,122 +1285,178 @@ class _ResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = dagwaResults[menuName];
     final isWide = MediaQuery.sizeOf(context).width >= 780;
+    final paragraphs = data == null
+        ? <String>[]
+        : data.description
+              .split(RegExp(r'\n\s*\n'))
+              .where((paragraph) => paragraph.trim().isNotEmpty)
+              .toList();
 
     return Container(
-      color: const Color(0xFFF5F0ED),
-      padding: const EdgeInsets.symmetric(vertical: 60),
+      color: const Color(0xFFDDDAD9),
+      padding: const EdgeInsets.symmetric(vertical: 46),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 1116),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tr('취향 분석 결과', 'Your taste result'),
-                  style: const TextStyle(
-                    color: Color(0xFF8F7E7B),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                isWide ? 34 : 22,
+                isWide ? 32 : 24,
+                isWide ? 34 : 22,
+                isWide ? 34 : 26,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEFAF9),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.11),
+                    blurRadius: 26,
+                    spreadRadius: -4,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                const SizedBox(height: 40),
-                Center(
-                  child: SizedBox(
-                    width: isWide ? 260 : 200,
-                    height: isWide ? 260 : 200,
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      tr('취향 분석 결과', 'Your taste result'),
+                      style: const TextStyle(
+                        color: Color(0xFF8F7E7B),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: isWide ? 312 : 232,
+                    height: isWide ? 300 : 224,
                     child: data != null
                         ? Image.asset(data.imagePath, fit: BoxFit.contain)
                         : const SizedBox(),
                   ),
-                ),
-                const SizedBox(height: 32),
-                Center(
-                  child: Text(
-                    data?.title ?? '오늘의 추천 다과는 $menuName 입니다!',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF633B3A),
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-                if (data != null) ...[
-                  const SizedBox(height: 24),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 720),
-                      child: Text(
-                        data.description,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF6B5B5A),
-                          fontFamily: 'Gowun Batang',
-                          fontFamilyFallback: _serifFallback,
-                          fontSize: 15,
-                          height: 1.85,
-                        ),
+                  const SizedBox(height: 26),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: Text(
+                      data?.title ?? '오늘의 추천 다과는 $menuName 입니다!',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF633B3A),
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  if (isWide)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _PairingBox(
-                          label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
-                          value: data.pairing,
-                          desc: data.pairingDesc,
-                        )),
-                        const SizedBox(width: 20),
-                        Expanded(child: _PairingBox(
-                          label: tr('차선 추천', 'Runner-up'),
-                          value: data.runnerUp,
-                          desc: data.runnerUpDesc,
-                        )),
-                      ],
-                    )
-                  else
-                    Column(
-                      children: [
-                        _PairingBox(
-                          label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
-                          value: data.pairing,
-                          desc: data.pairingDesc,
-                        ),
-                        const SizedBox(height: 16),
-                        _PairingBox(
-                          label: tr('차선 추천', 'Runner-up'),
-                          value: data.runnerUp,
-                          desc: data.runnerUpDesc,
-                        ),
-                      ],
+                  const SizedBox(height: 22),
+                  if (data != null)
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 930),
+                      child: Column(
+                        children: [
+                          for (
+                            var index = 0;
+                            index < paragraphs.length;
+                            index++
+                          ) ...[
+                            Text(
+                              paragraphs[index],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Color(0xFF8C7E7B),
+                                fontFamily: 'Gowun Batang',
+                                fontFamilyFallback: _serifFallback,
+                                fontSize: 20,
+                                height: 1.6,
+                              ),
+                            ),
+                            if (index != paragraphs.length - 1)
+                              const SizedBox(height: 8),
+                          ],
+                        ],
+                      ),
                     ),
+                  if (data != null) const SizedBox(height: 38),
+                  if (data != null)
+                    if (isWide)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _PairingBox(
+                              label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
+                              value: data.pairing,
+                              desc: data.pairingDesc,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _PairingBox(
+                              label: tr('차선 추천', 'Runner-up'),
+                              value: data.runnerUp,
+                              desc: data.runnerUpDesc,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          _PairingBox(
+                            label: tr('함께 어울리는 메뉴/차', 'Pairs well with'),
+                            value: data.pairing,
+                            desc: data.pairingDesc,
+                          ),
+                          const SizedBox(height: 12),
+                          _PairingBox(
+                            label: tr('차선 추천', 'Runner-up'),
+                            value: data.runnerUp,
+                            desc: data.runnerUpDesc,
+                          ),
+                        ],
+                      ),
+                  const SizedBox(height: 30),
+                  _ResultActions(
+                    onRetry: onHome,
+                    onBuy: () =>
+                        Navigator.pushReplacementNamed(context, '/menu'),
+                    onShare: () {
+                      Clipboard.setData(
+                        ClipboardData(
+                          text: tr(
+                            '행궁다과 추천 결과: ${data?.title ?? menuName}',
+                            'Haenggung Dagwa result: ${data?.title ?? menuName}',
+                          ),
+                        ),
+                      );
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              tr(
+                                '추천 결과를 복사했어요.',
+                                'Result copied to clipboard.',
+                              ),
+                            ),
+                          ),
+                        );
+                    },
+                  ),
                 ],
-                const SizedBox(height: 40),
-                _ResultActions(
-                  onRetry: onHome,
-                  onBuy: () => Navigator.pushReplacementNamed(context, '/menu'),
-                  onShare: () {
-                    Clipboard.setData(ClipboardData(
-                      text: '행궁다과 추천 결과: ${data?.title ?? menuName}',
-                    ));
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(SnackBar(
-                        content: Text(tr('추천 결과를 복사했어요.', 'Result copied to clipboard.')),
-                      ));
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1337,7 +1504,7 @@ class _ResultActions extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       child: Text(
-        tr('구매하러 가기', 'Shop now'),
+        tr('메뉴 보러가기', 'See menu'),
         style: const TextStyle(
           fontFamily: 'Gowun Batang',
           fontFamilyFallback: _serifFallback,
@@ -1404,10 +1571,11 @@ class _PairingBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      constraints: const BoxConstraints(minHeight: 176),
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 20),
       decoration: BoxDecoration(
         color: const Color(0xFFF2ECEC),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1418,29 +1586,33 @@ class _PairingBox extends StatelessWidget {
               color: Color(0xFF5F5552),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 13,
+              fontSize: 19,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFFC85F65),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 14),
+          Center(
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFC85F65),
+                fontFamily: 'Gowun Batang',
+                fontFamilyFallback: _serifFallback,
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Text(
             desc,
+            textAlign: TextAlign.left,
             style: const TextStyle(
               color: Color(0xFF8C7E7B),
               fontFamily: 'Gowun Batang',
               fontFamilyFallback: _serifFallback,
-              fontSize: 13,
-              height: 1.7,
+              fontSize: 15,
+              height: 1.55,
             ),
           ),
         ],

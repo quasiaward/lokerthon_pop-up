@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/lang.dart';
-import '../theme/app_colors.dart';
 import 'common.dart';
 import 'lang_toggle.dart';
 import 'watercolor_deco.dart';
@@ -13,158 +12,191 @@ const _serifFallback = [
   'sans-serif',
 ];
 
-// ── 데이터 모델 ────────────────────────────────────────────────────────────────
-// 메뉴 추가하려면 _menuItems 리스트에 _MenuItem 항목 하나 추가하세요.
-// hotPrice / icePrice 둘 다 있으면 둘 다 표시, 하나만 있으면 하나만 표시.
-// category: '음료' | '다과' | '빙수'
+// ─── 색상 (Figma '홈페이지 최종' 메뉴 화면 기준) ───────────────────────────
+const _pageBg = Color(0xFFF5F5F3);
+const _maroon = Color(0xFF934753); // 음료 카드 배경
+const _cardBorder = Color(0xFFEBEBDF); // 카드 테두리 3px
+const _titleColor = Color(0xFF534344);
+const _tempColor = Color(0xFF9A9285);
+const _signatureColor = Color(0xFFE06B7E);
+
+// ─── 데이터 모델 ──────────────────────────────────────────────────────────
+class _Price {
+  const _Price(
+    this.temp,
+    this.amount,
+  ); // temp: 'HOT' | 'ICE' | '' , amount: '8,000'
+  final String temp;
+  final String amount;
+
+  int get value => int.parse(amount.replaceAll(',', ''));
+}
 
 class _MenuItem {
   const _MenuItem({
     required this.name,
     required this.nameEn,
-    required this.category,
-    this.hotPrice,
-    this.icePrice,
-    required this.imagePath,
-    this.description = '',
-    this.isNew = false,
+    required this.image,
+    required this.prices,
+    this.signature = false,
   });
 
   final String name;
   final String nameEn;
-  final String category;
-  final int? hotPrice;
-  final int? icePrice;
-  final String imagePath;
-  final String description;
-  final bool isNew;
+  final String image; // asset 경로
+  final List<_Price> prices; // 1~2개 (HOT/ICE)
+  final bool signature; // '대표' 태그
+
+  int get minValue =>
+      prices.map((p) => p.value).reduce((a, b) => a < b ? a : b);
 }
 
-const _menuItems = <_MenuItem>[
-  // ── 음료 ──
+class _MenuCategory {
+  const _MenuCategory({
+    required this.key,
+    required this.labelKo,
+    required this.labelEn,
+    required this.items,
+    required this.cardColor,
+    this.pageSize = 16,
+  });
+
+  final String key;
+  final String labelKo;
+  final String labelEn;
+  final List<_MenuItem> items;
+  final Color cardColor; // 카드 배경색 (음료=마룬, 다과/빙수는 프레임 확인 후 조정)
+  final int pageSize;
+}
+
+// ─── 음료 (Beverage) — Figma 1페이지 16종 ─────────────────────────────────
+const _beverages = <_MenuItem>[
   _MenuItem(
     name: '대추차',
     nameEn: 'Jujube Tea',
-    category: '음료',
-    hotPrice: 8000,
-    imagePath: 'assets/figma/menu_jujube_tea.png',
-    description: '',
+    image: 'assets/figma/menu/jujube_tea.png',
+    prices: [_Price('HOT', '8,000')],
   ),
   _MenuItem(
     name: '쌍화차',
     nameEn: 'Ssanghwa Tea',
-    category: '음료',
-    hotPrice: 9000,
-    imagePath: 'assets/figma/menu_ssanghwa_tea.png',
-    description: '',
+    image: 'assets/figma/menu/ssanghwa_tea.png',
+    prices: [_Price('HOT', '8,000')],
   ),
   _MenuItem(
     name: '생강차',
     nameEn: 'Ginger Tea',
-    category: '음료',
-    hotPrice: 8000,
-    imagePath: 'assets/figma/menu_ginger_tea.png',
-    description: '',
+    image: 'assets/figma/menu/ginger_tea.png',
+    prices: [_Price('HOT', '6,000')],
+  ),
+  _MenuItem(
+    name: '오미자 수단',
+    nameEn: 'Omija Tea with Teok',
+    image: 'assets/figma/menu/omija_sudan.png',
+    prices: [_Price('ICE', '6,000')],
+    signature: true,
   ),
   _MenuItem(
     name: '식혜',
     nameEn: 'Sweet Rice Punch',
-    category: '음료',
-    icePrice: 4500,
-    imagePath: 'assets/figma/menu_sikhye.png',
-    description: '',
+    image: 'assets/figma/menu/sikhye.png',
+    prices: [_Price('ICE', '4,500')],
+  ),
+  _MenuItem(
+    name: '레몬 생강차',
+    nameEn: 'Lemon Ginger Tea',
+    image: 'assets/figma/menu/lemon_ginger_tea.png',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+  ),
+  _MenuItem(
+    name: '베리 레몬차',
+    nameEn: 'Berry Lemon Tea',
+    image: 'assets/figma/menu/berry_lemon_tea.png',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
+  ),
+  _MenuItem(
+    name: '석류 레몬차',
+    nameEn: 'Pomegranate Lemon Tea',
+    image: 'assets/figma/menu/pomegranate_lemon_tea.png',
+    prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
   ),
   _MenuItem(
     name: '오미자차',
     nameEn: 'Omija Tea',
-    category: '음료',
-    hotPrice: 5000,
-    icePrice: 5000,
-    imagePath: 'assets/figma/menu_omija_tea.png',
-    description: '',
+    image: 'assets/figma/menu/omija_tea.png',
+    prices: [_Price('HOT', '5,000'), _Price('ICE', '5,500')],
   ),
   _MenuItem(
-    name: '오미자 수단',
-    nameEn: 'Omija Tea with Tteok',
-    category: '음료',
-    hotPrice: 6500,
-    icePrice: 6500,
-    imagePath: 'assets/figma/menu_omija_sudan.png',
-    description: '',
-    isNew: true,
+    name: '유자차 / 에이드',
+    nameEn: 'Yuja Tea / Ade',
+    image: 'assets/figma/menu/yuja_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
-    name: '베리레몬차',
-    nameEn: 'Berry Lemon Tea',
-    category: '음료',
-    hotPrice: 5500,
-    icePrice: 6000,
-    imagePath: 'assets/figma/menu_berry_lemon_tea.png',
-    description: '',
+    name: '레몬차 / 에이드',
+    nameEn: 'Lemon Tea / Ade',
+    image: 'assets/figma/menu/lemon_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
-    name: '흑임자 라떼',
-    nameEn: 'Black Sesame Latte',
-    category: '음료',
-    hotPrice: 5500,
-    icePrice: 5500,
-    imagePath: 'assets/figma/menu_black_sesame_latte.png',
-    description: '',
-  ),
-
-  // ── 다과 ──
-  _MenuItem(
-    name: '약과',
-    nameEn: 'Yakgwa',
-    category: '다과',
-    hotPrice: 3000,
-    imagePath: 'assets/figma/menu_yakgwa.png',
-    description: '',
+    name: '자몽차 / 에이드',
+    nameEn: 'Grapefruit Tea / Ade',
+    image: 'assets/figma/menu/grapefruit_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
-    name: '다과상',
-    nameEn: 'Dagwa Tray',
-    category: '다과',
-    hotPrice: 15000,
-    imagePath: 'assets/figma/menu_dagwasang.png',
-    description: '',
+    name: '라임차 / 에이드',
+    nameEn: 'Lime Tea / Ade',
+    image: 'assets/figma/menu/lime_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
-
-  // ── 빙수 ──
   _MenuItem(
-    name: '그린 빙수',
-    nameEn: 'Green Bingsu',
-    category: '빙수',
-    icePrice: 9000,
-    imagePath: 'assets/figma/menu_green_bingsu.png',
-    description: '',
+    name: '청귤차 / 에이드',
+    nameEn: 'Green Tangerine Tea / Ade',
+    image: 'assets/figma/menu/green_tangerine_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
+  ),
+  _MenuItem(
+    name: '모과차 / 에이드',
+    nameEn: 'Quince Tea / Ade',
+    image: 'assets/figma/menu/quince_ade.png',
+    prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
+  ),
+  _MenuItem(
+    name: '청포도 에이드',
+    nameEn: 'Green Grape Ade',
+    image: 'assets/figma/menu/green_grape_ade.png',
+    prices: [_Price('ICE', '5,000')],
   ),
 ];
 
-// ── 카테고리 ───────────────────────────────────────────────────────────────────
+// 다과 / 빙수는 Figma 프레임을 추가로 받아 채울 예정(일러스트·배경색 대기 중).
+const _categories = <_MenuCategory>[
+  _MenuCategory(
+    key: '음료',
+    labelKo: '음료',
+    labelEn: 'Beverage',
+    items: _beverages,
+    cardColor: _maroon,
+    pageSize: 16,
+  ),
+  _MenuCategory(
+    key: '다과',
+    labelKo: '다과',
+    labelEn: 'Dessert',
+    items: [],
+    cardColor: Color(0xFFE7EBE3),
+  ),
+  _MenuCategory(
+    key: '빙수',
+    labelKo: '빙수',
+    labelEn: 'Bingsu',
+    items: [],
+    cardColor: Color(0xFFEDE6DC),
+  ),
+];
 
-const _categories = ['음료', '다과', '빙수'];
-
-String _catLabel(String c) => switch (c) {
-      '음료' => tr(c, 'Beverage'),
-      '다과' => tr(c, 'Dessert'),
-      '빙수' => tr(c, 'Bingsu'),
-      _ => c,
-    };
-
-// ── 가격 포맷 ──────────────────────────────────────────────────────────────────
-
-String _won(int v) {
-  final s = v.toString();
-  final buf = StringBuffer();
-  for (var i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-    buf.write(s[i]);
-  }
-  return '${buf.toString()}원';
-}
-
-// ── 메인 위젯 ─────────────────────────────────────────────────────────────────
+enum _SortMode { recommended, priceLow, priceHigh }
 
 class MenuSection extends StatefulWidget {
   const MenuSection({super.key});
@@ -174,25 +206,51 @@ class MenuSection extends StatefulWidget {
 }
 
 class _MenuSectionState extends State<MenuSection> {
-  String _category = _categories.first;
+  int _categoryIndex = 0;
+  int _page = 0;
+  _SortMode _sort = _SortMode.recommended;
 
-  List<_MenuItem> get _visible =>
-      _menuItems.where((m) => m.category == _category).toList();
+  _MenuCategory get _category => _categories[_categoryIndex];
 
-  void _showModal(_MenuItem item) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.45),
-      builder: (_) => _MenuModal(item: item),
-    );
+  List<_MenuItem> get _sortedItems {
+    final items = [..._category.items];
+    switch (_sort) {
+      case _SortMode.recommended:
+        break;
+      case _SortMode.priceLow:
+        items.sort((a, b) => a.minValue.compareTo(b.minValue));
+      case _SortMode.priceHigh:
+        items.sort((a, b) => b.minValue.compareTo(a.minValue));
+    }
+    return items;
+  }
+
+  List<List<_MenuItem>> get _pages {
+    final items = _sortedItems;
+    if (items.isEmpty) return const [];
+    final size = _category.pageSize;
+    return [
+      for (var i = 0; i < items.length; i += size)
+        items.sublist(i, (i + size).clamp(0, items.length)),
+    ];
+  }
+
+  void _selectCategory(int index) {
+    setState(() {
+      _categoryIndex = index;
+      _page = 0;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final deco = decoScaleOf(context, designWidth: 1409);
+    final isWide = MediaQuery.sizeOf(context).width >= 760;
+    final pages = _pages;
+    final currentPage = pages.isEmpty ? -1 : _page.clamp(0, pages.length - 1);
 
     return Container(
-      color: const Color(0xFFF5F5F3),
+      color: _pageBg,
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -206,91 +264,44 @@ class _MenuSectionState extends State<MenuSection> {
             child: SectionShell(
               child: Column(
                 children: [
-                  // 제목
                   Text(
-                    'MENU',
-                    style: const TextStyle(
-                      color: Color(0xFF534344),
+                    tr('행궁다과 메뉴', 'MENU'),
+                    style: TextStyle(
+                      color: _titleColor,
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: 50,
+                      fontSize: isWide ? 50 : 34,
                       fontWeight: FontWeight.w700,
                       height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 34),
-
-                  // 카테고리 탭
                   _CategoryTabs(
-                    selected: _category,
-                    onChanged: (c) => setState(() => _category = c),
+                    selected: _categoryIndex,
+                    onChanged: _selectCategory,
                   ),
-                  const SizedBox(height: 40),
-
-                  // 툴바 (언어 토글 + 정렬)
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFB5B5B5)),
-                        ),
-                        child: const LangToggle(),
-                      ),
-                      const Spacer(),
-                      PopupMenuButton<String>(
-                        itemBuilder: (_) => [
-                          PopupMenuItem(
-                            value: '추천순',
-                            child: Text(tr('추천순', 'Recommended')),
-                          ),
-                        ],
-                        child: Row(
-                          children: [
-                            Text(
-                              tr('추천순', 'Recommend'),
-                              style: const TextStyle(
-                                color: Color(0xFF534344),
-                                fontFamily: 'Gowun Batang',
-                                fontFamilyFallback: _serifFallback,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const Icon(Icons.keyboard_arrow_down_rounded,
-                                color: Color(0xFF534344)),
-                          ],
-                        ),
+                  const SizedBox(height: 52),
+                  _MenuToolbar(
+                    sort: _sort,
+                    onSortChanged: (mode) => setState(() => _sort = mode),
+                  ),
+                  const SizedBox(height: 28),
+                  if (currentPage < 0)
+                    _ComingSoon(category: _category)
+                  else ...[
+                    _MenuGrid(
+                      items: pages[currentPage],
+                      cardColor: _category.cardColor,
+                    ),
+                    if (pages.length > 1) ...[
+                      const SizedBox(height: 44),
+                      _Pagination(
+                        count: pages.length,
+                        active: currentPage,
+                        onChanged: (i) => setState(() => _page = i),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  // 메뉴 그리드
-                  if (_visible.isEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 28),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.wheat),
-                      ),
-                      child: Text(
-                        tr('해당 카테고리의 메뉴는 준비 중입니다.',
-                            'Items in this category are coming soon.'),
-                        style: const TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 15,
-                        ),
-                      ),
-                    )
-                  else
-                    _MenuGrid(
-                      items: _visible,
-                      onTap: _showModal,
-                    ),
+                  ],
                 ],
               ),
             ),
@@ -301,64 +312,134 @@ class _MenuSectionState extends State<MenuSection> {
   }
 }
 
-// ── 카테고리 탭 ────────────────────────────────────────────────────────────────
-
+// ─── 카테고리 탭 ──────────────────────────────────────────────────────────
 class _CategoryTabs extends StatelessWidget {
   const _CategoryTabs({required this.selected, required this.onChanged});
 
-  final String selected;
-  final ValueChanged<String> onChanged;
+  final int selected;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 18,
+      runSpacing: 12,
       children: [
-        for (final c in _categories)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: GestureDetector(
-              onTap: () => onChanged(c),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                decoration: BoxDecoration(
-                  color: c == selected
-                      ? const Color(0xFF7A3B47)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(
-                    color: c == selected
-                        ? const Color(0xFF7A3B47)
-                        : const Color(0xFFB5B5B5),
-                  ),
-                ),
-                child: Text(
-                  _catLabel(c),
-                  style: TextStyle(
-                    color: c == selected ? Colors.white : const Color(0xFF6B5B5A),
-                    fontFamily: 'Gowun Batang',
-                    fontFamilyFallback: _serifFallback,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
+        for (var i = 0; i < _categories.length; i++)
+          _CategoryPill(
+            label: tr(_categories[i].labelKo, _categories[i].labelEn),
+            selected: i == selected,
+            onTap: () => onChanged(i),
           ),
       ],
     );
   }
 }
 
-// ── 메뉴 그리드 ────────────────────────────────────────────────────────────────
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+          decoration: BoxDecoration(
+            color: selected ? _maroon : const Color(0xFFE6E6E6),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : const Color(0xFF806D6D),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── 툴바 (언어 토글 + 정렬) ──────────────────────────────────────────────
+class _MenuToolbar extends StatelessWidget {
+  const _MenuToolbar({required this.sort, required this.onSortChanged});
+
+  final _SortMode sort;
+  final ValueChanged<_SortMode> onSortChanged;
+
+  String _sortLabel(_SortMode mode) => switch (mode) {
+    _SortMode.recommended => tr('추천순', 'Recommend'),
+    _SortMode.priceLow => tr('낮은 가격순', 'Low price'),
+    _SortMode.priceHigh => tr('높은 가격순', 'High price'),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFB5B5B5)),
+          ),
+          child: const LangToggle(),
+        ),
+        const Spacer(),
+        PopupMenuButton<_SortMode>(
+          initialValue: sort,
+          onSelected: onSortChanged,
+          itemBuilder: (context) => [
+            for (final mode in _SortMode.values)
+              PopupMenuItem(value: mode, child: Text(_sortLabel(mode))),
+          ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _sortLabel(sort),
+                style: const TextStyle(
+                  color: _titleColor,
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.keyboard_arrow_down_rounded, color: _titleColor),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── 메뉴 그리드 ──────────────────────────────────────────────────────────
 class _MenuGrid extends StatelessWidget {
-  const _MenuGrid({required this.items, required this.onTap});
+  const _MenuGrid({required this.items, required this.cardColor});
 
   final List<_MenuItem> items;
-  final ValueChanged<_MenuItem> onTap;
+  final Color cardColor;
 
   @override
   Widget build(BuildContext context) {
@@ -367,18 +448,18 @@ class _MenuGrid extends StatelessWidget {
         final columns = constraints.maxWidth >= 1040
             ? 4
             : (constraints.maxWidth >= 680 ? 2 : 1);
-        final gap = 24.0;
+        const gap = 24.0;
         final itemWidth =
             (constraints.maxWidth - gap * (columns - 1)) / columns;
 
         return Wrap(
           spacing: gap,
-          runSpacing: 34,
+          runSpacing: 40,
           children: [
             for (final item in items)
               SizedBox(
                 width: itemWidth,
-                child: _MenuCard(item: item, onTap: () => onTap(item)),
+                child: _MenuItemCard(item: item, cardColor: cardColor),
               ),
           ],
         );
@@ -387,316 +468,227 @@ class _MenuGrid extends StatelessWidget {
   }
 }
 
-// ── 메뉴 카드 ─────────────────────────────────────────────────────────────────
-
-class _MenuCard extends StatelessWidget {
-  const _MenuCard({required this.item, required this.onTap});
+class _MenuItemCard extends StatelessWidget {
+  const _MenuItemCard({required this.item, required this.cardColor});
 
   final _MenuItem item;
-  final VoidCallback onTap;
+  final Color cardColor;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 이미지
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.asset(
-                    item.imagePath,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: const Color(0xFFF0E8E5),
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported_outlined,
-                            color: Color(0xFFCFC4C0), size: 40),
-                      ),
-                    ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AspectRatio(
+          aspectRatio: 260 / 263,
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardColor,
+              border: Border.all(color: _cardBorder, width: 3),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Image.asset(
+                  item.image,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (context, error, stack) =>
+                      const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Text(
+                tr(item.name, item.nameEn),
+                style: const TextStyle(
+                  color: Color(0xFF1C1C18),
+                  fontFamily: 'Gowun Batang',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                ),
+              ),
+            ),
+            if (item.signature) ...[
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(
+                  tr('대표', 'Best'),
+                  style: const TextStyle(
+                    color: _signatureColor,
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
                   ),
                 ),
               ),
-              if (item.isNew)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF7A3B47),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: const Text(
-                      'New',
-                      style: TextStyle(
-                        color: Colors.white,
+            ],
+          ],
+        ),
+        const SizedBox(height: 10),
+        for (final price in item.prices)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 3),
+            child: Row(
+              children: [
+                if (price.temp.isNotEmpty)
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      price.temp,
+                      style: const TextStyle(
+                        color: _tempColor,
+                        fontFamily: 'Inter',
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Gowun Batang',
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
                       ),
                     ),
                   ),
+                Text(
+                  tr('${price.amount}원', '${price.amount}W'),
+                  style: const TextStyle(
+                    color: Color(0xFF2A2320),
+                    fontFamily: 'Gowun Batang',
+                    fontFamilyFallback: _serifFallback,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 이름
-          Text(
-            tr(item.name, item.nameEn),
-            style: const TextStyle(
-              color: Color(0xFF2C1F1F),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
+              ],
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            tr(item.nameEn, item.name),
-            style: const TextStyle(
-              color: Color(0xFF8C7E7B),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // HOT / ICE 가격
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              if (item.hotPrice != null)
-                _PriceBadge(
-                  label: 'HOT',
-                  price: _won(item.hotPrice!),
-                  color: const Color(0xFF934753),
-                ),
-              if (item.icePrice != null)
-                _PriceBadge(
-                  label: 'ICE',
-                  price: _won(item.icePrice!),
-                  color: const Color(0xFF4A7FA5),
-                ),
-            ],
-          ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-class _PriceBadge extends StatelessWidget {
-  const _PriceBadge({
-    required this.label,
-    required this.price,
-    required this.color,
+// ─── 페이지네이션 ─────────────────────────────────────────────────────────
+class _Pagination extends StatelessWidget {
+  const _Pagination({
+    required this.count,
+    required this.active,
+    required this.onChanged,
   });
 
-  final String label;
-  final String price;
-  final Color color;
+  final int count;
+  final int active;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Gowun Batang',
-            ),
-          ),
+        _PageArrow(
+          icon: Icons.arrow_back_ios_rounded,
+          enabled: active > 0,
+          onTap: () => onChanged(active - 1),
         ),
-        const SizedBox(width: 6),
-        Text(
-          price,
-          style: TextStyle(
-            color: color,
-            fontFamily: 'Gowun Batang',
-            fontFamilyFallback: _serifFallback,
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
+        const SizedBox(width: 12),
+        for (var i = 0; i < count; i++) ...[
+          if (i != 0) const SizedBox(width: 10),
+          _PageDot(active: i == active, onTap: () => onChanged(i)),
+        ],
+        const SizedBox(width: 12),
+        _PageArrow(
+          icon: Icons.arrow_forward_ios_rounded,
+          enabled: active < count - 1,
+          onTap: () => onChanged(active + 1),
         ),
       ],
     );
   }
 }
 
-// ── 모달 ──────────────────────────────────────────────────────────────────────
+class _PageDot extends StatelessWidget {
+  const _PageDot({required this.active, required this.onTap});
 
-class _MenuModal extends StatelessWidget {
-  const _MenuModal({required this.item});
-
-  final _MenuItem item;
+  final bool active;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF9F6),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 이미지
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.asset(
-                      item.imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFFF0E8E5),
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported_outlined,
-                              color: Color(0xFFCFC4C0), size: 48),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 11,
+        height: 11,
+        decoration: BoxDecoration(
+          color: active ? _maroon : const Color(0xFFD3C8C8),
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
 
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 이름 + 닫기
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (item.isNew)
-                                  Container(
-                                    margin: const EdgeInsets.only(bottom: 6),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF7A3B47),
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    child: const Text(
-                                      'New',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        fontFamily: 'Gowun Batang',
-                                      ),
-                                    ),
-                                  ),
-                                Text(
-                                  tr(item.name, item.nameEn),
-                                  style: const TextStyle(
-                                    color: Color(0xFF2C1F1F),
-                                    fontFamily: 'Gowun Batang',
-                                    fontFamilyFallback: _serifFallback,
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  tr(item.nameEn, item.name),
-                                  style: const TextStyle(
-                                    color: Color(0xFF8C7E7B),
-                                    fontFamily: 'Gowun Batang',
-                                    fontFamilyFallback: _serifFallback,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.close,
-                                color: Color(0xFF8C7E7B)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+class _PageArrow extends StatelessWidget {
+  const _PageArrow({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
 
-                      // 설명
-                      if (item.description.isNotEmpty) ...[
-                        Text(
-                          item.description,
-                          style: const TextStyle(
-                            color: Color(0xFF6B5B5A),
-                            fontFamily: 'Gowun Batang',
-                            fontFamilyFallback: _serifFallback,
-                            fontSize: 15,
-                            height: 1.7,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
 
-                      // 구분선
-                      const Divider(color: Color(0xFFEDE4E0)),
-                      const SizedBox(height: 16),
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: enabled ? onTap : null,
+      iconSize: 16,
+      color: _titleColor,
+      disabledColor: const Color(0xFFCBC2C2),
+      icon: Icon(icon),
+    );
+  }
+}
 
-                      // 가격
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 10,
-                        children: [
-                          if (item.hotPrice != null)
-                            _PriceBadge(
-                              label: 'HOT',
-                              price: _won(item.hotPrice!),
-                              color: const Color(0xFF934753),
-                            ),
-                          if (item.icePrice != null)
-                            _PriceBadge(
-                              label: 'ICE',
-                              price: _won(item.icePrice!),
-                              color: const Color(0xFF4A7FA5),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+// ─── 준비 중 카테고리 (다과 / 빙수) ────────────────────────────────────────
+class _ComingSoon extends StatelessWidget {
+  const _ComingSoon({required this.category});
+
+  final _MenuCategory category;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = tr(category.labelKo, category.labelEn);
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 56),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _cardBorder, width: 2),
+      ),
+      child: Text(
+        tr('$label 메뉴는 곧 업데이트됩니다.', 'The $label menu is coming soon.'),
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: _tempColor,
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          height: 1.5,
         ),
       ),
     );

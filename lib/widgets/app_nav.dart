@@ -4,12 +4,6 @@ import '../l10n/lang.dart';
 import 'brand_logo.dart';
 import 'lang_toggle.dart';
 
-const _serifFallback = [
-  'Apple SD Gothic Neo',
-  'Noto Sans CJK KR',
-  'Malgun Gothic',
-  'sans-serif',
-];
 const _sansFallback = [
   'Apple SD Gothic Neo',
   'Noto Sans CJK KR',
@@ -59,8 +53,12 @@ class _WideNav extends StatelessWidget {
           children: [
             _LogoButton(),
             const Spacer(),
-            _NavItem(tr('소개', 'About'), '/', currentRoute,
-                onTap: () => _goHome(context)),
+            _NavItem(
+              tr('홈', 'Home'),
+              '/',
+              currentRoute,
+              onTap: () => _goHome(context),
+            ),
             _NavItem(
               tr('메뉴', 'Menu'),
               '/menu',
@@ -68,40 +66,24 @@ class _WideNav extends StatelessWidget {
               onTap: () => _navigate(context, '/menu'),
             ),
             _NavItem(
-              tr('체험', 'Experience'),
+              tr('원데이 클래스', 'One-day Class'),
               '/experience',
               currentRoute,
               onTap: () => _navigate(context, '/experience'),
             ),
             _NavItem(
-              tr('케이터링', 'Catering'),
-              '/custom',
-              currentRoute,
-              onTap: () => _navigate(context, '/custom'),
-            ),
-            _NavItem(
-              tr('나만의 다과 추천', 'Find Your Dagwa'),
+              tr('퍼스널 다과 추천', 'Personal Picks'),
               '/ai',
               currentRoute,
               onTap: () => _navigate(context, '/ai'),
             ),
+            _NavItem(
+              tr('다과 상자 주문', 'Gift Box Order'),
+              '/custom',
+              currentRoute,
+              onTap: () => _navigate(context, '/custom'),
+            ),
             const Spacer(),
-            _NavItem(
-              tr('로그인', 'Log in'),
-              '',
-              currentRoute,
-              onTap: () => _showDemoNotice(
-                  context,
-                  tr('로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.',
-                      'In this demo, login is replaced by the reservation lookup flow.')),
-            ),
-            _NavItem(
-              tr('장바구니', 'Cart'),
-              '',
-              currentRoute,
-              onTap: () => _showCartSheet(context),
-            ),
-            const SizedBox(width: 8),
             const LangToggle(),
           ],
         ),
@@ -123,11 +105,7 @@ class _CompactNav extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 20, top: 10, right: 12),
           child: Row(
-            children: [
-              _LogoButton(),
-              const Spacer(),
-              const LangToggle(),
-            ],
+            children: [_LogoButton(), const Spacer(), const LangToggle()],
           ),
         ),
         SingleChildScrollView(
@@ -135,8 +113,12 @@ class _CompactNav extends StatelessWidget {
           padding: const EdgeInsets.only(left: 12, bottom: 8),
           child: Row(
             children: [
-              _NavItem(tr('소개', 'About'), '/', currentRoute,
-                  onTap: () => _goHome(context)),
+              _NavItem(
+                tr('홈', 'Home'),
+                '/',
+                currentRoute,
+                onTap: () => _goHome(context),
+              ),
               _NavItem(
                 tr('메뉴', 'Menu'),
                 '/menu',
@@ -144,22 +126,22 @@ class _CompactNav extends StatelessWidget {
                 onTap: () => _navigate(context, '/menu'),
               ),
               _NavItem(
-                tr('체험', 'Experience'),
+                tr('원데이 클래스', 'One-day Class'),
                 '/experience',
                 currentRoute,
                 onTap: () => _navigate(context, '/experience'),
               ),
               _NavItem(
-                tr('케이터링', 'Catering'),
-                '/custom',
-                currentRoute,
-                onTap: () => _navigate(context, '/custom'),
-              ),
-              _NavItem(
-                tr('나만의 다과 추천', 'Find Your Dagwa'),
+                tr('퍼스널 다과 추천', 'Personal Picks'),
                 '/ai',
                 currentRoute,
                 onTap: () => _navigate(context, '/ai'),
+              ),
+              _NavItem(
+                tr('다과 상자 주문', 'Gift Box Order'),
+                '/custom',
+                currentRoute,
+                onTap: () => _navigate(context, '/custom'),
               ),
             ],
           ),
@@ -175,87 +157,6 @@ void _navigate(BuildContext context, String route) {
 
 void _goHome(BuildContext context) {
   Navigator.pushReplacementNamed(context, '/');
-}
-
-void _showDemoNotice(BuildContext context, String message) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF534344),
-      ),
-    );
-}
-
-void _showCartSheet(BuildContext context) {
-  showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: const Color(0xFFFFFCF7),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-    ),
-    builder: (ctx) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              tr('장바구니 안내', 'About the cart'),
-              style: const TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              tr('발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
-                  'In this demo, instead of checkout the cart leads into the experience booking and catering inquiry flows.'),
-              style: const TextStyle(
-                color: Color(0xFF6F625B),
-                fontSize: 15,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 22),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                FilledButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/custom');
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF934753),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(tr('케이터링 문의', 'Catering inquiry')),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/experience');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF934753),
-                  ),
-                  child: Text(tr('체험 예약', 'Book experience')),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
 }
 
 class _LogoButton extends StatelessWidget {
@@ -311,8 +212,6 @@ class _NavItem extends StatelessWidget {
                   style: TextStyle(
                     color: _isActive
                         ? const Color(0xFF995959)
-                        : route.isEmpty
-                        ? Colors.black
                         : const Color(0xFF837777),
                     fontFamily: 'Inter',
                     fontFamilyFallback: _sansFallback,
