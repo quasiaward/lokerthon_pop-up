@@ -40,6 +40,18 @@ const _sansFallback = [
   'Malgun Gothic',
   'sans-serif',
 ];
+const _bodyFallback = [
+  'Apple SD Gothic Neo',
+  'Noto Sans CJK KR',
+  'Malgun Gothic',
+  'sans-serif',
+];
+
+const _desktopContentWidth = 1142.0;
+const _desktopHeroHeight = 945.0;
+const _desktopBrandHeight = 1022.0;
+const _desktopMenuHeight = 1034.0;
+const _desktopExperienceHeight = 860.0;
 
 Widget _img(String asset, {BoxFit fit = BoxFit.cover}) =>
     Image.asset(asset, fit: fit);
@@ -72,7 +84,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFCF7F5),
+      backgroundColor: const Color(0xFFF2F2F2),
       body: Stack(
         children: [
           Positioned.fill(
@@ -90,18 +102,6 @@ class _HomePageState extends State<HomePage> {
                         Navigator.pushReplacementNamed(context, '/custom'),
                     onAiTap: () =>
                         Navigator.pushReplacementNamed(context, '/ai'),
-                    onLoginTap: () => ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        SnackBar(
-                          content: Text(tr(
-                              '로그인은 발표 데모에서는 예약 확인 흐름으로 대체했습니다.',
-                              'In this demo, login is replaced by the reservation lookup flow.')),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: const Color(0xFF534344),
-                        ),
-                      ),
-                    onCartTap: () => _showCartSheet(context),
                   ),
                   const _BrandSection(),
                   _MenuPreviewSection(
@@ -126,73 +126,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  void _showCartSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: const Color(0xFFFFFCF7),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              tr('장바구니 안내', 'About the cart'),
-              style: const TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              tr('발표 데모에서는 메뉴를 담아 결제하기보다, 체험 예약과 케이터링 상담으로 이어지는 흐름을 보여줍니다.',
-                  'In this demo, instead of checkout the cart leads into the experience booking and catering inquiry flows.'),
-              style: const TextStyle(
-                color: Color(0xFF6F625B),
-                fontSize: 15,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 22),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                FilledButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/custom');
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF934753),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(tr('케이터링 문의', 'Catering inquiry')),
-                ),
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushReplacementNamed(context, '/experience');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF934753),
-                  ),
-                  child: Text(tr('체험 예약', 'Book experience')),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Hero Section ───────────────────────────────────────────────────────────
@@ -204,8 +137,6 @@ class _HeroSection extends StatefulWidget {
     required this.onExperienceTap,
     required this.onCateringTap,
     required this.onAiTap,
-    required this.onLoginTap,
-    required this.onCartTap,
   });
 
   final VoidCallback onHomeTap;
@@ -213,8 +144,6 @@ class _HeroSection extends StatefulWidget {
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
   final VoidCallback onAiTap;
-  final VoidCallback onLoginTap;
-  final VoidCallback onCartTap;
 
   @override
   State<_HeroSection> createState() => _HeroSectionState();
@@ -250,7 +179,7 @@ class _HeroSectionState extends State<_HeroSection> {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
     return SizedBox(
-      height: isWide ? 945 : 780,
+      height: isWide ? _desktopHeroHeight : 780,
       width: double.infinity,
       child: Stack(
         children: [
@@ -260,21 +189,6 @@ class _HeroSectionState extends State<_HeroSection> {
               child: _HeroSlideImage(
                 key: ValueKey<int>(_index),
                 url: _heroSlides[_index],
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.18),
-                    Colors.black.withValues(alpha: 0.04),
-                    Colors.black.withValues(alpha: 0.22),
-                  ],
-                ),
               ),
             ),
           ),
@@ -290,8 +204,6 @@ class _HeroSectionState extends State<_HeroSection> {
                 onExperienceTap: widget.onExperienceTap,
                 onCateringTap: widget.onCateringTap,
                 onAiTap: widget.onAiTap,
-                onLoginTap: widget.onLoginTap,
-                onCartTap: widget.onCartTap,
               ),
             ),
           ),
@@ -348,8 +260,6 @@ class _HeroNav extends StatelessWidget {
     required this.onExperienceTap,
     required this.onCateringTap,
     required this.onAiTap,
-    required this.onLoginTap,
-    required this.onCartTap,
   });
 
   final VoidCallback onHomeTap;
@@ -357,44 +267,48 @@ class _HeroNav extends StatelessWidget {
   final VoidCallback onExperienceTap;
   final VoidCallback onCateringTap;
   final VoidCallback onAiTap;
-  final VoidCallback onLoginTap;
-  final VoidCallback onCartTap;
 
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 1000;
 
     if (compact) {
-      return Padding(
-        padding: const EdgeInsets.only(left: 20, top: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _HeroLogoButton(
-              onTap: () => Navigator.pushReplacementNamed(context, '/'),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 10, right: 12),
+            child: Row(
+              children: [
+                _HeroLogoButton(
+                  onTap: () => Navigator.pushReplacementNamed(context, '/'),
+                ),
+                const Spacer(),
+                const LangToggle(light: true),
+              ],
             ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _HeroNavBtn(tr('홈', 'Home'), onTap: onHomeTap, active: true),
-                  _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
-                  _HeroNavBtn(tr('원데이 클래스', 'One-day Class'),
-                      onTap: onExperienceTap),
-                  _HeroNavBtn(tr('퍼스널 다과 추천', 'Personal Picks'),
-                      onTap: onAiTap),
-                  _HeroNavBtn(tr('다과 상자 주문', 'Gift Box Order'),
-                      onTap: onCateringTap),
-                  _HeroNavBtn(tr('주문 / 예약확인', 'Order / Booking'),
-                      onTap: onLoginTap),
-                  const SizedBox(width: 4),
-                  const LangToggle(light: true),
-                ],
-              ),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 12, bottom: 8),
+            child: Row(
+              children: [
+                _HeroNavBtn(tr('홈', 'Home'), onTap: onHomeTap, active: true),
+                _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
+                _HeroNavBtn(
+                  tr('원데이 클래스', 'One-day Class'),
+                  onTap: onExperienceTap,
+                ),
+                _HeroNavBtn(tr('퍼스널 다과 추천', 'Personal Picks'), onTap: onAiTap),
+                _HeroNavBtn(
+                  tr('다과 상자 만들기', 'Gift Box Builder'),
+                  onTap: onCateringTap,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
@@ -413,21 +327,13 @@ class _HeroNav extends StatelessWidget {
             const Spacer(),
             _HeroNavBtn(tr('홈', 'Home'), onTap: onHomeTap, active: true),
             _HeroNavBtn(tr('메뉴', 'Menu'), onTap: onMenuTap),
-            _HeroNavBtn(tr('원데이 클래스', 'One-day Class'),
-                onTap: onExperienceTap),
+            _HeroNavBtn(tr('원데이 클래스', 'One-day Class'), onTap: onExperienceTap),
             _HeroNavBtn(tr('퍼스널 다과 추천', 'Personal Picks'), onTap: onAiTap),
-            _HeroNavBtn(tr('다과 상자 주문', 'Gift Box Order'),
-                onTap: onCateringTap),
-            const Spacer(),
-            _HeroNavBtn(tr('주문 / 예약확인', 'Order / Booking'),
-                onTap: onLoginTap),
-            IconButton(
-              onPressed: onCartTap,
-              icon: const Icon(Icons.shopping_bag_outlined),
-              color: Colors.white,
-              tooltip: tr('장바구니', 'Cart'),
+            _HeroNavBtn(
+              tr('다과 상자 만들기', 'Gift Box Builder'),
+              onTap: onCateringTap,
             ),
-            const SizedBox(width: 6),
+            const Spacer(),
             const LangToggle(light: true),
           ],
         ),
@@ -450,7 +356,7 @@ class _HeroLogoButton extends StatelessWidget {
         minimumSize: const Size(0, 44),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: const HaenggungBrandLogo(light: true, height: 43),
+      child: const HaenggungBrandLogo(light: true, height: 42),
     );
   }
 }
@@ -468,23 +374,39 @@ class _HeroNavBtn extends StatelessWidget {
       onPressed: onTap,
       style: TextButton.styleFrom(
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        minimumSize: const Size(0, 52),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: Text(
-        label,
-        maxLines: 1,
-        style: TextStyle(
-          color: Colors.white,
-          fontFamily: 'Inter',
-          fontFamilyFallback: _sansFallback,
-          fontSize: 17,
-          fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-          height: 1,
-          decoration: active ? TextDecoration.underline : TextDecoration.none,
-          decorationColor: Colors.white,
-          decorationThickness: 2,
+      child: SizedBox(
+        height: 52,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 50,
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Inter',
+                    fontFamilyFallback: _sansFallback,
+                    fontSize: 17,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              width: active ? label.length * 10.5 + 21 : 0,
+              height: 2,
+              color: Colors.white,
+            ),
+          ],
         ),
       ),
     );
@@ -498,50 +420,60 @@ class _HeroContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: isWide ? 560 : double.infinity,
+          child: Text(
+            tr(
+              '화성행궁 곁,\n명인이 빚은 다과.',
+              'Beside Hwaseong Palace,\ndagwa shaped by master hands.',
+            ),
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: isWide ? 50 : 40,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+        ),
+        SizedBox(height: isWide ? 31 : 28),
+        SizedBox(
+          width: isWide ? 495 : double.infinity,
+          child: Text(
+            tr(
+              '장인의 손길로 빚어낸 행궁다과의 섬세한 맛과 멋을 경험해보세요. 한 점의 다과에 담긴 전통과 느린 삶의 이야기를 전합니다.',
+              'Experience the delicate taste and beauty of Haenggung Dagwa, crafted by artisan hands. Each piece carries a story of tradition and an unhurried life.',
+            ),
+            style: const TextStyle(
+              color: Color(0xFFF2F2ED),
+              fontFamily: 'Pretendard',
+              fontFamilyFallback: _bodyFallback,
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+              height: 1.55,
+            ),
+          ),
+        ),
+        SizedBox(height: isWide ? 59 : 34),
+        _HeroInfoPanel(isWide: isWide),
+      ],
+    );
 
     return Padding(
       padding: EdgeInsets.only(
-        top: isWide ? 198 : 142,
+        top: isWide ? 210 : 142,
         left: padding,
         right: padding,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: isWide ? 560 : double.infinity,
-            child: Text(
-              tr('화성행궁 곁,\n명인이 빚은 다과.',
-                  'Beside Hwaseong Palace,\ndagwa shaped by master hands.'),
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: isWide ? 50 : 40,
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 38),
-          SizedBox(
-            width: isWide ? 495 : double.infinity,
-            child: Text(
-              tr('장인의 손길로 빚어낸 행궁다과의 섬세한 맛과 멋을 경험해보세요. 한 점의 다과에 담긴 전통과 느린 삶의 이야기를 전합니다.',
-                  'Experience the delicate taste and beauty of Haenggung Dagwa, crafted by artisan hands. Each piece carries a story of tradition and an unhurried life.'),
-              style: const TextStyle(
-                color: Color(0xFFF2F2ED),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 18,
-                height: 1.55,
-              ),
-            ),
-          ),
-          SizedBox(height: isWide ? 64 : 34),
-          _HeroInfoPanel(isWide: isWide),
-        ],
-      ),
+      child: isWide
+          ? Center(
+              child: SizedBox(width: _desktopContentWidth, child: content),
+            )
+          : content,
     );
   }
 }
@@ -571,8 +503,10 @@ class _HeroInfoPanel extends StatelessWidget {
           _InfoRow(
             icon: Icons.schedule_outlined,
             label: tr('운영', 'Hours'),
-            value: tr('월,수,목,금,일 10:00-21:00 / 토 10:00-22:00',
-                'Mon, Wed, Thu, Fri, Sun 10:00-21:00 / Sat 10:00-22:00'),
+            value: tr(
+              '월,수,목,금,일 10:00-21:00 / 토 10:00-22:00',
+              'Mon, Wed, Thu, Fri, Sun 10:00-21:00 / Sat 10:00-22:00',
+            ),
           ),
           const SizedBox(height: 20),
           _InfoRow(
@@ -677,18 +611,20 @@ class _HeroDot extends StatelessWidget {
 // ─── Brand Section ───────────────────────────────────────────────────────────
 
 class _BrandSection extends StatelessWidget {
-  const _BrandSection({super.key});
+  const _BrandSection();
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 900;
-    final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 900;
+    final padding = width < 420 ? 20.0 : (isWide ? 0.0 : 36.0);
     final deco = decoScaleOf(context);
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF6EFEF),
-      padding: const EdgeInsets.symmetric(vertical: 82),
+      height: isWide ? _desktopBrandHeight : null,
+      color: const Color(0xFFF2F2F2),
+      padding: EdgeInsets.only(top: 82, bottom: isWide ? 0 : 82),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -707,54 +643,116 @@ class _BrandSection extends StatelessWidget {
                     _SectionTitle(
                       eyebrow: 'BRAND',
                       eyebrowColor: const Color(0xFFE06B7E),
-                      title: tr('한국 다과의 서정을 담은 브랜드',
-                          'A brand that captures the poetry of Korean dagwa'),
+                      title: tr(
+                        '한국 다과의 서정을 담은 브랜드',
+                        'A brand that captures the poetry of Korean dagwa',
+                      ),
                       description: tr(
-                          '행궁다과는 화성행궁의 정취와 한국 다과의 정서를 담은 브랜드입니다.\n전통 다과를 현대적으로 재해석하여 정갈한 맛과 계절의 이야기를 전하며, 바쁜 일상 속 잠시 머물러 쉬어갈 수 있는 여유로운 시간을 선물합니다.',
-                          'Haenggung Dagwa is a brand inspired by the mood of Hwaseong Palace and the spirit of Korean dagwa.\nReinterpreting traditional sweets for today, it offers refined flavors and seasonal stories — a moment of calm to pause within a busy day.'),
+                        '행궁다과는 화성행궁의 정취와 한국 다과의 정서를 담은 브랜드입니다.\n전통 다과를 현대적으로 재해석하여 정갈한 맛과 계절의 이야기를 전하며, 바쁜 일상 속 잠시 머물러 쉬어갈 수 있는 여유로운 시간을 선물합니다.',
+                        'Haenggung Dagwa is a brand inspired by the mood of Hwaseong Palace and the spirit of Korean dagwa.\nReinterpreting traditional sweets for today, it offers refined flavors and seasonal stories — a moment of calm to pause within a busy day.',
+                      ),
                     ),
-                    const SizedBox(height: 72),
+                    SizedBox(height: isWide ? 53 : 48),
                     if (isWide)
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final col = (constraints.maxWidth - 30) / 2;
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: col,
-                                child: _SocialCard(
-                                  image: _brandInstagramImage,
-                                  caption: tr('인스타그램 바로가기 →',
-                                      'Go to Instagram →'),
-                                  url: placeInstagramUrl,
-                                  aspectRatio: 559 / 498,
-                                ),
-                              ),
-                              const SizedBox(width: 30),
-                              SizedBox(
-                                width: col,
-                                child: Column(
-                                  children: [
-                                    _SocialCard(
-                                      image: _brandYoutubeImage,
-                                      caption: tr('유튜브 바로가기 →',
-                                          'Go to YouTube →'),
-                                      url: placeYoutubeUrl,
-                                      aspectRatio: 559 / 234,
+                          return Center(
+                            child: SizedBox(
+                              width: constraints.maxWidth >= 1042
+                                  ? 1042
+                                  : constraints.maxWidth,
+                              child: constraints.maxWidth >= 1042
+                                  ? Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 559,
+                                          child: _SocialCard(
+                                            image: _brandInstagramImage,
+                                            caption: tr(
+                                              '인스타그램 바로가기 →',
+                                              'Go to Instagram →',
+                                            ),
+                                            url: placeInstagramUrl,
+                                            aspectRatio: 559 / 498,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        SizedBox(
+                                          width: 459,
+                                          child: Column(
+                                            children: [
+                                              _SocialCard(
+                                                image: _brandYoutubeImage,
+                                                caption: tr(
+                                                  '유튜브 바로가기 →',
+                                                  'Go to YouTube →',
+                                                ),
+                                                url: placeYoutubeUrl,
+                                                aspectRatio: 459 / 234,
+                                              ),
+                                              const SizedBox(height: 30),
+                                              _SocialCard(
+                                                image: _brandBlogImage,
+                                                caption: tr(
+                                                  '블로그 바로가기 →',
+                                                  'Go to Blog →',
+                                                ),
+                                                url: placeBlogUrl,
+                                                aspectRatio: 459 / 234,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 559,
+                                          child: _SocialCard(
+                                            image: _brandInstagramImage,
+                                            caption: tr(
+                                              '인스타그램 바로가기 →',
+                                              'Go to Instagram →',
+                                            ),
+                                            url: placeInstagramUrl,
+                                            aspectRatio: 559 / 498,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        Expanded(
+                                          flex: 459,
+                                          child: Column(
+                                            children: [
+                                              _SocialCard(
+                                                image: _brandYoutubeImage,
+                                                caption: tr(
+                                                  '유튜브 바로가기 →',
+                                                  'Go to YouTube →',
+                                                ),
+                                                url: placeYoutubeUrl,
+                                                aspectRatio: 459 / 234,
+                                              ),
+                                              const SizedBox(height: 30),
+                                              _SocialCard(
+                                                image: _brandBlogImage,
+                                                caption: tr(
+                                                  '블로그 바로가기 →',
+                                                  'Go to Blog →',
+                                                ),
+                                                url: placeBlogUrl,
+                                                aspectRatio: 459 / 234,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 30),
-                                    _SocialCard(
-                                      image: _brandBlogImage,
-                                      caption: tr('블로그 바로가기 →',
-                                          'Go to Blog →'),
-                                      url: placeBlogUrl,
-                                      aspectRatio: 559 / 234,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           );
                         },
                       )
@@ -763,8 +761,7 @@ class _BrandSection extends StatelessWidget {
                         children: [
                           _SocialCard(
                             image: _brandInstagramImage,
-                            caption:
-                                tr('인스타그램 바로가기 →', 'Go to Instagram →'),
+                            caption: tr('인스타그램 바로가기 →', 'Go to Instagram →'),
                             url: placeInstagramUrl,
                             aspectRatio: 559 / 498,
                           ),
@@ -816,8 +813,9 @@ class _SocialCard extends StatelessWidget {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text(tr('링크가 곧 연결될 예정입니다.',
-                'This link will be connected soon.')),
+            content: Text(
+              tr('링크가 곧 연결될 예정입니다.', 'This link will be connected soon.'),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: const Color(0xFF534344),
           ),
@@ -831,56 +829,59 @@ class _SocialCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: aspectRatio,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _handleTap(context),
-          borderRadius: BorderRadius.circular(5),
-          child: ClipRRect(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _handleTap(context),
             borderRadius: BorderRadius.circular(5),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    image,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stack) =>
-                        const ColoredBox(color: Color(0xFF8C6B6B)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stack) =>
+                          const ColoredBox(color: Color(0xFF8C6B6B)),
+                    ),
                   ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          const Color(0xFF462B30).withValues(alpha: 0.62),
-                        ],
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFF462B30).withValues(alpha: 0.62),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 24,
-                  bottom: 20,
-                  right: 24,
-                  child: Text(
-                    caption,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      height: 1.25,
+                  Positioned(
+                    left: 24,
+                    bottom: 20,
+                    right: 24,
+                    child: Text(
+                      caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Gowun Batang',
+                        fontFamilyFallback: _serifFallback,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -897,8 +898,9 @@ class _MenuPreviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 980;
-    final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 980;
+    final padding = width < 420 ? 20.0 : (isWide ? 0.0 : 36.0);
 
     final cards = [
       _MenuCard(
@@ -928,8 +930,9 @@ class _MenuPreviewSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF6F6F6),
-      padding: const EdgeInsets.symmetric(vertical: 82),
+      height: isWide ? _desktopMenuHeight : null,
+      color: const Color(0xFFF2F2F2),
+      padding: EdgeInsets.only(top: isWide ? 86 : 82, bottom: isWide ? 0 : 82),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -948,12 +951,16 @@ class _MenuPreviewSection extends StatelessWidget {
                     _SectionTitle(
                       eyebrow: 'MENU',
                       eyebrowColor: const Color(0xFF99C679),
-                      title: tr('행궁다과 대표 메뉴', 'Signature menu of Haenggung Dagwa'),
+                      title: tr(
+                        '행궁다과 대표 메뉴',
+                        'Signature menu of Haenggung Dagwa',
+                      ),
                       description: tr(
-                          '행궁다과의 대표 메뉴는 약과, 정과, 다식 등 한국 전통 다과를 중심으로 구성됩니다.\n계절의 재료와 차를 곁들여 정갈하게 준비한 한 상은 바쁜 일상 속 잠시 쉬어갈 수 있는 여유를 선물합니다.',
-                          'Our signature menu centers on Korean traditional sweets such as yakgwa, jeonggwa, and dasik.\nElegantly prepared with seasonal ingredients and tea, each setting offers a restful pause within a busy day.'),
+                        '행궁다과의 대표 메뉴는 약과, 정과, 다식 등 한국 전통 다과를 중심으로 구성됩니다.\n계절의 재료와 차를 곁들여 정갈하게 준비한 한 상은 바쁜 일상 속 잠시 쉬어갈 수 있는 여유를 선물합니다.',
+                        'Our signature menu centers on Korean traditional sweets such as yakgwa, jeonggwa, and dasik.\nElegantly prepared with seasonal ingredients and tea, each setting offers a restful pause within a busy day.',
+                      ),
                     ),
-                    const SizedBox(height: 70),
+                    SizedBox(height: isWide ? 42 : 48),
                     if (isWide)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1041,70 +1048,75 @@ class _MenuPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(15),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 356),
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
-          decoration: BoxDecoration(
-            color: data.background,
-            border: Border.all(color: data.border),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 356),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF3F2D2D).withValues(alpha: 0.25),
-                blurRadius: 19.1,
-                spreadRadius: -1,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: AspectRatio(
-                  aspectRatio: 327 / 423,
-                  child: _img(data.asset),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text(
-                      data.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF706761),
-                        fontFamily: 'Gowun Batang',
-                        fontFamilyFallback: _serifFallback,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    data.price,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      color: Color(0xFF706761),
-                      fontFamily: 'Gowun Batang',
-                      fontFamilyFallback: _serifFallback,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
+              decoration: BoxDecoration(
+                color: data.background,
+                border: Border.all(color: data.border),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3F2D2D).withValues(alpha: 0.25),
+                    blurRadius: 19.1,
+                    spreadRadius: -1,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ],
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: AspectRatio(
+                      aspectRatio: 327 / 423,
+                      child: _img(data.asset),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          data.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xFF706761),
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        data.price,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Color(0xFF706761),
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1127,14 +1139,17 @@ class _ExperienceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 960;
-    final padding = MediaQuery.sizeOf(context).width < 420 ? 20.0 : 36.0;
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 960;
+    final padding = width < 420 ? 20.0 : (isWide ? 0.0 : 36.0);
 
     final cards = [
       _ExpCard(
         title: tr('나만의 다과 추천', 'Personal Dagwa Picks'),
-        body: tr('취향에 맞는 다과를 탐색해보세요',
-            'Discover the dagwa that suits your taste.'),
+        body: tr(
+          '취향에 맞는 다과를 탐색해보세요',
+          'Discover the dagwa that suits your taste.',
+        ),
         action: tr('테스트 바로가기', 'Take the test'),
         icon: Icons.account_tree_outlined,
         iconOverlay: Icons.edit_rounded,
@@ -1145,8 +1160,7 @@ class _ExperienceSection extends StatelessWidget {
       ),
       _ExpCard(
         title: tr('원데이 클래스', 'One-day Class'),
-        body: tr('명인과 함께하는 힐링타임',
-            'A healing time together with the master.'),
+        body: tr('명인과 함께하는 힐링타임', 'A healing time together with the master.'),
         action: tr('예약하기', 'Book'),
         icon: Icons.school_outlined,
         iconColor: const Color(0xFF557057),
@@ -1156,9 +1170,11 @@ class _ExperienceSection extends StatelessWidget {
       ),
       _ExpCard(
         title: tr('커스텀 다과상자', 'Custom Dagwa Box'),
-        body: tr('취향대로 구성하는 나만의 다과상자',
-            'Compose your own dagwa box, just the way you like.'),
-        action: tr('주문하기', 'Order'),
+        body: tr(
+          '취향대로 구성하는 나만의 다과상자',
+          'Compose your own dagwa box, just the way you like.',
+        ),
+        action: tr('만들기', 'Build'),
         icon: Icons.card_giftcard_rounded,
         iconColor: const Color(0xFF7D5724),
         tint: const Color(0xFFFFDEA7),
@@ -1171,8 +1187,16 @@ class _ExperienceSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF6F4F0),
-      padding: const EdgeInsets.symmetric(vertical: 88),
+      height: isWide ? _desktopExperienceHeight : null,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF2F2F2),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF2F2F2), Color(0xFFF6F1EA)],
+        ),
+      ),
+      padding: EdgeInsets.only(top: isWide ? 131 : 88, bottom: isWide ? 0 : 88),
       child: Stack(
         clipBehavior: Clip.hardEdge,
         children: [
@@ -1191,13 +1215,17 @@ class _ExperienceSection extends StatelessWidget {
                     _SectionTitle(
                       eyebrow: 'Special Experiences',
                       eyebrowColor: const Color(0xFFA38650),
-                      title: tr('행궁다과만의 특별한 경험',
-                          'Special experiences at Haenggung Dagwa'),
+                      title: tr(
+                        '행궁다과만의 특별한 경험',
+                        'Special experiences at Haenggung Dagwa',
+                      ),
                       description: tr(
-                          '한 조각의 다과에는 계절의 풍경과 만드는 이의 정성이 담겨 있습니다.\n행궁다과는 취향을 발견하고, 직접 만들고, 함께 나누는 경험을 통해 다과가 가진 이야기를 전합니다.\n맛을 넘어 추억으로 남는 순간을 만나보세요.',
-                          'Each piece of dagwa holds a season\'s scenery and the maker\'s care.\nThrough discovering your taste, making by hand, and sharing together, Haenggung Dagwa tells the story within each sweet.\nMeet moments that linger as memories, beyond taste.'),
+                        '한 조각의 다과에는 계절의 풍경과 만드는 이의 정성이 담겨 있습니다.\n행궁다과는 취향을 발견하고, 직접 만들고, 함께 나누는 경험을 통해 다과가 가진 이야기를 전합니다.\n맛을 넘어 추억으로 남는 순간을 만나보세요.',
+                        'Each piece of dagwa holds a season\'s scenery and the maker\'s care.\nThrough discovering your taste, making by hand, and sharing together, Haenggung Dagwa tells the story within each sweet.\nMeet moments that linger as memories, beyond taste.',
+                      ),
+                      descriptionGap: 27,
                     ),
-                    const SizedBox(height: 68),
+                    SizedBox(height: isWide ? 40 : 48),
                     if (isWide)
                       Row(
                         children: [
@@ -1264,6 +1292,7 @@ class _ExpCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 363),
+          height: 278,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -1422,11 +1451,13 @@ class _SectionTitle extends StatelessWidget {
     required this.eyebrowColor,
     required this.title,
     required this.description,
+    this.descriptionGap = 30,
   });
   final String eyebrow;
   final Color eyebrowColor;
   final String title;
   final String description;
+  final double descriptionGap;
 
   @override
   Widget build(BuildContext context) {
@@ -1434,32 +1465,18 @@ class _SectionTitle extends StatelessWidget {
 
     return Column(
       children: [
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: isWide ? 26.0 : 12.0,
-          runSpacing: 6,
-          children: [
-            Container(
-              width: isWide ? 76.5 : 42,
-              height: 1,
-              color: eyebrowColor,
-            ),
-            Text(
-              eyebrow,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: eyebrowColor,
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: isWide ? 25.0 : 16.0,
-                fontWeight: FontWeight.w700,
-                height: 1.2,
-              ),
-            ),
-          ],
+        Text(
+          eyebrow,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: eyebrowColor,
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: isWide ? 25.0 : 16.0,
+            fontWeight: FontWeight.w700,
+            height: isWide ? 60 / 25 : 1.35,
+          ),
         ),
-        const SizedBox(height: 18),
         Text(
           title,
           textAlign: TextAlign.center,
@@ -1472,7 +1489,7 @@ class _SectionTitle extends StatelessWidget {
             height: 1.2,
           ),
         ),
-        const SizedBox(height: 28),
+        SizedBox(height: isWide ? descriptionGap : 22),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 981),
           child: Text(
@@ -1480,10 +1497,10 @@ class _SectionTitle extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: const Color(0xFF9A9285),
-              fontFamily: 'Gowun Batang',
-              fontFamilyFallback: _serifFallback,
+              fontFamily: 'Pretendard',
+              fontFamilyFallback: _bodyFallback,
               fontSize: isWide ? 20.0 : 16.0,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               height: 1.5,
             ),
           ),

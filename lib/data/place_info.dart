@@ -69,9 +69,11 @@ const placeNaverUrl = 'https://naver.me/Fy2FI8D4';
 // ─── 소셜 바로가기 링크 ───────────────────────────────────────────────
 // 홈 BRAND 섹션의 인스타그램/유튜브/블로그 카드가 사용하는 링크.
 // 링크가 정해지면 아래 값만 채워 넣으면 된다. (빈 문자열이면 "준비 중" 안내)
-const placeInstagramUrl = 'https://www.instagram.com/haenggung_da_gwa_1';
-const placeYoutubeUrl = ''; // TODO: 유튜브 채널 링크 입력
-const placeBlogUrl = ''; // TODO: 블로그 링크 입력
+const placeInstagramUrl =
+    'https://www.instagram.com/haenggung_da_gwa?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
+const placeYoutubeUrl =
+    'https://youtube.com/channel/UCrWqO53K5nDFHsKfM5vhoug?si=ufnQX2I0zmFOUrqC';
+const placeBlogUrl = 'https://blog.naver.com/ysoon69';
 const placeVisitorReviewText = '방문자 리뷰 1,074';
 const placeBlogReviewText = '블로그 리뷰 181';
 const placeTodayStatus = '월·수·목·금·일 10:00-21:00 / 토 10:00-22:00';

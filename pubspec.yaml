@@ -28,6 +28,8 @@ flutter:
     - assets/figma/quiz/
     - assets/figma/logo/
     - assets/figma/deco/
+    - assets/figma/menu/
+    - assets/figma/recommend/
 
   fonts:
     - family: Gowun Batang
@@ -63,4 +65,14 @@ flutter:
         - asset: assets/fonts/PlusJakartaSans-Variable.ttf
           weight: 600
         - asset: assets/fonts/PlusJakartaSans-Variable.ttf
+          weight: 700
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/PretendardVariable.ttf
+          weight: 400
+        - asset: assets/fonts/PretendardVariable.ttf
+          weight: 500
+        - asset: assets/fonts/PretendardVariable.ttf
+          weight: 600
+        - asset: assets/fonts/PretendardVariable.ttf
           weight: 700
