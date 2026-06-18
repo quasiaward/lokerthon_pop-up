@@ -29,7 +29,7 @@ const _programs = [
     titleEn: 'Making Beautiful Korean Rice Cakes',
     shortTitle: '떡 만들기',
     shortTitleEn: 'Rice cake making',
-    description: '바람떡, 꽃산병, 사탕절편, 꼬리절편을 직접 빚어보는 체험입니다.',
+    description: '바람떡, 꽃산병, 사탕절편, 꼬리절편 네가지 종류의\n아름다운 떡을 만들어봅니다.',
     descriptionEn:
         'Shape baramtteok, kkotsanbyeong, and jeolpyeon rice cakes by hand.',
     detail: '약 1시간 30분 동안 색과 모양을 고르며 전통 떡을 완성합니다.',
@@ -38,6 +38,7 @@ const _programs = [
     badge: '인기',
     badgeEn: 'Popular',
     image: 'assets/figma/experience_rice_cake_class.png',
+    heroImage: 'assets/figma/experience_rice_hero_figma.png',
     color: Color(0xFF779D3B),
   ),
   _Program(
@@ -45,7 +46,7 @@ const _programs = [
     titleEn: 'Making Traditional Dasik',
     shortTitle: '다식 만들기',
     shortTitleEn: 'Dasik making',
-    description: '다식판을 사용해 흑임자와 곡물 가루로 차과자를 빚어봅니다.',
+    description: '전통 다식판을 사용하여\n곡물 가루로 정교한 차과자를 빚어봅니다.',
     descriptionEn:
         'Use a dasik mold to press tea sweets from black sesame and grain flours.',
     detail: '차와 함께 어울리는 전통 다식을 구성하고 포장까지 경험합니다.',
@@ -54,11 +55,12 @@ const _programs = [
     badge: '신규',
     badgeEn: 'New',
     image: 'assets/figma/experience_dasik_class.png',
+    heroImage: 'assets/figma/experience_dasik_highres.png',
     color: Color(0xFFD56779),
   ),
 ];
 
-enum _ReservationStage { select, detail, confirm }
+enum _ReservationStage { select, detail, confirm, complete }
 
 class ReservationSection extends StatefulWidget {
   const ReservationSection({super.key});
@@ -74,17 +76,20 @@ class _ReservationSectionState extends State<ReservationSection> {
   int _programIndex = 0;
   bool _hasProgramSelection = false;
   bool _isSubmitting = false;
-  String _type = '개인';
+  bool _showCalendar = false;
   int _adultCount = 4;
   int _childCount = 0;
   DateTime? _date;
+  DateTime _calendarMonth = DateTime(DateTime.now().year, DateTime.now().month);
   String _time = '11:30';
 
   _Program get _program => _programs[_programIndex];
   int get _totalPeople => math.max(1, _adultCount + _childCount);
+  bool get _hasMinimumPeople => _totalPeople >= 4;
   String get _feeLabel => tr(
-      '${_formatWon(_unitPrice * _totalPeople)}원',
-      '${_formatWon(_unitPrice * _totalPeople)} KRW');
+    '${_formatWon(_unitPrice * _totalPeople)}원',
+    '${_formatWon(_unitPrice * _totalPeople)} KRW',
+  );
 
   String get _dateLabel {
     final date = _date;
@@ -96,6 +101,11 @@ class _ReservationSectionState extends State<ReservationSection> {
     final date = _date == null ? tr('날짜 미선택', 'No date') : _dateLabel;
     return '$date, $_time';
   }
+
+  String get _peopleLabel => tr(
+    '성인 $_adultCount명${_childCount > 0 ? ' / 어린이 $_childCount명' : ''}',
+    '$_adultCount adults${_childCount > 0 ? ' / $_childCount children' : ''}',
+  );
 
   @override
   void dispose() {
@@ -113,24 +123,12 @@ class _ReservationSectionState extends State<ReservationSection> {
       _hasProgramSelection = true;
       _stage = _ReservationStage.detail;
     });
-  }
-
-  void _setType(String type) {
-    setState(() {
-      _type = type;
-      if (type == '개인') {
-        _childCount = 0;
-        _adultCount = math.max(1, _adultCount);
-      } else {
-        _adultCount = math.max(4, _adultCount);
-      }
-    });
+    _scrollStageToTop();
   }
 
   void _changeAdult(int delta) {
     setState(() {
-      final min = _type == '단체' ? 4 : 1;
-      _adultCount = math.max(min, _adultCount + delta);
+      _adultCount = math.max(1, _adultCount + delta);
     });
   }
 
@@ -144,41 +142,55 @@ class _ReservationSectionState extends State<ReservationSection> {
 
   void _editReservation() {
     setState(() => _stage = _ReservationStage.detail);
+    _scrollStageToTop();
   }
 
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date ?? now.add(const Duration(days: 7)),
-      firstDate: now.add(const Duration(days: 1)),
-      lastDate: now.add(const Duration(days: 180)),
-      locale: const Locale('ko', 'KR'),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF9B4A59),
-            onPrimary: Colors.white,
-            surface: Color(0xFFFFFEF8),
-          ),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked == null) return;
-    setState(() => _date = picked);
+  void _toggleCalendar() {
+    setState(() {
+      final base = _date ?? _calendarMonth;
+      _calendarMonth = DateTime(base.year, base.month);
+      _showCalendar = !_showCalendar;
+    });
+  }
+
+  void _changeCalendarMonth(int delta) {
+    setState(() {
+      _calendarMonth = DateTime(
+        _calendarMonth.year,
+        _calendarMonth.month + delta,
+      );
+    });
+  }
+
+  void _selectDate(DateTime date) {
+    setState(() {
+      _date = date;
+      _showCalendar = false;
+    });
   }
 
   void _submit() {
+    if (!_hasMinimumPeople) {
+      _showSnack(
+        tr(
+          '행궁다과의 체험은 4명 이상부터 예약이 가능합니다.',
+          'Experience reservations are available for groups of 4 or more.',
+        ),
+      );
+      return;
+    }
     if (_contactController.text.trim().isEmpty) {
       _showSnack(tr('연락처를 입력해 주세요.', 'Please enter your contact.'));
       return;
     }
     if (_date == null) {
-      _showSnack(tr('희망 체험 날짜를 선택해 주세요.', 'Please choose your preferred date.'));
+      _showSnack(
+        tr('희망 체험 날짜를 선택해 주세요.', 'Please choose your preferred date.'),
+      );
       return;
     }
     setState(() => _stage = _ReservationStage.confirm);
+    _scrollStageToTop();
   }
 
   Future<void> _complete() async {
@@ -198,16 +210,15 @@ class _ReservationSectionState extends State<ReservationSection> {
         }),
       );
       if (res.statusCode == 200) {
-        _showSnack(tr(
-          '체험 문의가 접수되었습니다. 매장 확인 후 연락드립니다.',
-          'Your inquiry has been received. We\'ll contact you after confirming.',
-        ));
         setState(() {
-          _stage = _ReservationStage.select;
-          _hasProgramSelection = false;
+          _stage = _ReservationStage.complete;
+          _hasProgramSelection = true;
         });
+        _scrollStageToTop();
       } else {
-        _showSnack(tr('전송에 실패했습니다. 다시 시도해 주세요.', 'Submission failed. Please try again.'));
+        _showSnack(
+          tr('전송에 실패했습니다. 다시 시도해 주세요.', 'Submission failed. Please try again.'),
+        );
       }
     } catch (_) {
       _showSnack(tr('네트워크 오류가 발생했습니다.', 'A network error occurred.'));
@@ -226,6 +237,22 @@ class _ReservationSectionState extends State<ReservationSection> {
           backgroundColor: const Color(0xFF934753),
         ),
       );
+  }
+
+  void _goHome() {
+    Navigator.pushReplacementNamed(context, '/');
+  }
+
+  void _scrollStageToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        alignment: 0,
+      );
+    });
   }
 
   @override
@@ -263,6 +290,10 @@ class _ReservationSectionState extends State<ReservationSection> {
                 key: const ValueKey('confirm'),
                 state: this,
               ),
+              _ReservationStage.complete => _ReservationCompleteView(
+                key: const ValueKey('complete'),
+                state: this,
+              ),
             },
           ),
         ],
@@ -281,15 +312,19 @@ class _ExperienceHero extends StatelessWidget {
     final isWide = MediaQuery.sizeOf(context).width >= 760;
 
     return SizedBox(
-      height: isWide ? 252 : 230,
+      height: isWide ? 288 : 250,
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(program.image, fit: BoxFit.cover),
+          Image.asset(
+            program.heroImage,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.18),
+              color: Colors.black.withValues(alpha: 0.50),
             ),
           ),
           SectionShell(
@@ -303,28 +338,29 @@ class _ExperienceHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tr('<${program.title}> 체험 예약',
-                          '<${program.titleEn}> Booking'),
+                      tr(program.title, program.titleEn),
                       style: TextStyle(
                         color: Colors.white,
                         fontFamily: 'Gowun Batang',
                         fontFamilyFallback: _serifFallback,
-                        fontSize: isWide ? 42 : 30,
+                        fontSize: isWide ? 50 : 32,
                         fontWeight: FontWeight.w700,
-                        height: 1.25,
+                        height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      tr('${program.detail} 간단하게 만들 수 있는 체험입니다.',
-                          '${program.detailEn} A hands-on experience anyone can enjoy.'),
+                      tr(
+                        '${program.title} 체험은 약 1시간 30분 정도 소요되며, 간단하게 만들 수 있는 체험입니다.',
+                        '${program.titleEn} takes about 90 minutes and is easy to enjoy.',
+                      ),
                       style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Gowun Batang',
+                        color: const Color(0xFFECE7E0),
+                        fontFamily: 'Pretendard',
                         fontFamilyFallback: _serifFallback,
-                        fontSize: isWide ? 19 : 15,
-                        fontWeight: FontWeight.w700,
-                        height: 1.5,
+                        fontSize: isWide ? 20 : 15,
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
                       ),
                     ),
                   ],
@@ -371,10 +407,11 @@ class _ProgramSelectView extends StatelessWidget {
             isWide ? 96 : 64,
           ),
           child: SectionShell(
+            maxWidth: 1324,
             child: Column(
               children: [
                 Text(
-                  tr('행궁다과 체험 예약', 'Haenggung Dagwa Experiences'),
+                  tr('행궁다과 원데이 클래스', 'Haenggung Dagwa One-Day Class'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Color(0xFF534344),
@@ -394,7 +431,7 @@ class _ProgramSelectView extends StatelessWidget {
                       color: const Color(0xFF675C4F),
                       fontFamily: 'Noto Serif KR',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: isWide ? 32 : 25,
+                      fontSize: isWide ? 24 : 25,
                       fontWeight: FontWeight.w600,
                       height: 1.25,
                     ),
@@ -522,7 +559,11 @@ class _ProgramCardState extends State<_ProgramCard> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(widget.program.image, fit: BoxFit.cover),
+                        Image.asset(
+                          widget.program.image,
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                        ),
                         Positioned(
                           top: 16,
                           left: 16,
@@ -566,7 +607,7 @@ class _ProgramCardState extends State<_ProgramCard> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -581,19 +622,23 @@ class _ProgramCardState extends State<_ProgramCard> {
                             height: 32 / 24,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Text(
-                          tr(widget.program.description,
-                              widget.program.descriptionEn),
+                          tr(
+                            widget.program.description,
+                            widget.program.descriptionEn,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF665C58),
+                            color: Color(0xFF534344),
                             fontFamily: 'Gowun Batang',
                             fontFamilyFallback: _serifFallback,
                             fontSize: 16,
                             height: 24 / 16,
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 20),
                         Row(
                           children: [
                             Text(
@@ -609,8 +654,10 @@ class _ProgramCardState extends State<_ProgramCard> {
                             ),
                             const Spacer(),
                             Text(
-                              tr('${_formatWon(_unitPrice)}원',
-                                  '${_formatWon(_unitPrice)} KRW'),
+                              tr(
+                                '1인 ${_formatWon(_unitPrice)}₩',
+                                '${_formatWon(_unitPrice)} KRW / person',
+                              ),
                               style: const TextStyle(
                                 color: Color(0xFF1C1C18),
                                 fontFamily: 'Plus Jakarta Sans',
@@ -660,8 +707,11 @@ class _ReservationNotice extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.info_rounded,
-                      color: Color(0xFF9B4A59), size: 21),
+                  const Icon(
+                    Icons.info_rounded,
+                    color: Color(0xFF9B4A59),
+                    size: 21,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     tr('예약 안내 사항', 'Booking information'),
@@ -680,29 +730,29 @@ class _ReservationNotice extends StatelessWidget {
               Wrap(
                 spacing: 24,
                 runSpacing: 18,
-                children:
-                    [
-                          _NoticeItem(
-                            title: tr('환불 규정', 'Refund policy'),
-                            body: tr(
-                                '체험 48시간 전까지 100% 환불 가능합니다. 당일 노쇼는 환불이 불가합니다.',
-                                'Full refunds up to 48 hours before the class. Same-day no-shows are non-refundable.'),
-                          ),
-                          _NoticeItem(
-                            title: tr('준비물 안내', 'What to bring'),
-                            body: tr(
-                                '모든 재료와 앞치마가 제공됩니다. 수업 시작 10분 전까지 도착해주세요.',
-                                'All ingredients and aprons are provided. Please arrive 10 minutes before the class.'),
-                          ),
-                          _NoticeItem(
-                            title: tr('예약 문의', 'Reservations'),
-                            body: tr(
-                                '4인 이상만 예약 가능하며, 개인은 받고 있지 않습니다.',
-                                'Reservations are for groups of 4 or more; individual bookings are not accepted.'),
-                          ),
-                        ]
-                        .map((item) => SizedBox(width: itemWidth, child: item))
-                        .toList(),
+                children: [
+                  _NoticeItem(
+                    title: tr('환불 규정', 'Refund policy'),
+                    body: tr(
+                      '체험 48시간 전까지 100% 환불 가능합니다. 당일 노쇼는 환불이 불가합니다.',
+                      'Full refunds up to 48 hours before the class. Same-day no-shows are non-refundable.',
+                    ),
+                  ),
+                  _NoticeItem(
+                    title: tr('준비물 안내', 'What to bring'),
+                    body: tr(
+                      '모든 재료와 앞치마가 제공됩니다. 수업 시작 10분 전까지 도착해주세요.',
+                      'All ingredients and aprons are provided. Please arrive 10 minutes before the class.',
+                    ),
+                  ),
+                  _NoticeItem(
+                    title: tr('예약 문의', 'Reservations'),
+                    body: tr(
+                      '4인 이상만 예약 가능하며, 개인은 받고 있지 않습니다.',
+                      'Reservations are for groups of 4 or more; individual bookings are not accepted.',
+                    ),
+                  ),
+                ].map((item) => SizedBox(width: itemWidth, child: item)).toList(),
               ),
             ],
           );
@@ -759,6 +809,7 @@ class _ReservationDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
     final deco = decoScaleOf(context, designWidth: 1409);
+    final canSubmit = state._hasMinimumPeople && !state._isSubmitting;
 
     return Stack(
       clipBehavior: Clip.hardEdge,
@@ -769,25 +820,24 @@ class _ReservationDetailView extends StatelessWidget {
           child: WatercolorDeco(decoCluster, width: 706 * deco),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 46),
+          padding: const EdgeInsets.symmetric(vertical: 50),
           child: SectionShell(
-            maxWidth: 1040,
+            maxWidth: 1163,
             child: Container(
               padding: EdgeInsets.fromLTRB(
                 isWide ? 26 : 18,
-                isWide ? 26 : 20,
-                isWide ? 26 : 18,
-                isWide ? 34 : 24,
+                isWide ? 18 : 20,
+                isWide ? 47 : 18,
+                isWide ? 44 : 24,
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 8,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 7,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
@@ -797,14 +847,15 @@ class _ReservationDetailView extends StatelessWidget {
                   Text(
                     tr('체험 문의', 'Experience inquiry'),
                     style: const TextStyle(
-                      color: Color(0xFF1C1C18),
+                      color: Colors.black,
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
-                      fontSize: 26,
+                      fontSize: 25,
                       fontWeight: FontWeight.w700,
+                      height: 30 / 25,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 18),
                   if (isWide)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -823,17 +874,18 @@ class _ReservationDetailView extends StatelessWidget {
                         _ReservationRightForm(state: state),
                       ],
                     ),
-                  const SizedBox(height: 34),
+                  const SizedBox(height: 50),
                   SizedBox(
                     width: double.infinity,
-                    height: 70,
+                    height: 88,
                     child: FilledButton(
-                      onPressed: state._submit,
+                      onPressed: canSubmit ? state._submit : null,
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF9B4A59),
+                        disabledBackgroundColor: const Color(0xFFD7D1D1),
+                        backgroundColor: const Color(0xFF934753),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       child: Text(
@@ -841,8 +893,9 @@ class _ReservationDetailView extends StatelessWidget {
                         style: const TextStyle(
                           fontFamily: 'Gowun Batang',
                           fontFamilyFallback: _serifFallback,
-                          fontSize: 23,
+                          fontSize: 24,
                           fontWeight: FontWeight.w700,
+                          height: 20 / 24,
                         ),
                       ),
                     ),
@@ -867,26 +920,8 @@ class _ReservationLeftForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _FieldLabel(tr('유형', 'Type')),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            _TypeChip(
-              label: tr('개인', 'Individual'),
-              selected: state._type == '개인',
-              onTap: () => state._setType('개인'),
-            ),
-            const SizedBox(width: 10),
-            _TypeChip(
-              label: tr('단체', 'Group'),
-              selected: state._type == '단체',
-              onTap: () => state._setType('단체'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 22),
         _FieldLabel(tr('인원 수', 'Party size')),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
         _PeopleBox(
           adultCount: state._adultCount,
           childCount: state._childCount,
@@ -895,39 +930,25 @@ class _ReservationLeftForm extends StatelessWidget {
           onChildDown: () => state._changeChild(-1),
           onChildUp: () => state._changeChild(1),
         ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            _FieldLabel(tr('체험비', 'Fee')),
-            const Spacer(),
-            Text(
-              state._feeLabel,
-              style: const TextStyle(
-                color: Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 21,
-                fontWeight: FontWeight.w700,
-              ),
+        if (!state._hasMinimumPeople) ...[
+          const SizedBox(height: 7),
+          _MinimumPeopleNotice(
+            text: tr(
+              '행궁다과의 체험은 4명 이상부터 예약이 가능합니다.',
+              'Experience reservations are available for groups of 4 or more.',
             ),
-          ],
-        ),
+          ),
+        ],
+        const SizedBox(height: 20),
+        _FieldLabel(tr('체험비', 'Fee')),
+        const SizedBox(height: 12),
+        _ReadOnlyField(value: state._feeLabel, alignRight: true),
         const SizedBox(height: 16),
         _FieldLabel(tr('연락처', 'Contact')),
-        const SizedBox(height: 8),
-        TextField(
+        const SizedBox(height: 14),
+        _ContactField(
           controller: state._contactController,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9-]')),
-          ],
-          style: const TextStyle(
-            fontFamily: 'Gowun Batang',
-            fontFamilyFallback: _serifFallback,
-            fontSize: 19,
-          ),
-          decoration: InputDecoration(
-              hintText: tr('연락처를 입력해주세요.', 'Enter your contact number.')),
+          hintText: tr('연락처를 입력해주세요.', 'Enter your contact number.'),
         ),
       ],
     );
@@ -945,77 +966,26 @@ class _ReservationRightForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(tr('희망 체험 날짜', 'Preferred date')),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: state._pickDate,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: double.infinity,
-            height: 76,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7F7F7),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              state._dateLabel,
-              style: TextStyle(
-                color: state._date == null
-                    ? const Color(0xFFB5B3B3)
-                    : const Color(0xFF534344),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
+        const SizedBox(height: 14),
+        _DateField(
+          value: state._dateLabel,
+          hasValue: state._date != null,
+          onTap: state._toggleCalendar,
         ),
-        const SizedBox(height: 22),
+        if (state._showCalendar) ...[
+          const SizedBox(height: 14),
+          _InlineCalendar(
+            month: state._calendarMonth,
+            selectedDate: state._date,
+            onMonthChanged: state._changeCalendarMonth,
+            onDateSelected: state._selectDate,
+          ),
+        ],
+        const SizedBox(height: 17),
         _FieldLabel(tr('희망 체험 시간', 'Preferred time')),
         const SizedBox(height: 12),
         _TimeGrid(selected: state._time, onSelect: state._setTime),
       ],
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  const _TypeChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFFC3C4) : Colors.white,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFC8C8C8)),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF1C1C18),
-            fontFamily: 'Gowun Batang',
-            fontFamilyFallback: _serifFallback,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
     );
   }
 }
@@ -1040,10 +1010,10 @@ class _PeopleBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 74,
+      height: 80,
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F7),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
@@ -1055,7 +1025,7 @@ class _PeopleBox extends StatelessWidget {
               onUp: onAdultUp,
             ),
           ),
-          Container(width: 1, height: 56, color: const Color(0xFFD7D7D7)),
+          Container(width: 1, height: 55, color: const Color(0xFFC9C9C9)),
           Expanded(
             child: _CountControl(
               label: tr('어린이', 'Children'),
@@ -1065,6 +1035,363 @@ class _PeopleBox extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MinimumPeopleNotice extends StatelessWidget {
+  const _MinimumPeopleNotice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.error_outline_rounded,
+          color: Color(0xFFE06161),
+          size: 22,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFFE06161),
+              fontFamily: 'Gowun Batang',
+              fontFamilyFallback: _serifFallback,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  const _ReadOnlyField({required this.value, this.alignRight = false});
+
+  final String value;
+  final bool alignRight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      width: double.infinity,
+      alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F7F7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: Color(0xFF534344),
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 23,
+          fontWeight: FontWeight.w700,
+          height: 20.251 / 23,
+        ),
+      ),
+    );
+  }
+}
+
+class _ContactField extends StatelessWidget {
+  const _ContactField({required this.controller, required this.hintText});
+
+  final TextEditingController controller;
+  final String hintText;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 80,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.phone,
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-]'))],
+        style: const TextStyle(
+          color: Color(0xFF534344),
+          fontFamily: 'Gowun Batang',
+          fontFamilyFallback: _serifFallback,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: const TextStyle(
+            color: Color(0xFFAFAFAF),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+          filled: true,
+          fillColor: const Color(0xFFF7F7F7),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 30,
+            vertical: 27,
+          ),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  const _DateField({
+    required this.value,
+    required this.hasValue,
+    required this.onTap,
+  });
+
+  final String value;
+  final bool hasValue;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: double.infinity,
+        height: 80,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 38),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F7F7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          value,
+          style: TextStyle(
+            color: hasValue ? const Color(0xFF534344) : const Color(0xFFAFAFAF),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            height: 20.251 / 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineCalendar extends StatelessWidget {
+  const _InlineCalendar({
+    required this.month,
+    required this.selectedDate,
+    required this.onMonthChanged,
+    required this.onDateSelected,
+  });
+
+  final DateTime month;
+  final DateTime? selectedDate;
+  final ValueChanged<int> onMonthChanged;
+  final ValueChanged<DateTime> onDateSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstOfMonth = DateTime(month.year, month.month);
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leading = firstOfMonth.weekday % 7;
+    final today = DateTime.now();
+    final minDate = DateTime(today.year, today.month, today.day + 1);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8E0DA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                tr(
+                  '${month.year}년 ${month.month}월',
+                  '${_monthName(month.month)} ${month.year}',
+                ),
+                style: const TextStyle(
+                  color: Color(0xFF1C1C18),
+                  fontFamily: 'Noto Serif KR',
+                  fontFamilyFallback: _serifFallback,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              _CalendarArrow(
+                icon: Icons.chevron_left_rounded,
+                onTap: () => onMonthChanged(-1),
+              ),
+              _CalendarArrow(
+                icon: Icons.chevron_right_rounded,
+                onTap: () => onMonthChanged(1),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          GridView.count(
+            crossAxisCount: 7,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 0.92,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            children: [
+              for (final day in ['일', '월', '화', '수', '목', '금', '토'])
+                Center(
+                  child: Text(
+                    tr(day, _weekdayEn(day)),
+                    style: const TextStyle(
+                      color: Color(0xFF8D8378),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              for (var i = 0; i < leading; i++) const SizedBox.shrink(),
+              for (var day = 1; day <= daysInMonth; day++)
+                _CalendarDay(
+                  date: DateTime(month.year, month.month, day),
+                  selectedDate: selectedDate,
+                  minDate: minDate,
+                  onTap: onDateSelected,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _monthName(int month) {
+    const names = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return names[month - 1];
+  }
+
+  static String _weekdayEn(String day) => switch (day) {
+    '일' => 'Sun',
+    '월' => 'Mon',
+    '화' => 'Tue',
+    '수' => 'Wed',
+    '목' => 'Thu',
+    '금' => 'Fri',
+    _ => 'Sat',
+  };
+}
+
+class _CalendarArrow extends StatelessWidget {
+  const _CalendarArrow({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        width: 32,
+        height: 32,
+        child: Icon(icon, color: const Color(0xFF786E5C), size: 24),
+      ),
+    );
+  }
+}
+
+class _CalendarDay extends StatelessWidget {
+  const _CalendarDay({
+    required this.date,
+    required this.selectedDate,
+    required this.minDate,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final DateTime? selectedDate;
+  final DateTime minDate;
+  final ValueChanged<DateTime> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected =
+        selectedDate != null &&
+        selectedDate!.year == date.year &&
+        selectedDate!.month == date.month &&
+        selectedDate!.day == date.day;
+    final enabled = !date.isBefore(minDate);
+
+    return InkWell(
+      onTap: enabled ? () => onTap(date) : null,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        alignment: Alignment.topLeft,
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFF9E5E5) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected ? const Color(0xFFE68C8C) : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          '${date.day}',
+          style: TextStyle(
+            color: enabled
+                ? selected
+                      ? const Color(0xFFD9808C)
+                      : const Color(0xFF534344)
+                : const Color(0xFFC7C2BD),
+            fontFamily: 'Gowun Batang',
+            fontFamilyFallback: _serifFallback,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -1166,18 +1493,18 @@ class _TimeGrid extends StatelessWidget {
   final ValueChanged<String> onSelect;
 
   static const _slots = [
-    ('10:00', false),
-    ('10:30', false),
+    ('10:00', true),
+    ('10:30', true),
     ('11:00', true),
     ('11:30', true),
     ('12:00', true),
     ('12:30', true),
-    ('13:00', false),
-    ('13:30', false),
-    ('14:00', false),
-    ('14:30', false),
-    ('15:00', false),
-    ('15:30', false),
+    ('13:00', true),
+    ('13:30', true),
+    ('14:00', true),
+    ('14:30', true),
+    ('15:00', true),
+    ('15:30', true),
   ];
 
   @override
@@ -1304,18 +1631,18 @@ class _ReservationConfirmView extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 40),
           child: SectionShell(
-            maxWidth: 920,
+            maxWidth: 937,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(52, 40, 52, 28),
+              constraints: const BoxConstraints(minHeight: 659),
+              padding: const EdgeInsets.fromLTRB(48, 38, 48, 32),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 8,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 7,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
@@ -1335,22 +1662,25 @@ class _ReservationConfirmView extends StatelessWidget {
                   const SizedBox(height: 28),
                   _SummaryRow(
                     label: tr('인원 수', 'Party size'),
-                    value: tr(
-                        '${state._type}, 성인 ${state._adultCount}명${state._childCount > 0 ? ', 어린이 ${state._childCount}명' : ''}',
-                        '${state._type == '개인' ? 'Individual' : 'Group'}, ${state._adultCount} adults${state._childCount > 0 ? ', ${state._childCount} children' : ''}'),
+                    value: state._peopleLabel,
                   ),
                   _SummaryRow(
-                    label: tr('희망 날짜 및 시간', 'Date & time'),
+                    label: tr('희망 일시', 'Date/time'),
                     value: state._summaryDateTime,
                   ),
                   _SummaryRow(
-                      label: tr('체험 구성', 'Class'),
-                      value: tr(state._program.shortTitle,
-                          state._program.shortTitleEn)),
+                    label: tr('체험 구성', 'Class'),
+                    value: tr(
+                      state._program.shortTitle,
+                      state._program.shortTitleEn,
+                    ),
+                  ),
                   _SummaryRow(
                     label: tr('비용', 'Fee'),
-                    value: tr('${state._feeLabel} (상담을 통해 변경될 수 있습니다.)',
-                        '${state._feeLabel} (subject to change after consultation)'),
+                    value: tr(
+                      '${state._feeLabel} (상담을 통해 변경될 수 있습니다.)',
+                      '${state._feeLabel} (subject to change after consultation)',
+                    ),
                   ),
                   _SummaryRow(
                     label: tr('연락처', 'Contact'),
@@ -1361,18 +1691,18 @@ class _ReservationConfirmView extends StatelessWidget {
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 70,
+                          height: 88,
                           child: FilledButton(
                             onPressed: state._editReservation,
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFFF0F0F0),
+                              backgroundColor: const Color(0xFFD7D1D1),
                               foregroundColor: const Color(0xFF534344),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                             ),
                             child: Text(
-                              tr('문의 변경 및 취소', 'Edit or cancel'),
+                              tr('뒤로가기', 'Back'),
                               style: const TextStyle(
                                 fontFamily: 'Gowun Batang',
                                 fontFamilyFallback: _serifFallback,
@@ -1386,14 +1716,17 @@ class _ReservationConfirmView extends StatelessWidget {
                       const SizedBox(width: 22),
                       Expanded(
                         child: SizedBox(
-                          height: 70,
+                          height: 88,
                           child: FilledButton(
-                            onPressed: state._isSubmitting ? null : state._complete,
+                            onPressed: state._isSubmitting
+                                ? null
+                                : state._complete,
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF9B4A59),
+                              disabledBackgroundColor: const Color(0xFFD7D1D1),
+                              backgroundColor: const Color(0xFF934753),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                             ),
                             child: state._isSubmitting
@@ -1421,14 +1754,145 @@ class _ReservationConfirmView extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    tr('매장에서 일정 및 인원 수 확인 후 카카오톡을 통해 안내가 전송됩니다.',
-                        'After the shop confirms the schedule and party size, details will be sent via KakaoTalk.'),
+                    tr(
+                      '매장에서 일정 및 인원 수 확인 후 카카오톡을 통해 안내가 전송됩니다.',
+                      'After the shop confirms the schedule and party size, details will be sent via KakaoTalk.',
+                    ),
                     style: const TextStyle(
                       color: Color(0xFFB5B3B3),
                       fontFamily: 'Gowun Batang',
                       fontFamilyFallback: _serifFallback,
                       fontSize: 16,
                       height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReservationCompleteView extends StatelessWidget {
+  const _ReservationCompleteView({super.key, required this.state});
+
+  final _ReservationSectionState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final deco = decoScaleOf(context, designWidth: 1409);
+
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        Positioned(
+          right: 0,
+          bottom: 16 * deco,
+          child: WatercolorDeco(decoCluster, width: 706 * deco),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: SectionShell(
+            maxWidth: 937,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 659),
+              padding: const EdgeInsets.fromLTRB(48, 42, 48, 32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 7,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF934753),
+                    size: 86,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    tr(
+                      '[${state._program.title}] 체험 예약 접수가 완료되었습니다.',
+                      '[${state._program.titleEn}] inquiry has been received.',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    tr(
+                      '매장에서 일정 및 인원 수 확인 후 <행궁다과> 카카오톡 채널을 통해 자세한 안내가 전송됩니다.',
+                      'After the shop confirms the schedule and party size, details will be sent through the Haenggung Dagwa KakaoTalk channel.',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFFB5B3B3),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  _SummaryRow(
+                    label: tr('체험 구성', 'Class'),
+                    value: tr(
+                      state._program.shortTitle,
+                      state._program.shortTitleEn,
+                    ),
+                  ),
+                  _SummaryRow(
+                    label: tr('인원 수', 'Party size'),
+                    value: state._peopleLabel,
+                  ),
+                  _SummaryRow(
+                    label: tr('희망 일시', 'Date/time'),
+                    value: state._summaryDateTime,
+                  ),
+                  _SummaryRow(label: tr('비용', 'Fee'), value: state._feeLabel),
+                  _SummaryRow(
+                    label: tr('연락처', 'Contact'),
+                    value: state._contactController.text.trim(),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 88,
+                    child: FilledButton(
+                      onPressed: state._goHome,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF934753),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        tr('홈 화면으로 돌아가기', 'Return home'),
+                        style: const TextStyle(
+                          fontFamily: 'Gowun Batang',
+                          fontFamilyFallback: _serifFallback,
+                          fontSize: 23,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -1449,48 +1913,60 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F2EF),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 160,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF7A6B63),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                height: 1.4,
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 540;
+
+        return Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: 64),
+          margin: const EdgeInsets.only(bottom: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F7F7),
+            borderRadius: BorderRadius.circular(6),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Color(0xFF1C1C18),
-                fontFamily: 'Gowun Batang',
-                fontFamilyFallback: _serifFallback,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: _summaryLabelStyle),
+                    const SizedBox(height: 8),
+                    Text(value, style: _summaryValueStyle),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 155,
+                      child: Text(label, style: _summaryLabelStyle),
+                    ),
+                    Expanded(child: Text(value, style: _summaryValueStyle)),
+                  ],
+                ),
+        );
+      },
     );
   }
+
+  static const _summaryLabelStyle = TextStyle(
+    color: Color(0xFF786E5C),
+    fontFamily: 'Gowun Batang',
+    fontFamilyFallback: _serifFallback,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 1.25,
+  );
+
+  static const _summaryValueStyle = TextStyle(
+    color: Color(0xFF534344),
+    fontFamily: 'Gowun Batang',
+    fontFamilyFallback: _serifFallback,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 1.25,
+  );
 }
 
 class _FieldLabel extends StatelessWidget {
@@ -1503,11 +1979,12 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(
-        color: Color(0xFF6E6258),
+        color: Color(0xFF786E5C),
         fontFamily: 'Gowun Batang',
         fontFamilyFallback: _serifFallback,
         fontSize: 20,
         fontWeight: FontWeight.w700,
+        height: 1,
       ),
     );
   }
@@ -1526,6 +2003,7 @@ class _Program {
     required this.badge,
     required this.badgeEn,
     required this.image,
+    required this.heroImage,
     required this.color,
   });
 
@@ -1540,6 +2018,7 @@ class _Program {
   final String badge;
   final String badgeEn;
   final String image;
+  final String heroImage;
   final Color color;
 }
 

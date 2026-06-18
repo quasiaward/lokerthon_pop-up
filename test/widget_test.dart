@@ -1,35 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:haenggung_dagwa/services/recommendation_service.dart';
+import 'package:haenggung_dagwa/data/dagwa_results.dart';
 
 void main() {
-  testWidgets('placeholder', (tester) async {});
+  test('recommendation result data covers API menu names', () {
+    const apiMenus = [
+      '흑임자다식',
+      '도라지정과',
+      '육포다식',
+      '콩고물 도라지정과',
+      '곶감 호두말이',
+      '구움 견과 강정',
+      '금귤정과',
+      '깨강정',
+      '영양찰떡',
+      '양갱',
+      '매작과',
+      '수원약과',
+    ];
 
-  test('local AI prompt includes every recommendation question axis', () {
-    final service = RecommendationService();
-    final prompt = service.buildLocalAiPrompt(defaultRecommendationInput);
-
-    expect(prompt, contains('행궁다과'));
-    expect(prompt, contains('색감/성향'));
-    expect(prompt, contains(defaultRecommendationInput.personality));
-    expect(prompt, contains('마음 날씨/방문 순간'));
-    expect(prompt, contains(defaultRecommendationInput.moment));
-    expect(prompt, contains('동행/차 무드'));
-    expect(prompt, contains(defaultRecommendationInput.tea));
-    expect(prompt, contains('식감'));
-    expect(prompt, contains(defaultRecommendationInput.texture));
-    expect(prompt, contains('계절/단맛'));
-    expect(prompt, contains(defaultRecommendationInput.sweetness));
-    expect(prompt, contains('모양/선택 성향'));
-    expect(prompt, contains(defaultRecommendationInput.choiceStyle));
-    expect(prompt, contains('추천은 다과상 구성이나 임시 이미지가 아니라'));
-    expect(prompt, contains('내부 점수표'));
-  });
-
-  test('recommendation summary follows local prompt tone', () {
-    final service = RecommendationService();
-    final result = service.getRecommendation(defaultRecommendationInput);
-
-    expect(result.aiSummary, contains(result.productName));
-    expect(result.aiSummary, isNot(contains('신호가')));
+    expect(dagwaResults.keys, containsAll(apiMenus));
+    for (final menu in apiMenus) {
+      final result = dagwaResults[menu]!;
+      expect(result.menuName, menu);
+      expect(result.imagePath, isNotEmpty);
+    }
   });
 }

@@ -95,99 +95,99 @@ const _beverages = <_MenuItem>[
   _MenuItem(
     name: '대추차',
     nameEn: 'Jujube Tea',
-    image: 'assets/figma/menu/jujube_tea.png',
+    image: 'assets/figma/menu/jujube_tea_sharp.png',
     prices: [_Price('HOT', '8,000')],
     signature: true,
   ),
   _MenuItem(
     name: '쌍화차',
     nameEn: 'Ssanghwa Tea',
-    image: 'assets/figma/menu/ssanghwa_tea.png',
+    image: 'assets/figma/menu/ssanghwa_tea_sharp.png',
     prices: [_Price('HOT', '8,000')],
   ),
   _MenuItem(
     name: '생강차',
     nameEn: 'Ginger Tea',
-    image: 'assets/figma/menu/ginger_tea.png',
+    image: 'assets/figma/menu/ginger_tea_sharp.png',
     prices: [_Price('HOT', '6,000')],
   ),
   _MenuItem(
     name: '오미자 수단',
     nameEn: 'Omija Tea with Teok',
-    image: 'assets/figma/menu/omija_sudan.png',
+    image: 'assets/figma/menu/omija_sudan_sharp.png',
     prices: [_Price('ICE', '6,000')],
     signature: true,
   ),
   _MenuItem(
     name: '식혜',
     nameEn: 'Sweet Rice Punch',
-    image: 'assets/figma/menu/sikhye.png',
+    image: 'assets/figma/menu/sikhye_sharp.png',
     prices: [_Price('ICE', '4,500')],
   ),
   _MenuItem(
     name: '레몬 생강차',
     nameEn: 'Lemon Ginger Tea',
-    image: 'assets/figma/menu/lemon_ginger_tea.png',
+    image: 'assets/figma/menu/lemon_ginger_tea_sharp.png',
     prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
   ),
   _MenuItem(
     name: '베리 레몬차',
     nameEn: 'Berry Lemon Tea',
-    image: 'assets/figma/menu/berry_lemon_tea.png',
+    image: 'assets/figma/menu/berry_lemon_tea_sharp.png',
     prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
   ),
   _MenuItem(
     name: '석류 레몬차',
     nameEn: 'Pomegranate Lemon Tea',
-    image: 'assets/figma/menu/pomegranate_lemon_tea.png',
+    image: 'assets/figma/menu/pomegranate_lemon_tea_sharp.png',
     prices: [_Price('HOT', '5,500'), _Price('ICE', '6,000')],
   ),
   _MenuItem(
     name: '오미자차',
     nameEn: 'Omija Tea',
-    image: 'assets/figma/menu/omija_tea.png',
+    image: 'assets/figma/menu/omija_tea_sharp.png',
     prices: [_Price('HOT', '5,000'), _Price('ICE', '5,500')],
   ),
   _MenuItem(
     name: '유자차 / 에이드',
     nameEn: 'Yuja Tea / Ade',
-    image: 'assets/figma/menu/yuja_ade.png',
+    image: 'assets/figma/menu/yuja_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '레몬차 / 에이드',
     nameEn: 'Lemon Tea / Ade',
-    image: 'assets/figma/menu/lemon_ade.png',
+    image: 'assets/figma/menu/lemon_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '자몽차 / 에이드',
     nameEn: 'Grapefruit Tea / Ade',
-    image: 'assets/figma/menu/grapefruit_ade.png',
+    image: 'assets/figma/menu/grapefruit_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '라임차 / 에이드',
     nameEn: 'Lime Tea / Ade',
-    image: 'assets/figma/menu/lime_ade.png',
+    image: 'assets/figma/menu/lime_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '청귤차 / 에이드',
     nameEn: 'Green Tangerine Tea / Ade',
-    image: 'assets/figma/menu/green_tangerine_ade.png',
+    image: 'assets/figma/menu/green_tangerine_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '모과차 / 에이드',
     nameEn: 'Quince Tea / Ade',
-    image: 'assets/figma/menu/quince_ade.png',
+    image: 'assets/figma/menu/quince_ade_sharp.png',
     prices: [_Price('HOT', '4,500'), _Price('ICE', '5,000')],
   ),
   _MenuItem(
     name: '청포도 에이드',
     nameEn: 'Green Grape Ade',
-    image: 'assets/figma/menu/green_grape_ade.png',
+    image: 'assets/figma/menu/green_grape_ade_sharp.png',
     prices: [_Price('ICE', '5,000')],
   ),
   _MenuItem(
@@ -640,10 +640,12 @@ class _MenuGrid extends StatelessWidget {
             ? 4
             : (constraints.maxWidth >= 680 ? 2 : 1);
         const gap = 24.0;
-        final itemWidth =
-            (constraints.maxWidth - gap * (columns - 1)) / columns;
+        final itemWidth = columns == 1
+            ? (constraints.maxWidth < 260 ? constraints.maxWidth : 260.0)
+            : (constraints.maxWidth - gap * (columns - 1)) / columns;
 
         return Wrap(
+          alignment: columns == 1 ? WrapAlignment.center : WrapAlignment.start,
           spacing: gap,
           runSpacing: 54,
           children: [
@@ -749,7 +751,7 @@ class _MenuArtCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item.rowCrop case final crop?) {
-      return _CroppedSvgCard(asset: item.image, crop: crop);
+      return _CroppedRowCard(asset: item.image, crop: crop);
     }
 
     return Container(
@@ -790,14 +792,14 @@ class _MenuAsset extends StatelessWidget {
     return Image.asset(
       path,
       fit: fit,
-      filterQuality: FilterQuality.high,
+      filterQuality: FilterQuality.medium,
       errorBuilder: (context, error, stack) => const SizedBox.shrink(),
     );
   }
 }
 
-class _CroppedSvgCard extends StatelessWidget {
-  const _CroppedSvgCard({required this.asset, required this.crop});
+class _CroppedRowCard extends StatelessWidget {
+  const _CroppedRowCard({required this.asset, required this.crop});
 
   final String asset;
   final _RowCrop crop;
@@ -818,11 +820,17 @@ class _CroppedSvgCard extends StatelessWidget {
                   top: 0,
                   width: 1112 * scale,
                   height: constraints.maxHeight,
-                  child: SvgPicture.asset(
-                    asset,
-                    fit: BoxFit.fill,
-                    clipBehavior: Clip.none,
-                  ),
+                  child: asset.endsWith('.svg')
+                      ? SvgPicture.asset(
+                          asset,
+                          fit: BoxFit.fill,
+                          clipBehavior: Clip.none,
+                        )
+                      : Image.asset(
+                          asset,
+                          fit: BoxFit.fill,
+                          filterQuality: FilterQuality.high,
+                        ),
                 ),
               ],
             ),

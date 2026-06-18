@@ -379,7 +379,7 @@ const _questions = [
   ),
 ];
 
-enum _Phase { landing, quiz, loading, result }
+enum _Phase { landing, quiz, loading, result, error }
 
 // ── Main widget ────────────────────────────────────────────────────────────────
 
@@ -397,6 +397,7 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
   int _step = 0;
   final _answers = <String?>[null, null, null, null, null, null];
   String? _menuName;
+  String? _errorMessage;
 
   void _start() => setState(() {
     _phase = _Phase.quiz;
@@ -405,6 +406,7 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       _answers[i] = null;
     }
     _menuName = null;
+    _errorMessage = null;
   });
 
   void _pick(String title) {
@@ -440,11 +442,18 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       if (!mounted) return;
       setState(() {
         _menuName = menu;
+        _errorMessage = null;
         _phase = _Phase.result;
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _phase = _Phase.quiz);
+      setState(() {
+        _errorMessage = tr(
+          'API가 추천 결과를 주지 않았습니다.',
+          'The API did not return a recommendation.',
+        );
+        _phase = _Phase.error;
+      });
     }
   }
 
@@ -454,6 +463,7 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
       _answers[i] = null;
     }
     _menuName = null;
+    _errorMessage = null;
   });
 
   @override
@@ -489,6 +499,17 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
         _Phase.result => _ResultView(
           key: const ValueKey('result'),
           menuName: _menuName!,
+          onHome: _restart,
+        ),
+        _Phase.error => _RecommendationErrorView(
+          key: const ValueKey('error'),
+          message:
+              _errorMessage ??
+              tr(
+                'API가 추천 결과를 주지 않았습니다.',
+                'The API did not return a recommendation.',
+              ),
+          onRetry: _fetchRecommendation,
           onHome: _restart,
         ),
       },
@@ -1440,7 +1461,142 @@ class _LoadingView extends StatelessWidget {
   }
 }
 
-// ── Result ─────────────────────────────────────────────────────────────────────
+// ── Error / Result ─────────────────────────────────────────────────────────────
+
+class _RecommendationErrorView extends StatelessWidget {
+  const _RecommendationErrorView({
+    super.key,
+    required this.message,
+    required this.onRetry,
+    required this.onHome,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onHome;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 640;
+
+    return Container(
+      color: const Color(0xFFFFFCF7),
+      constraints: const BoxConstraints(minHeight: 720),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 72),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(
+                compact ? 24 : 42,
+                compact ? 34 : 46,
+                compact ? 24 : 42,
+                compact ? 34 : 44,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF9F6),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE9D7D2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tr('추천 결과를 받을 수 없습니다.', 'No recommendation received.'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xFF534344),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: compact ? 30 : 40,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF8C7E7B),
+                      fontFamily: 'Gowun Batang',
+                      fontFamilyFallback: _serifFallback,
+                      fontSize: 20,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 34),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      OutlinedButton(
+                        onPressed: onHome,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF934753),
+                          side: const BorderSide(color: Color(0xFF934753)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 17,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: Text(
+                          tr('처음으로', 'Start over'),
+                          style: const TextStyle(
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      FilledButton(
+                        onPressed: onRetry,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF934753),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 18,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: Text(
+                          tr('다시 시도하기', 'Try again'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Gowun Batang',
+                            fontFamilyFallback: _serifFallback,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ResultView extends StatelessWidget {
   const _ResultView({super.key, required this.menuName, required this.onHome});
