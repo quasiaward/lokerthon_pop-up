@@ -23,6 +23,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/branding/
     - assets/figma/
     - assets/figma/quiz/
 

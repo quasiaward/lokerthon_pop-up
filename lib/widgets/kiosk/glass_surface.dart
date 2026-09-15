@@ -4,15 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
 
-/// 반투명 유리 표면.
-///
-/// 뒤의 ambient 색이 비쳐 깊이가 생긴다. 깊이를 그림자로 만들지 않기 위해
-/// 위쪽 specular 하이라이트와 1px 테두리만으로 입체감을 표현한다.
-///
-/// [blurBackdrop]은 기본으로 꺼져 있다. 카드 뒤에 있는 것은 이미 부드러운
-/// 그라데이션이라 흐리게 해도 보이는 차이가 거의 없는데, `BackdropFilter`는
-/// 화면 한 장을 통째로 blur하는 비싼 연산이라 카드 네 장이면 프레임이 밀린다.
-/// 뒤에 실제 콘텐츠가 있어서 정말 가려야 하는 곳(상세 시트)에서만 켠다.
+/// 행궁다과 색을 머금는 절제된 유리 표면.
+/// 실제 blur는 주요 조작과 시트에만 사용하고 반복 카드에서는 끈다.
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -47,22 +40,17 @@ class GlassSurface extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.accentSoft.withValues(alpha: 0.78),
-              accentColor.withValues(alpha: 0.10),
+              accentColor.withValues(alpha: strong ? 0.94 : 0.86),
+              AppColors.accentDeep.withValues(alpha: strong ? 0.96 : 0.88),
             ],
           )
         : LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: strong
-                ? [
-                    const Color(0xFFFFFDF8).withValues(alpha: 0.92),
-                    const Color(0xFFF7F1E7).withValues(alpha: 0.82),
-                  ]
-                : [
-                    const Color(0xFFFFFDF8).withValues(alpha: 0.62),
-                    const Color(0xFFFAF5EC).withValues(alpha: 0.38),
-                  ],
+            colors: [
+              strong ? AppColors.glassStrong : AppColors.glass,
+              AppColors.goldSoft.withValues(alpha: strong ? 0.46 : 0.24),
+            ],
           );
 
     final surface = Container(
@@ -71,12 +59,13 @@ class GlassSurface extends StatelessWidget {
         borderRadius: border,
         border: Border.all(
           color: accented
-              ? accentColor.withValues(alpha: 0.55)
-              : Colors.white.withValues(alpha: 0.42),
-          width: accented ? 1.4 : 1,
+              ? AppColors.gold.withValues(alpha: 0.54)
+              : Colors.white.withValues(alpha: 0.72),
+          width: accented ? 1.2 : 1,
         ),
       ),
       child: Stack(
+        fit: StackFit.passthrough,
         children: [
           // 위쪽 모서리의 가는 하이라이트 — 유리 두께를 만든다.
           Positioned(
@@ -89,7 +78,7 @@ class GlassSurface extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.white.withValues(alpha: 0),
-                    Colors.white.withValues(alpha: 0.85),
+                    Colors.white.withValues(alpha: accented ? 0.48 : 0.92),
                     Colors.white.withValues(alpha: 0),
                   ],
                 ),
@@ -101,17 +90,29 @@ class GlassSurface extends StatelessWidget {
       ),
     );
 
-    return ClipRRect(
-      borderRadius: border,
-      child: blurBackdrop
-          ? BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: strong ? 30 : 16,
-                sigmaY: strong ? 30 : 16,
-              ),
-              child: surface,
-            )
-          : surface,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: border,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentDeep.withValues(alpha: strong ? 0.15 : 0.08),
+            blurRadius: strong ? 34 : 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: border,
+        child: blurBackdrop
+            ? BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: strong ? 28 : 18,
+                  sigmaY: strong ? 28 : 18,
+                ),
+                child: surface,
+              )
+            : surface,
+      ),
     );
   }
 }

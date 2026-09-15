@@ -1,39 +1,86 @@
 import 'package:flutter/material.dart';
+
 import '../../l10n/lang.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import 'brand_mark.dart';
+import 'glass_surface.dart';
 
 class TopControl extends StatelessWidget {
   const TopControl({super.key, this.onBack, required this.onHome});
+
   final VoidCallback? onBack;
   final VoidCallback onHome;
+
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      if (onBack != null)
-        TextButton.icon(
-          onPressed: onBack,
-          icon: const Icon(Icons.arrow_back_rounded, size: 24),
-          label: Text(tr('이전으로', 'Back')),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.charcoal,
-            minimumSize: const Size(120, 56),
-            textStyle: Type.caption.copyWith(fontSize: 20),
+  Widget build(BuildContext context) => SizedBox(
+    height: 58,
+    child: Row(
+      children: [
+        if (onBack == null)
+          const SizedBox(width: 142)
+        else
+          _GlassControl(
+            onPressed: onBack!,
+            icon: Icons.arrow_back_rounded,
+            label: tr('이전으로', 'Back', '戻る'),
           ),
-        )
-      else
-        Text('행궁다과', style: Type.section.copyWith(fontSize: 26)),
-      TextButton.icon(
-        onPressed: onHome,
-        icon: const Icon(Icons.home_outlined, size: 24),
-        label: Text(tr('처음으로', 'Home')),
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.muted,
-          minimumSize: const Size(120, 56),
-          textStyle: Type.caption.copyWith(fontSize: 20),
+        const Expanded(child: Center(child: BrandMark(compact: true))),
+        _GlassControl(
+          onPressed: onHome,
+          icon: Icons.home_outlined,
+          label: tr('처음으로', 'Home', 'はじめに戻る'),
+          muted: true,
+        ),
+      ],
+    ),
+  );
+}
+
+class _GlassControl extends StatelessWidget {
+  const _GlassControl({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+    this.muted = false,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) => GlassSurface(
+    radius: 22,
+    blurBackdrop: true,
+    child: Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 23,
+                color: muted ? AppColors.muted : AppColors.accent,
+              ),
+              const SizedBox(width: 9),
+              Text(
+                label,
+                style: Type.caption.copyWith(
+                  fontSize: 18,
+                  color: muted ? AppColors.muted : AppColors.charcoal,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ],
+    ),
   );
 }

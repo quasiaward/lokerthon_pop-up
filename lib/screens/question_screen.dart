@@ -37,16 +37,22 @@ class QuestionScreen extends StatelessWidget {
         const SizedBox(height: 20),
         Semantics(
           header: true,
-          child: Text(
-            tr(question.titleKo, question.titleEn),
-            style: Type.question,
+          child: Text.rich(
+            TextSpan(
+              style: Type.question,
+              children: [
+                TextSpan(text: question.before.t),
+                TextSpan(
+                  text: question.keyword.t,
+                  style: Type.question.copyWith(color: AppColors.accent),
+                ),
+                TextSpan(text: question.after.t),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          tr(question.hint, question.hintEn),
-          style: Type.bodyMuted.copyWith(fontSize: 23),
-        ),
+        Text(question.hint.t, style: Type.bodyMuted.copyWith(fontSize: 23)),
         const SizedBox(height: 36),
         Expanded(
           child: GridView.count(
@@ -55,7 +61,7 @@ class QuestionScreen extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 22,
             crossAxisSpacing: 22,
-            childAspectRatio: 2.72,
+            childAspectRatio: 2.4,
             children: [
               for (final option in question.options)
                 ChoiceCard(
@@ -70,7 +76,12 @@ class QuestionScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Center(
           child: Text(
-            error ?? tr('선택하면 다음 질문으로 넘어가요', 'Choose an answer to continue'),
+            error ??
+                tr(
+                  '선택하면 다음 질문으로 넘어가요',
+                  'Choose an answer to continue',
+                  '選ぶと次の質問に進みます',
+                ),
             style: Type.caption.copyWith(
               fontSize: 19,
               color: error == null ? AppColors.muted : Colors.red.shade700,

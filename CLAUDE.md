@@ -88,16 +88,16 @@ flutter run --dart-define=USE_API=true --dart-define=API_BASE_URL=https://...
 
 ## 디자인 시스템
 
-모바일 토스 앱의 명확한 정보 계층과 빠른 피드백을 iPad 키오스크에 맞게 적용했다.
-전통 다과의 사진과 이야기는 그대로 두고, 큰 제목·넉넉한 여백·한 번에 하나인
-주요 행동으로 흐름을 단순하게 만든다.
+행궁다과의 다식 꽃문양과 버건디·금빛·쑥빛을 브랜드 축으로 삼는다. 큰 제목과
+넉넉한 여백은 유지하되, Apple Liquid Glass의 반투명 표면·빛 테두리·주변색 반사를
+주요 조작과 상세 시트에만 절제해 적용한다.
 
 ### 토큰 (`lib/theme/app_colors.dart`)
-- 바탕: cool gray `#F7F8FA`, 카드: white `#FFFFFF`
-- 텍스트: `#191F28` / 보조 `#4E5968`
-- accent: Toss blue `#3182F6`, 선택 배경 `#EAF3FF`
+- 바탕: warm ivory `#F5F0E8`, 카드: `#FFFCF7`
+- 텍스트: `#241B1B` / 보조 `#746663`
+- 브랜드: burgundy `#773243`, gold `#D5B36C`, moss `#5D664F`
 - 여백은 `Space` 스케일에서만 고른다 (8·12·16·24·32·40·48·64·80·96·120)
-- 깊이는 강한 그림자나 블러 대신 배경 톤과 경계로 만든다
+- 실제 blur는 버튼·상단 조작·상세 시트에만 쓰고 반복 카드에서는 끈다
 
 ### 타이포 (`lib/theme/app_theme.dart`의 `Type`)
 Pretendard sans가 본문. 영문 accent에만 Fraunces italic을 보조로 쓴다.

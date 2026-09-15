@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 
-/// Clear, solid surfaces and a single action color across the tasting flow.
+/// 행궁다과의 버건디와 금빛을 현대적인 유리 표면에 맞게 정리한 팔레트.
 class AppColors {
   const AppColors._();
-  static const ground = Color(0xFFF7F8FA);
-  static const surface = Colors.white;
-  static const cream = Color(0xFFF2F4F6);
-  static const mist = Color(0xFFE5E8EB);
-  static const line = Color(0xFFE5E8EB);
-  static const lineStrong = Color(0xFFB0B8C1);
-  static const ink = Color(0xFF191F28);
-  static const charcoal = Color(0xFF333D4B);
-  static const muted = Color(0xFF6B7684);
-  static const faint = Color(0xFF8B95A1);
-  static const accent = Color(0xFF3182F6);
-  static const accentSoft = Color(0xFFEAF3FF);
-  static const surround = ground;
+  static const ground = Color(0xFFF5F0E8);
+  static const surface = Color(0xFFFFFCF7);
+  static const cream = Color(0xFFEDE4D8);
+  static const mist = Color(0xFFE3D8CB);
+  static const line = Color(0xFFD8CABC);
+  static const lineStrong = Color(0xFFB8A493);
+  static const ink = Color(0xFF241B1B);
+  static const charcoal = Color(0xFF443838);
+  static const muted = Color(0xFF746663);
+  static const faint = Color(0xFF988A84);
+  static const accent = Color(0xFF773243);
+  static const accentDeep = Color(0xFF55202D);
+  static const accentSoft = Color(0xFFF0DFE1);
+  static const gold = Color(0xFFD5B36C);
+  static const goldSoft = Color(0xFFF4E7C7);
+  static const moss = Color(0xFF5D664F);
+  static const surround = Color(0xFF211719);
+  static const glass = Color(0xB8FFFCF7);
+  static const glassStrong = Color(0xE8FFFCF7);
 }
 
 class Space {
@@ -35,18 +41,18 @@ class Space {
 
 class Radii {
   const Radii._();
-  static const card = 24.0;
-  static const button = 20.0;
-  static const asset = 40.0;
-  static const sheet = 36.0;
+  static const card = 28.0;
+  static const button = 24.0;
+  static const asset = 44.0;
+  static const sheet = 42.0;
 }
 
 class Motion {
   const Motion._();
-  static const fast = Duration(milliseconds: 160);
-  static const base = Duration(milliseconds: 240);
-  static const slow = Duration(milliseconds: 320);
-  static const reveal = Duration(milliseconds: 400);
-  static const exit = Duration(milliseconds: 120);
-  static const curve = Curves.easeOutCubic;
+  static const fast = Duration(milliseconds: 140);
+  static const base = Duration(milliseconds: 260);
+  static const slow = Duration(milliseconds: 420);
+  static const reveal = Duration(milliseconds: 520);
+  static const exit = Duration(milliseconds: 140);
+  static const curve = Curves.easeOutQuart;
 }

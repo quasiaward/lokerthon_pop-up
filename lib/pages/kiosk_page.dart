@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../data/dagwa_results.dart';
+import '../data/dagwa_tones.dart';
 import '../perf_probe.dart';
 import '../data/quiz_questions.dart';
 import '../screens/idle_screen.dart';
@@ -14,6 +15,7 @@ import '../services/recommendation_engine.dart';
 import '../services/recommendation_service.dart';
 import '../theme/app_colors.dart';
 import '../l10n/lang.dart';
+import '../widgets/kiosk/ambient_field.dart';
 import '../widgets/kiosk/kiosk_canvas.dart';
 import '../widgets/lang_toggle.dart';
 
@@ -208,7 +210,8 @@ class _KioskPageState extends State<KioskPage>
       _answers[_step] = option.title;
     });
     _bumpIdleTimer();
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    // 선택 상태가 보일 만큼만 머물고, 전체 전환은 0.6초 안에 끝낸다.
+    await Future<void>.delayed(const Duration(milliseconds: 160));
     if (!mounted || session != _session) return;
     if (_step < quizQuestions.length - 1) {
       await _change(() => _step++);
@@ -231,6 +234,7 @@ class _KioskPageState extends State<KioskPage>
         _error = tr(
           '연결이 원활하지 않아요. 선택지를 눌러 다시 시도해주세요.',
           'Could not connect. Tap your choice to try again.',
+          '接続がうまくいきません。選択肢をタップしてもう一度お試しください。',
         );
       });
     }
@@ -257,20 +261,37 @@ class _KioskPageState extends State<KioskPage>
       child: Listener(
         onPointerDown: (_) => _bumpIdleTimer(),
         onPointerMove: (_) => _bumpIdleTimer(),
-        child: AbsorbPointer(
-          absorbing: _busy,
-          child: FadeTransition(
-            opacity: _opacity,
-            child: RepaintBoundary(
-              child: Stack(
-                children: [
-                  Positioned.fill(child: _buildStage()),
-                  if (_stage == _Stage.idle || _stage == _Stage.intro)
-                    const Positioned(right: 88, top: 52, child: LangToggle()),
-                ],
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: AmbientField(
+                tint: _stage == _Stage.result && _menuName != null
+                    ? toneFor(_menuName!).deep
+                    : AppColors.accent,
               ),
             ),
-          ),
+            Positioned.fill(
+              child: AbsorbPointer(
+                absorbing: _busy,
+                child: FadeTransition(
+                  opacity: _opacity,
+                  child: RepaintBoundary(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(child: _buildStage()),
+                        if (_stage == _Stage.idle || _stage == _Stage.intro)
+                          const Positioned(
+                            right: 88,
+                            top: 52,
+                            child: LangToggle(),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     ),

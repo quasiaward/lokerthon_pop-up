@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../data/quiz_questions.dart';
 import '../../l10n/lang.dart';
 import '../../theme/app_colors.dart';
@@ -12,10 +13,12 @@ class ChoiceCard extends StatelessWidget {
     required this.onTap,
     this.accentColor = AppColors.accent,
   });
+
   final QuizOption option;
   final bool selected;
   final VoidCallback onTap;
   final Color accentColor;
+
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
@@ -23,38 +26,68 @@ class ChoiceCard extends StatelessWidget {
     child: AnimatedContainer(
       duration: MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
-          : Motion.fast,
+          : Motion.base,
+      curve: Motion.curve,
       decoration: BoxDecoration(
-        color: selected ? AppColors.accentSoft : AppColors.surface,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: selected
+              ? [
+                  AppColors.accentSoft,
+                  AppColors.goldSoft.withValues(alpha: 0.78),
+                ]
+              : [
+                  Colors.white.withValues(alpha: 0.76),
+                  AppColors.surface.withValues(alpha: 0.54),
+                ],
+        ),
         borderRadius: BorderRadius.circular(Radii.card),
         border: Border.all(
-          color: selected ? accentColor : AppColors.line,
-          width: 2,
+          color: selected
+              ? accentColor.withValues(alpha: 0.78)
+              : Colors.white.withValues(alpha: 0.82),
+          width: selected ? 1.8 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentDeep.withValues(
+              alpha: selected ? 0.12 : 0.06,
+            ),
+            blurRadius: selected ? 28 : 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(Radii.card),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(22),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    option.imageStyle == QuizImageStyle.circle ? 60 : 20,
-                  ),
-                  child: ColoredBox(
+                Container(
+                  width: 108,
+                  height: 108,
+                  decoration: BoxDecoration(
                     color: option.bgColor,
-                    child: Image.asset(
-                      option.imagePath,
-                      width: 108,
-                      height: 108,
-                      fit: option.imageFit,
-                      cacheWidth: 216,
-                      excludeFromSemantics: true,
+                    borderRadius: BorderRadius.circular(
+                      option.imageStyle == QuizImageStyle.circle ? 60 : 22,
                     ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      width: 2,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    option.imagePath,
+                    fit: option.imageFit,
+                    cacheWidth: 216,
+                    excludeFromSemantics: true,
                   ),
                 ),
                 const SizedBox(width: 24),
@@ -64,16 +97,17 @@ class ChoiceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        tr(option.shownTitle, option.shownTitleEn),
+                        option.label.t,
                         style: Type.section.copyWith(
-                          fontSize: isEn ? 25 : 29,
-                          fontWeight: FontWeight.w700,
-                          color: selected ? accentColor : AppColors.ink,
+                          fontSize: isEn ? 24 : 28,
+                          color: selected
+                              ? AppColors.accentDeep
+                              : AppColors.ink,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Text(
-                        tr(option.shownSubtitle, option.shownSubtitleEn),
+                        option.desc.t,
                         style: Type.caption.copyWith(
                           fontSize: 18,
                           height: 1.4,
@@ -84,12 +118,26 @@ class ChoiceCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Icon(
-                  selected
-                      ? Icons.check_circle_rounded
-                      : Icons.radio_button_unchecked_rounded,
-                  color: selected ? accentColor : AppColors.line,
-                  size: 30,
+                AnimatedContainer(
+                  duration: Motion.fast,
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected
+                        ? accentColor
+                        : Colors.white.withValues(alpha: 0.5),
+                    border: Border.all(
+                      color: selected ? AppColors.gold : AppColors.lineStrong,
+                    ),
+                  ),
+                  child: selected
+                      ? const Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: Colors.white,
+                        )
+                      : null,
                 ),
               ],
             ),

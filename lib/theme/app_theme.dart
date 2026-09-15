@@ -6,7 +6,14 @@ import 'app_colors.dart';
 const kSans = 'Pretendard';
 const kSerifAccent = 'Fraunces';
 
+/// Pretendard가 커버하지 못하는 글자를 이어받는 순서.
+///
+/// 가나·한자는 일본어 시스템 폰트(Hiragino)가 먼저 받도록 한글 폰트 앞에 둔다.
+/// 같은 한자라도 일본어와 한국어의 자형이 달라서, 순서를 바꾸면 일본어 화면에
+/// 한국어용 자형이 섞여 나온다.
 const kSansFallback = <String>[
+  'Hiragino Sans',
+  'Hiragino Kaku Gothic ProN',
   'Apple SD Gothic Neo',
   'Noto Sans CJK KR',
   'sans-serif',

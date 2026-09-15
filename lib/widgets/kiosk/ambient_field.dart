@@ -2,10 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// 아주 느리게 떠다니는 색 덩어리.
-///
-/// 유리 표면이 굴절할 색을 뒤에 깔아 준다. 대비를 극도로 낮게 유지해
-/// quiet luxury의 정적인 분위기를 깨지 않는다.
+import '../../theme/app_colors.dart';
+
+/// 버건디·금빛·쑥빛이 아주 느리게 움직이는 브랜드 배경.
 ///
 /// 화면 전체를 덮는 배경이라 매 프레임 비용이 그대로 프레임 예산을 먹는다.
 /// 그래서 위젯을 다시 만들지 않고 [CustomPaint] 한 장에 직접 그리며,
@@ -40,7 +39,7 @@ class _AmbientFieldState extends State<AmbientField>
         child: CustomPaint(
           painter: _AmbientPainter(
             progress: _c,
-            tint: widget.tint ?? const Color(0xFF8A2F45),
+            tint: widget.tint ?? AppColors.accent,
           ),
           size: Size.infinite,
         ),
@@ -70,10 +69,10 @@ class _AmbientPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final orbs = <_Orb>[
-      const _Orb(Color(0xFF6D1F2B), 0.18, 620, -0.08, 0.02, 0.0),
-      const _Orb(Color(0xFF4B5842), 0.14, 540, 0.68, -0.12, 0.3),
-      const _Orb(Color(0xFF8A5A2B), 0.13, 560, 0.72, 0.58, 0.55),
-      _Orb(tint, 0.10, 480, 0.18, 0.66, 0.8),
+      const _Orb(Color(0xFF773243), 0.18, 660, -0.10, -0.04, 0.0),
+      const _Orb(Color(0xFFD5B36C), 0.16, 580, 0.66, -0.10, 0.3),
+      const _Orb(Color(0xFF5D664F), 0.12, 560, 0.72, 0.58, 0.55),
+      _Orb(tint, 0.10, 500, 0.12, 0.66, 0.8),
     ];
 
     for (final o in orbs) {

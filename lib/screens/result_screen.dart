@@ -5,6 +5,7 @@ import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/dangwa_image.dart';
+import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/kiosk_button.dart';
 import '../widgets/kiosk/top_control.dart';
 import '../widgets/kiosk/story_sheet.dart';
@@ -32,7 +33,10 @@ class _ResultScreenState extends State<ResultScreen> {
     final result = dagwaResults[widget.menuName];
     if (result == null) {
       return Center(
-        child: KioskButton(label: tr('처음으로', 'Home'), onPressed: widget.onHome),
+        child: KioskButton(
+          label: tr('처음으로', 'Home', 'はじめに戻る'),
+          onPressed: widget.onHome,
+        ),
       );
     }
     final runnerUp =
@@ -47,7 +51,7 @@ class _ResultScreenState extends State<ResultScreen> {
             child: Column(
               children: [
                 TopControl(onHome: widget.onHome),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,7 +65,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           padding: 0.10,
                         ),
                       ),
-                      const SizedBox(width: 60),
+                      const SizedBox(width: 64),
                       Expanded(
                         flex: 6,
                         child: Column(
@@ -69,51 +73,84 @@ class _ResultScreenState extends State<ResultScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              tr('당신과 가장 잘 어울리는 다과', 'Your dagwa today'),
-                              style: Type.bodyMuted.copyWith(fontSize: 22),
+                              tr(
+                                '당신과 가장 잘 어울리는 다과',
+                                'Your dagwa today',
+                                'あなたにいちばん似合う茶菓',
+                              ),
+                              style: Type.eyebrow(
+                                AppColors.accent,
+                              ).copyWith(letterSpacing: 3),
                             ),
-                            const SizedBox(height: 18),
-                            Text(result.menuName, style: Type.resultTitle),
-                            const SizedBox(height: 22),
+                            const SizedBox(height: 14),
+                            Text(result.name.t, style: Type.resultTitle),
+                            const SizedBox(height: 20),
                             Text(
-                              result.title,
+                              result.title.t,
                               style: Type.body.copyWith(
-                                fontSize: 23,
+                                fontSize: 22,
                                 height: 1.55,
                               ),
                             ),
-                            const SizedBox(height: 30),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.local_cafe_outlined,
-                                  color: AppColors.muted,
-                                  size: 26,
+                            const SizedBox(height: 26),
+                            GlassSurface(
+                              radius: 24,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 22,
+                                  vertical: 18,
                                 ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  tr('어울리는 차', 'Pairs with'),
-                                  style: Type.bodyMuted.copyWith(fontSize: 21),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.goldSoft,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.local_cafe_outlined,
+                                        color: AppColors.accent,
+                                        size: 23,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Text(
+                                      tr('어울리는 차', 'Pairs with', '相性のよいお茶'),
+                                      style: Type.bodyMuted.copyWith(
+                                        fontSize: 19,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Flexible(
+                                      child: Text(
+                                        result.pairing.t,
+                                        textAlign: TextAlign.right,
+                                        style: Type.section.copyWith(
+                                          fontSize: 22,
+                                          color: AppColors.accentDeep,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 18),
-                                Flexible(
-                                  child: Text(
-                                    result.pairing,
-                                    style: Type.section.copyWith(fontSize: 24),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 36),
+                            const SizedBox(height: 28),
                             KioskButton(
-                              label: tr('이 다과 이야기 보기', 'Read the story'),
+                              label: tr(
+                                '이 다과 이야기 보기',
+                                'Read the story',
+                                'この茶菓の物語を読む',
+                              ),
                               fullWidth: true,
                               icon: Icons.arrow_forward_rounded,
                               onPressed: () => setState(() => _story = true),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 12),
                             KioskButton(
-                              label: tr('다시 추천받기', 'Try again'),
+                              label: tr('다시 추천받기', 'Try again', 'もう一度さがす'),
                               fullWidth: true,
                               variant: KioskButtonVariant.secondary,
                               onPressed: widget.onRestart,
@@ -125,36 +162,48 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                 ),
                 if (runnerUp != null) ...[
-                  const SizedBox(height: 28),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 18,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 76,
-                          child: DangwaImage(
-                            assetPath: runnerUp.imagePath,
-                            tone: toneFor(runnerUp.menuName),
+                  const SizedBox(height: 24),
+                  GlassSurface(
+                    radius: 26,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 72,
+                            child: DangwaImage(
+                              assetPath: runnerUp.imagePath,
+                              tone: toneFor(runnerUp.menuName),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 24),
-                        Text(
-                          tr('이런 다과도 잘 어울려요', 'You may also like'),
-                          style: Type.bodyMuted.copyWith(fontSize: 21),
-                        ),
-                        const Spacer(),
-                        Text(
-                          runnerUp.menuName,
-                          style: Type.section.copyWith(fontSize: 25),
-                        ),
-                      ],
+                          const SizedBox(width: 22),
+                          Text(
+                            tr(
+                              '이런 다과도 잘 어울려요',
+                              'You may also like',
+                              'こちらの茶菓もおすすめです',
+                            ),
+                            style: Type.bodyMuted.copyWith(fontSize: 19),
+                          ),
+                          const Spacer(),
+                          Text(
+                            runnerUp.name.t,
+                            style: Type.section.copyWith(
+                              fontSize: 23,
+                              color: AppColors.accentDeep,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: AppColors.gold,
+                            size: 21,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

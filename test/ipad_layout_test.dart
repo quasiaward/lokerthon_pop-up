@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dagwa_results.dart';
 import 'package:haenggung_dagwa/data/quiz_questions.dart';
+import 'package:haenggung_dagwa/l10n/lang.dart';
 import 'package:haenggung_dagwa/pages/kiosk_page.dart';
 import 'package:haenggung_dagwa/screens/idle_screen.dart';
 import 'package:haenggung_dagwa/screens/intro_screen.dart';
@@ -13,6 +14,7 @@ import 'package:haenggung_dagwa/screens/transition_screen.dart';
 const _iPadLandscape = Size(1366, 1024);
 
 Future<void> _pumpKiosk(WidgetTester tester) async {
+  appLang.value = Lang.ko;
   tester.view.physicalSize = _iPadLandscape * 2;
   tester.view.devicePixelRatio = 2;
   addTearDown(tester.view.resetPhysicalSize);
@@ -77,13 +79,17 @@ void main() {
     // 03 · 6문항. 각 질문의 첫 선택지를 고른다.
     for (var i = 0; i < quizQuestions.length; i++) {
       expect(
-        find.text(quizQuestions[i].titleKo),
+        find.text(
+          quizQuestions[i].before.ko +
+              quizQuestions[i].keyword.ko +
+              quizQuestions[i].after.ko,
+        ),
         findsOneWidget,
         reason: '${i + 1}번째 질문 화면이 아니다',
       );
 
       final option = quizQuestions[i].options.first;
-      await _tapText(tester, option.shownTitle);
+      await _tapText(tester, option.label.ko);
       expect(tester.takeException(), isNull, reason: '"${option.title}" 선택 직후');
     }
 
@@ -105,7 +111,7 @@ void main() {
     await _settle(tester);
 
     for (final q in quizQuestions) {
-      await _tapText(tester, q.options.first.shownTitle);
+      await _tapText(tester, q.options.first.label.ko);
     }
     await _settle(tester, 600);
     await tester.pump(TransitionScreen.duration);

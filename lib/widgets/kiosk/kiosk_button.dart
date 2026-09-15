@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import 'glass_surface.dart';
 
 enum KioskButtonVariant { primary, secondary, text }
 
-class KioskButton extends StatelessWidget {
+class KioskButton extends StatefulWidget {
   const KioskButton({
     super.key,
     required this.label,
@@ -14,6 +16,7 @@ class KioskButton extends StatelessWidget {
     this.accentColor = AppColors.accent,
     this.icon,
   });
+
   final String label;
   final VoidCallback? onPressed;
   final KioskButtonVariant variant;
@@ -22,39 +25,75 @@ class KioskButton extends StatelessWidget {
   final IconData? icon;
 
   @override
+  State<KioskButton> createState() => _KioskButtonState();
+}
+
+class _KioskButtonState extends State<KioskButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final primary = variant == KioskButtonVariant.primary;
-    final foreground = primary ? Colors.white : AppColors.charcoal;
-    return SizedBox(
-      width: fullWidth ? double.infinity : null,
-      height: variant == KioskButtonVariant.text ? 60 : 76,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          foregroundColor: foreground,
-          backgroundColor: primary
-              ? accentColor
-              : variant == KioskButtonVariant.secondary
-              ? AppColors.mist
-              : Colors.transparent,
-          disabledBackgroundColor: AppColors.mist,
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Radii.button),
+    final primary = widget.variant == KioskButtonVariant.primary;
+    final textOnly = widget.variant == KioskButtonVariant.text;
+    final enabled = widget.onPressed != null;
+    final foreground = primary ? AppColors.surface : AppColors.charcoal;
+
+    final content = Semantics(
+      button: true,
+      enabled: enabled,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: widget.onPressed,
+          onHighlightChanged: enabled
+              ? (value) => setState(() => _pressed = value)
+              : null,
+          borderRadius: BorderRadius.circular(Radii.button),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              mainAxisSize: widget.fullWidth
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    textAlign: TextAlign.center,
+                    style: Type.cta.copyWith(color: foreground),
+                  ),
+                ),
+                if (widget.icon != null) ...[
+                  const SizedBox(width: 14),
+                  Icon(widget.icon, size: 25, color: foreground),
+                ],
+              ],
+            ),
           ),
-          textStyle: Type.cta,
-          animationDuration: Motion.fast,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(child: Text(label, textAlign: TextAlign.center)),
-            if (icon != null) ...[
-              const SizedBox(width: 14),
-              Icon(icon, size: 26),
-            ],
-          ],
+      ),
+    );
+
+    return AnimatedScale(
+      scale: _pressed ? 0.975 : 1,
+      duration: Motion.fast,
+      curve: Motion.curve,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: SizedBox(
+          width: widget.fullWidth ? double.infinity : null,
+          height: textOnly ? 58 : 74,
+          child: textOnly
+              ? content
+              : GlassSurface(
+                  radius: Radii.button,
+                  accented: primary,
+                  strong: primary,
+                  accentColor: widget.accentColor,
+                  blurBackdrop: true,
+                  child: content,
+                ),
         ),
       ),
     );
