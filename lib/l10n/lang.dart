@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum Lang {
   ko('KO', Locale('ko', 'KR')),
   en('EN', Locale('en', 'US')),
-  ja('JA', Locale('ja', 'JP'));
+  ja('JP', Locale('ja', 'JP'));
 
   const Lang(this.label, this.locale);
 

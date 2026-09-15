@@ -144,6 +144,7 @@ void main() {
     for (final lang in Lang.values) {
       expect(lang.label.length, 2, reason: '$lang');
     }
+    expect(Lang.ja.label, 'JP');
   });
 
   group('eyebrow 자간', () {
