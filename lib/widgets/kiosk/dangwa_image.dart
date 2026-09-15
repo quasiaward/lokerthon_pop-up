@@ -49,6 +49,9 @@ class DangwaImage extends StatelessWidget {
                   assetPath,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
+                  // 표시 크기에 맞춰 디코드한다. 원본을 그대로 올리면
+                  // 쓰지 않는 픽셀까지 GPU로 보내게 된다.
+                  cacheWidth: (box.maxWidth * 2).round(),
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),
                 ),
               ),

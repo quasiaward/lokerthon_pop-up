@@ -45,19 +45,45 @@ class QuestionScreen extends StatelessWidget {
             ],
           ),
 
+          // 상단 진행 표시는 자리를 지키고, 질문 블록만 옆으로 흘러 들어온다.
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _QuestionHeading(index: index, question: question),
-                const SizedBox(height: Space.xxl),
-                _ChoiceGrid(
-                  question: question,
-                  selected: selected,
-                  onSelect: onSelect,
+            child: AnimatedSwitcher(
+              duration: Motion.base,
+              switchInCurve: Motion.curve,
+              switchOutCurve: Motion.curve,
+              transitionBuilder: (child, animation) {
+                final incoming = child.key == ValueKey(index);
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: Offset(incoming ? 0.035 : -0.02, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              layoutBuilder: (current, previous) => Stack(
+                alignment: Alignment.centerLeft,
+                children: [...previous, ?current],
+              ),
+              child: RepaintBoundary(
+                key: ValueKey(index),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _QuestionHeading(index: index, question: question),
+                    const SizedBox(height: Space.xxl),
+                    _ChoiceGrid(
+                      question: question,
+                      selected: selected,
+                      onSelect: onSelect,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],

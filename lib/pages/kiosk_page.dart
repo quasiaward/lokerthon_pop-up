@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../data/dagwa_results.dart';
+import '../perf_probe.dart';
 import '../data/quiz_questions.dart';
 import '../screens/idle_screen.dart';
 import '../screens/intro_screen.dart';
@@ -48,6 +50,59 @@ class _KioskPageState extends State<KioskPage> {
     'result' => _Stage.result,
     _ => _Stage.idle,
   };
+
+  bool _precached = false;
+
+  /// 계측용 자동 주행. 사람이 누르는 것과 같은 경로로 단계를 넘기며
+  /// 프레임 시간을 재려고 쓴다. PERF_PROBE가 켜졌을 때만 돈다.
+  Future<void> _autoDrive() async {
+    Future<void> hold(int ms) =>
+        Future<void>.delayed(Duration(milliseconds: ms));
+
+    while (mounted) {
+      PerfProbe.label = 'idle';
+      await hold(3000);
+      if (!mounted) return;
+      _go(_Stage.intro);
+
+      PerfProbe.label = 'intro';
+      await hold(3000);
+      if (!mounted) return;
+      _go(_Stage.question);
+
+      for (var i = 0; i < quizQuestions.length; i++) {
+        PerfProbe.label = 'question';
+        await hold(1400);
+        if (!mounted) return;
+        await _select(quizQuestions[_step].options.first);
+      }
+
+      PerfProbe.label = 'transition';
+      await hold(2600);
+      PerfProbe.label = 'result';
+      await hold(4000);
+      if (!mounted) return;
+      _reset();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_precached) return;
+    _precached = true;
+    if (PerfProbe.enabled) unawaited(_autoDrive());
+    // 화면을 넘길 때 처음 디코드하면 그 프레임이 밀린다. Idle에 머무는 동안
+    // 미리 올려 둔다. 에셋이 모두 작아서 전부 합쳐도 몇 MB 수준이다.
+    for (final q in quizQuestions) {
+      for (final o in q.options) {
+        precacheImage(AssetImage(o.imagePath), context);
+      }
+    }
+    for (final r in dagwaResults.values) {
+      precacheImage(AssetImage(r.imagePath), context);
+    }
+  }
 
   @override
   void dispose() {
@@ -172,7 +227,9 @@ class _KioskPageState extends State<KioskPage> {
         );
       case _Stage.question:
         return QuestionScreen(
-          key: ValueKey('question-$_step'),
+          // 단계마다 화면을 갈아끼우면 두 벌이 동시에 그려져 프레임이 밀린다.
+          // 화면은 그대로 두고 QuestionScreen 안에서 내용만 전환한다.
+          key: const ValueKey('question'),
           index: _step,
           question: quizQuestions[_step],
           selected: _answers[_step],

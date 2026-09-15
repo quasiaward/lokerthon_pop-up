@@ -123,6 +123,7 @@ class _OptionImage extends StatelessWidget {
         option.imagePath,
         fit: option.imageFit,
         filterQuality: FilterQuality.medium,
+        cacheWidth: (size * 2).round(),
         errorBuilder: (_, _, _) => const SizedBox.shrink(),
       ),
     );

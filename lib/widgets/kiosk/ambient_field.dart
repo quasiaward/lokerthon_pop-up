@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 /// 아주 느리게 떠다니는 색 덩어리.
 ///
 /// 유리 표면이 굴절할 색을 뒤에 깔아 준다. 대비를 극도로 낮게 유지해
-/// quiet luxury의 정적인 분위기를 깨지 않는다. 실제 blur 필터 대신
-/// 방사형 그라데이션을 써서 매 프레임 비용을 낮췄다.
+/// quiet luxury의 정적인 분위기를 깨지 않는다.
+///
+/// 화면 전체를 덮는 배경이라 매 프레임 비용이 그대로 프레임 예산을 먹는다.
+/// 그래서 위젯을 다시 만들지 않고 [CustomPaint] 한 장에 직접 그리며,
+/// [RepaintBoundary]로 격리해 앞쪽 UI가 다시 그려져도 같이 끌려가지 않게 한다.
 class AmbientField extends StatefulWidget {
   const AmbientField({super.key, this.tint});
 
@@ -32,54 +35,18 @@ class _AmbientFieldState extends State<AmbientField>
 
   @override
   Widget build(BuildContext context) {
-    final orbs = <_Orb>[
-      _Orb(const Color(0xFF6D1F2B), 0.18, 620, -0.08, 0.02, 0.0),
-      _Orb(const Color(0xFF4B5842), 0.14, 540, 0.68, -0.12, 0.3),
-      _Orb(const Color(0xFF8A5A2B), 0.13, 560, 0.72, 0.58, 0.55),
-      _Orb(widget.tint ?? const Color(0xFF8A2F45), 0.10, 480, 0.18, 0.66, 0.8),
-    ];
-
-    return IgnorePointer(
-      child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) => LayoutBuilder(
-            builder: (context, box) =>
-                Stack(children: [for (final o in orbs) _buildOrb(o, box)]),
+    return RepaintBoundary(
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: _AmbientPainter(
+            progress: _c,
+            tint: widget.tint ?? const Color(0xFF8A2F45),
           ),
+          size: Size.infinite,
         ),
       ),
     );
   }
-
-  Widget _buildOrb(_Orb o, BoxConstraints box) {
-    // 위상을 달리한 느린 8자 궤도.
-    final t = (_c.value + o.phase) * 2 * 3.1415926;
-    final dx = 30 * _sin(t);
-    final dy = -24 * _sin(t * 0.7 + 1.1);
-
-    return Positioned(
-      left: box.maxWidth * o.x + dx,
-      top: box.maxHeight * o.y + dy,
-      child: Container(
-        width: o.size,
-        height: o.size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              o.color.withValues(alpha: o.alpha),
-              o.color.withValues(alpha: o.alpha * 0.45),
-              o.color.withValues(alpha: 0),
-            ],
-            stops: const [0.0, 0.45, 1.0],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static double _sin(double v) => math.sin(v);
 }
 
 class _Orb {
@@ -91,4 +58,47 @@ class _Orb {
   final double x;
   final double y;
   final double phase;
+}
+
+class _AmbientPainter extends CustomPainter {
+  _AmbientPainter({required this.progress, required this.tint})
+    : super(repaint: progress);
+
+  final Animation<double> progress;
+  final Color tint;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final orbs = <_Orb>[
+      const _Orb(Color(0xFF6D1F2B), 0.18, 620, -0.08, 0.02, 0.0),
+      const _Orb(Color(0xFF4B5842), 0.14, 540, 0.68, -0.12, 0.3),
+      const _Orb(Color(0xFF8A5A2B), 0.13, 560, 0.72, 0.58, 0.55),
+      _Orb(tint, 0.10, 480, 0.18, 0.66, 0.8),
+    ];
+
+    for (final o in orbs) {
+      // 위상을 달리한 느린 궤도.
+      final t = (progress.value + o.phase) * 2 * math.pi;
+      final center = Offset(
+        size.width * o.x + o.size / 2 + 30 * math.sin(t),
+        size.height * o.y + o.size / 2 - 24 * math.sin(t * 0.7 + 1.1),
+      );
+      final radius = o.size / 2;
+
+      final paint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            o.color.withValues(alpha: o.alpha),
+            o.color.withValues(alpha: o.alpha * 0.45),
+            o.color.withValues(alpha: 0),
+          ],
+          stops: const [0.0, 0.45, 1.0],
+        ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+      canvas.drawCircle(center, radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _AmbientPainter old) => old.tint != tint;
 }

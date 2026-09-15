@@ -156,5 +156,27 @@ flutter test
 - `dagwa_results.dart`의 `runnerUp`에 `'견과류 강정'`처럼 메뉴 키와 다른 표기가
   있다. 문구는 그대로 두고 `result_screen.dart`의 `_runnerUpAliases`가 이미지
   조회만 이어 준다.
-- 유리 표면(`GlassSurface`)은 `BackdropFilter`라 비싸다. 한 화면에 4~5개를
-  넘기지 않는다.
+- 유리 표면(`GlassSurface`)의 실제 blur(`blurBackdrop`)는 **기본으로 꺼져 있다.**
+  카드 뒤는 이미 부드러운 그라데이션이라 흐리게 해도 보이는 차이가 거의 없는데,
+  `BackdropFilter`는 화면 한 장을 통째로 blur하는 비싼 연산이다. 뒤에 실제
+  콘텐츠가 있어 정말 가려야 하는 곳(상세 시트)에서만 켠다.
+- 질문 단계는 **화면을 갈아끼우지 않는다.** `kiosk_page.dart`의 키가
+  `ValueKey('question')`으로 고정이고, `QuestionScreen` 안에서 질문 블록만
+  전환된다. 단계마다 화면째 바꾸면 두 벌이 동시에 그려져 프레임이 밀린다.
+- `AmbientField`는 화면 전체를 덮으므로 위젯을 다시 만들지 않고 `CustomPaint`
+  한 장에 그리고 `RepaintBoundary`로 격리한다.
+- 큰 서브트리에 불투명도를 걸 때는 `RepaintBoundary`로 감싼다. 안 그러면 매
+  프레임 `saveLayer`가 생긴다.
+
+## 성능 측정
+
+`lib/perf_probe.dart`가 프레임 build/raster 시간을 모아 3초마다 출력한다.
+`kiosk_page.dart`의 `_autoDrive()`가 사람이 누르는 것과 같은 경로로 단계를
+자동 주행해서, 손을 대지 않고도 같은 조건으로 반복 측정할 수 있다.
+
+```bash
+flutter run --profile -d <기기> --dart-define=PERF_PROBE=true
+```
+
+대상 기기는 120Hz(ProMotion)라 프레임 예산이 8.3ms다.
+2026-09-15 측정 기준 모든 단계에서 raster p90 ≈ 1.0~1.7ms, jank 0%.

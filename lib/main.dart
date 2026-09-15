@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/lang.dart';
+import 'perf_probe.dart';
 import 'pages/kiosk_page.dart';
 import 'theme/app_theme.dart';
 
@@ -16,6 +17,7 @@ Future<void> main() async {
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
+  PerfProbe.start();
   runApp(const DagwaRecommendationApp());
 }
 

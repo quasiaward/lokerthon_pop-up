@@ -68,6 +68,7 @@ class _StorySheetState extends State<StorySheet> {
             curve: Motion.curve,
             child: GlassSurface(
               strong: true,
+              blurBackdrop: true, // 뒤에 결과 화면이 있어 실제로 가려야 한다
               radius: Radii.sheet,
               child: SizedBox(
                 width: 1366,

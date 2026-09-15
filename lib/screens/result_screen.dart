@@ -252,6 +252,8 @@ class _Reveal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 큰 서브트리에 불투명도를 걸면 매 프레임 saveLayer가 생긴다.
+    // RepaintBoundary로 한 번 래스터해 두면 그 위에 불투명도만 얹힌다.
     return AnimatedSlide(
       offset: shown ? Offset.zero : const Offset(0, 0.04),
       duration: duration + delay,
@@ -260,7 +262,7 @@ class _Reveal extends StatelessWidget {
         opacity: shown ? 1 : 0,
         duration: duration + delay,
         curve: Motion.curve,
-        child: child,
+        child: RepaintBoundary(child: child),
       ),
     );
   }

@@ -8,6 +8,11 @@ import '../../theme/app_colors.dart';
 ///
 /// 뒤의 ambient 색이 비쳐 깊이가 생긴다. 깊이를 그림자로 만들지 않기 위해
 /// 위쪽 specular 하이라이트와 1px 테두리만으로 입체감을 표현한다.
+///
+/// [blurBackdrop]은 기본으로 꺼져 있다. 카드 뒤에 있는 것은 이미 부드러운
+/// 그라데이션이라 흐리게 해도 보이는 차이가 거의 없는데, `BackdropFilter`는
+/// 화면 한 장을 통째로 blur하는 비싼 연산이라 카드 네 장이면 프레임이 밀린다.
+/// 뒤에 실제 콘텐츠가 있어서 정말 가려야 하는 곳(상세 시트)에서만 켠다.
 class GlassSurface extends StatelessWidget {
   const GlassSurface({
     super.key,
@@ -16,6 +21,7 @@ class GlassSurface extends StatelessWidget {
     this.accented = false,
     this.strong = false,
     this.accentColor = AppColors.accent,
+    this.blurBackdrop = false,
   });
 
   final Widget child;
@@ -28,6 +34,9 @@ class GlassSurface extends StatelessWidget {
   final bool strong;
 
   final Color accentColor;
+
+  /// 뒤 화면을 실제로 흐리게 할지. 비싸므로 꼭 필요한 곳에서만 켠다.
+  final bool blurBackdrop;
 
   @override
   Widget build(BuildContext context) {
@@ -56,49 +65,53 @@ class GlassSurface extends StatelessWidget {
                   ],
           );
 
-    return ClipRRect(
-      borderRadius: border,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: strong ? 30 : 16,
-          sigmaY: strong ? 30 : 16,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: border,
-            border: Border.all(
-              color: accented
-                  ? accentColor.withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.42),
-              width: accented ? 1.4 : 1,
-            ),
-          ),
-          child: Stack(
-            children: [
-              // 위쪽 모서리의 가는 하이라이트 — 유리 두께를 만든다.
-              Positioned(
-                left: radius * 0.6,
-                right: radius * 0.6,
-                top: 0,
-                child: Container(
-                  height: 1.2,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0),
-                        Colors.white.withValues(alpha: 0.85),
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              child,
-            ],
-          ),
+    final surface = Container(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: border,
+        border: Border.all(
+          color: accented
+              ? accentColor.withValues(alpha: 0.55)
+              : Colors.white.withValues(alpha: 0.42),
+          width: accented ? 1.4 : 1,
         ),
       ),
+      child: Stack(
+        children: [
+          // 위쪽 모서리의 가는 하이라이트 — 유리 두께를 만든다.
+          Positioned(
+            left: radius * 0.6,
+            right: radius * 0.6,
+            top: 0,
+            child: Container(
+              height: 1.2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.85),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: border,
+      child: blurBackdrop
+          ? BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: strong ? 30 : 16,
+                sigmaY: strong ? 30 : 16,
+              ),
+              child: surface,
+            )
+          : surface,
     );
   }
 }

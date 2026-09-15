@@ -25,7 +25,6 @@ flutter:
   assets:
     - assets/figma/
     - assets/figma/quiz/
-    - assets/figma/recommend/
 
   fonts:
     - family: Pretendard
