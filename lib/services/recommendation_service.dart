@@ -13,14 +13,15 @@ import 'recommendation_engine.dart';
 /// ```
 class RecommendationService {
   RecommendationService({RecommendationEngine? engine})
-      : engine = engine ?? _defaultEngine();
+    : engine = engine ?? _defaultEngine();
 
   static const useApi = bool.fromEnvironment('USE_API');
 
   final RecommendationEngine engine;
 
-  static RecommendationEngine _defaultEngine() =>
-      useApi ? const ApiRecommendationEngine() : const LocalRecommendationEngine();
+  static RecommendationEngine _defaultEngine() => useApi
+      ? const ApiRecommendationEngine()
+      : const LocalRecommendationEngine();
 
   Future<String> getRecommendation(List<String> answers) =>
       engine.recommend(answers);

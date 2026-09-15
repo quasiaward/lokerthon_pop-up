@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'l10n/lang.dart';
-import 'pages/ai_recommendation_page.dart';
+import 'pages/kiosk_page.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -40,7 +40,7 @@ class DagwaRecommendationApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
           ],
-          home: const AiRecommendationPage(),
+          home: const KioskPage(),
         );
       },
     );

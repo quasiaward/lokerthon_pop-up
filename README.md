@@ -51,21 +51,41 @@ flutter test
 - `test/widget_test.dart` — 추천 알고리즘. 4096개 답변 조합을 전수로 돌려
   12개 다과가 모두 추천되는지, 한 메뉴로 쏠리지 않는지(각 20% 미만),
   같은 답변에 같은 결과가 나오는지 확인합니다.
-- `test/ipad_layout_test.dart` — 1366×1024(12.9형 가로)에서 랜딩 → 6문항 → 결과까지
-  오버플로 없이 그려지는지 확인합니다.
+- `test/ipad_layout_test.dart` — 1366×1024(12.9형 가로)에서 Idle → Intro → 6문항 →
+  전환 → 결과까지 실제로 눌러 가며 오버플로가 없는지, 상세 시트가 열리고 닫히는지,
+  12개 다과 결과 화면이 모두 깨지지 않는지 확인합니다.
 
 ## 화면 구성
 
-단일 화면(`lib/pages/ai_recommendation_page.dart`)에 추천 퀴즈 하나만 올렸습니다.
+`lib/pages/kiosk_page.dart`가 단계 전환을 관리합니다.
 
 | 단계 | 내용 |
 |------|------|
-| 랜딩 | 다과 미리보기 흐름 + 시작 버튼 |
-| 퀴즈 | 6문항 (기분 색 / 마음의 날씨 / 동행 / 식감 / 계절 / 문양) |
-| 로딩 | 분석 중 (최소 1.4초 노출) |
-| 결과 | 추천 다과 + 어울리는 차 + 다음 추천 |
+| Idle | 팝업 공간의 디지털 포스터. 터치하면 시작 |
+| Intro | 시작해도 된다는 확신을 주는 화면 |
+| Question | 6문항 (기분 색 / 마음의 날씨 / 동행 / 식감 / 계절 / 문양) |
+| Transition | 결과 공개 직전 연출 (2.2초, spinner 없음) |
+| Result | editorial spread — 다과 이미지가 주인공 |
+| Story | 다과 상세 이야기 (아래에서 올라오는 시트) |
 
-우측 상단에 KO/EN 토글이 있습니다.
+결과 화면에서 45초 동안 아무 조작이 없으면 Idle로 돌아갑니다.
+KO/EN 토글은 Idle·Intro에서만 보입니다 — 체험 중에는 흐름을 방해하지 않습니다.
+
+## 디자인
+
+Figma Make로 제작한 키오스크 디자인을 이식했습니다.
+따뜻한 아이보리 바탕, 짙은 먹색 텍스트, 단 하나의 버건디 accent(`#6D1F2B`).
+Pretendard가 본문, 영문 accent에만 Fraunces italic을 씁니다.
+모든 화면은 1366×1024 고정 캔버스 위에 그립니다.
+
+질문·선택지·다과 이미지·결과 문구·추천 로직은 **기존 것을 그대로 유지**했고,
+바꾼 것은 art direction·레이아웃·타이포·컴포넌트·모션입니다.
+
+화면 하나를 바로 띄워 확인하려면:
+
+```bash
+flutter run --dart-define=KIOSK_STAGE=result   # idle|intro|question|transition|result
+```
 
 ## 아이패드 설정
 
@@ -75,6 +95,7 @@ flutter test
 - **전체화면 고정**: `UIRequiresFullScreen = true` (스플릿뷰·슬라이드오버 차단)
 - **상태표시줄 숨김**: `UIStatusBarHidden = true` + `immersiveSticky` 모드
 - **앱 아이콘**: `assets/branding/app_icon.png` (다식판 꽃문양 모티브)
+- **폰트**: Pretendard(본문) + Fraunces(영문 accent)
 
 ## 실기기 설치
 

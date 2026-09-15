@@ -1,69 +1,132 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:haenggung_dagwa/pages/ai_recommendation_page.dart';
+import 'package:haenggung_dagwa/data/dagwa_results.dart';
+import 'package:haenggung_dagwa/data/quiz_questions.dart';
+import 'package:haenggung_dagwa/pages/kiosk_page.dart';
+import 'package:haenggung_dagwa/screens/idle_screen.dart';
+import 'package:haenggung_dagwa/screens/intro_screen.dart';
+import 'package:haenggung_dagwa/screens/question_screen.dart';
+import 'package:haenggung_dagwa/screens/result_screen.dart';
+import 'package:haenggung_dagwa/screens/transition_screen.dart';
 
 /// iPad Pro 12.9형(5세대) 가로 논리 해상도.
 const _iPadLandscape = Size(1366, 1024);
 
-/// 화면을 [size]로 고정해 위젯을 띄운다.
-Future<void> _pumpApp(WidgetTester tester, Size size) async {
-  tester.view.physicalSize = size * 2;
+Future<void> _pumpKiosk(WidgetTester tester) async {
+  tester.view.physicalSize = _iPadLandscape * 2;
   tester.view.devicePixelRatio = 2;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  await tester.pumpWidget(
-    const MaterialApp(home: AiRecommendationPage()),
-  );
-  await tester.pump();
+  await tester.pumpWidget(const MaterialApp(home: KioskPage()));
+  await tester.pump(const Duration(milliseconds: 600));
 }
 
-/// 첫 번째 [Text] 위젯이 [label]인 탭 가능한 카드를 눌러 준다.
+/// 화면 전환 + 등장 애니메이션이 끝날 때까지 프레임을 흘린다.
+Future<void> _settle(WidgetTester tester, [int ms = 1200]) async {
+  await tester.pump(Duration(milliseconds: ms));
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 Future<void> _tapText(WidgetTester tester, String label) async {
   final finder = find.text(label);
   expect(finder, findsWidgets, reason: '"$label"을 찾지 못했다');
   await tester.tap(finder.first, warnIfMissed: false);
-  await tester.pump(const Duration(milliseconds: 400));
+  await _settle(tester, 600);
 }
 
 void main() {
-  testWidgets('12.9형 가로에서 랜딩 화면이 오버플로 없이 그려진다', (tester) async {
-    await _pumpApp(tester, _iPadLandscape);
-    await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('Idle → Intro → 6문항 → 전환 → 결과까지 예외 없이 진행된다', (tester) async {
+    await _pumpKiosk(tester);
 
-    expect(find.text('퍼스널 다과 추천'), findsOneWidget);
+    // 01 · Idle
+    expect(find.byType(IdleScreen), findsOneWidget);
+    expect(find.text('오늘, 나와\n어울리는 다과는?'), findsOneWidget);
+
+    // 화면 아무 곳이나 터치하면 Intro로
+    await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
+    await _settle(tester);
+    expect(find.byType(IntroScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // 02 · Intro → 질문
+    await _tapText(tester, '다과 추천 시작하기');
+    await _settle(tester);
+    expect(find.byType(QuestionScreen), findsOneWidget);
+
+    // 03 · 6문항. 각 질문의 첫 선택지를 고른다.
+    for (var i = 0; i < quizQuestions.length; i++) {
+      expect(
+        find.text('TASTE ${(i + 1).toString().padLeft(2, '0')}'),
+        findsOneWidget,
+        reason: '${i + 1}번째 질문 화면이 아니다',
+      );
+
+      final option = quizQuestions[i].options.first;
+      await _tapText(tester, option.shownTitle);
+      expect(tester.takeException(), isNull, reason: '"${option.title}" 선택 직후');
+    }
+
+    // 전환 화면 → 결과
+    await _settle(tester, 600);
+    expect(find.byType(TransitionScreen), findsOneWidget);
+    await tester.pump(TransitionScreen.duration);
+    await _settle(tester);
+
+    expect(find.byType(ResultScreen), findsOneWidget);
+    expect(find.text('당신과 가장 잘 어울리는 다과'), findsOneWidget);
+    expect(tester.takeException(), isNull, reason: '결과 화면');
+  });
+
+  testWidgets('결과 화면에서 다과 이야기 시트를 열고 닫을 수 있다', (tester) async {
+    await _pumpKiosk(tester);
+    await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
+    await _settle(tester);
+    await _tapText(tester, '다과 추천 시작하기');
+    await _settle(tester);
+
+    for (final q in quizQuestions) {
+      await _tapText(tester, q.options.first.shownTitle);
+    }
+    await _settle(tester, 600);
+    await tester.pump(TransitionScreen.duration);
+    await _settle(tester);
+
+    await _tapText(tester, '이 다과 이야기 보기');
+    await _settle(tester);
+    expect(find.text('THE STORY'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await _tapText(tester, '닫기');
+    await _settle(tester);
+    expect(find.text('THE STORY'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('12.9형 가로에서 6개 질문을 모두 거쳐 결과까지 간다', (tester) async {
-    await _pumpApp(tester, _iPadLandscape);
-    await tester.pump(const Duration(milliseconds: 300));
+  testWidgets('모든 다과의 결과 화면이 1366×1024에서 오버플로 없이 그려진다', (tester) async {
+    tester.view.physicalSize = _iPadLandscape * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-    await _tapText(tester, '오늘의 다과 추천 받으러 가기');
-    expect(find.textContaining('기분'), findsWidgets);
-
-    const answers = [
-      '매화 분홍',
-      '흐리고 지침',
-      '가족',
-      '촉촉한',
-      '봄',
-      '둥근 모양',
-    ];
-    for (final answer in answers) {
-      await _tapText(tester, answer);
-      expect(tester.takeException(), isNull, reason: '"$answer" 선택 직후');
+    for (final menu in dagwaResults.keys) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: _iPadLandscape.width,
+              height: _iPadLandscape.height,
+              child: ResultScreen(
+                menuName: menu,
+                onRestart: () {},
+                onHome: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await _settle(tester);
+      expect(tester.takeException(), isNull, reason: '$menu 결과 화면');
     }
-
-    // 로딩 최소 노출 시간(1.4초)을 넘겨 결과 화면까지 진행한다.
-    await tester.pump(const Duration(milliseconds: 600));
-    expect(find.textContaining('분석'), findsWidgets);
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump(const Duration(milliseconds: 400));
-
-    // 결과 화면에는 추천된 다과 이름이 있어야 한다.
-    expect(find.text('다시 추천받기').evaluate().isNotEmpty ||
-        find.textContaining('추천').evaluate().isNotEmpty, isTrue);
-    expect(tester.takeException(), isNull, reason: '결과 화면');
   });
 }

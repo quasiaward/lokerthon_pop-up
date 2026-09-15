@@ -25,24 +25,23 @@ flutter:
   assets:
     - assets/figma/
     - assets/figma/quiz/
-    - assets/figma/logo/
-    - assets/figma/deco/
     - assets/figma/recommend/
 
   fonts:
-    - family: Gowun Batang
+    - family: Pretendard
       fonts:
-        - asset: assets/fonts/GowunBatang-Regular.ttf
+        - asset: assets/fonts/PretendardVariable.ttf
           weight: 400
-        - asset: assets/fonts/GowunBatang-Bold.ttf
-          weight: 700
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Variable.ttf
+        - asset: assets/fonts/PretendardVariable.ttf
           weight: 500
-        - asset: assets/fonts/Inter-Variable.ttf
+        - asset: assets/fonts/PretendardVariable.ttf
           weight: 600
-        - asset: assets/fonts/Inter-Variable.ttf
+        - asset: assets/fonts/PretendardVariable.ttf
           weight: 700
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/Fraunces-Italic-Variable.ttf
+          weight: 400
+          style: italic

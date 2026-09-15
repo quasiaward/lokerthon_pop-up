@@ -16,5 +16,6 @@ bool get isEn => appLang.value == Lang.en;
 /// 로직 키(맵 키·switch case)에는 절대 쓰지 않는다.
 String tr(String ko, String en) => appLang.value == Lang.en ? en : ko;
 
-Locale get currentLocale =>
-    appLang.value == Lang.en ? const Locale('en', 'US') : const Locale('ko', 'KR');
+Locale get currentLocale => appLang.value == Lang.en
+    ? const Locale('en', 'US')
+    : const Locale('ko', 'KR');

@@ -19,9 +19,9 @@ class LangToggle extends StatelessWidget {
           child: Text(
             '/',
             style: TextStyle(
-              color: (light ? Colors.white : const Color(0xFF837777))
+              color: (light ? Colors.white : const Color(0xFF8A8172))
                   .withValues(alpha: 0.5),
-              fontFamily: 'Inter',
+              fontFamily: 'Pretendard',
               fontSize: 15,
             ),
           ),
@@ -48,9 +48,11 @@ class _Segment extends StatelessWidget {
     final active = appLang.value == target;
     final Color color;
     if (active) {
-      color = light ? Colors.white : const Color(0xFF995959);
+      color = light ? Colors.white : const Color(0xFF6D1F2B);
     } else {
-      color = light ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF9A8E8A);
+      color = light
+          ? Colors.white.withValues(alpha: 0.6)
+          : const Color(0xFF8A8172);
     }
 
     return InkWell(
@@ -62,7 +64,7 @@ class _Segment extends StatelessWidget {
           label,
           style: TextStyle(
             color: color,
-            fontFamily: 'Inter',
+            fontFamily: 'Pretendard',
             fontSize: 16,
             fontWeight: active ? FontWeight.w700 : FontWeight.w400,
             height: 1,
