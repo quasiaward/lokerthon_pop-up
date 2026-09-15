@@ -38,7 +38,7 @@ lokerthon_pop-up/
 │   │   │   ├── top_control.dart           ← 이전/처음으로
 │   │   │   ├── dangwa_image.dart          ← 다과 이미지 컨테이너
 │   │   │   ├── story_sheet.dart           ← 다과 상세 시트
-│   │   └── lang_toggle.dart               ← 한/영 전환 (Idle·Intro에서만 노출)
+│   │   └── lang_toggle.dart               ← 한/영/일 전환 (Idle·Intro에서만 노출)
 │   ├── services/
 │   │   ├── recommendation_engine.dart       ← 엔진 인터페이스 + 다과 12종 목록
 │   │   ├── local_recommendation_engine.dart ← 온디바이스 규칙 기반 추천 (기본값)
@@ -51,7 +51,7 @@ lokerthon_pop-up/
 │   ├── theme/
 │   │   ├── app_colors.dart                ← 색·여백·반경·모션 토큰
 │   │   └── app_theme.dart                 ← 타이포 스케일 (Type)
-│   └── l10n/lang.dart                     ← 한/영 문자열 (tr 헬퍼)
+│   └── l10n/lang.dart                     ← 한/영/일 (Lang, tr, L10nText)
 ├── ios/                                   ← iOS 러너, 앱 아이콘, Info.plist
 ├── assets/
 │   ├── branding/app_icon.png              ← 앱 아이콘 원본 (1024px)
@@ -126,6 +126,39 @@ flutter run --dart-define=KIOSK_STAGE=result --dart-define=KIOSK_STORY=true
 ### 하지 않기로 한 것
 그림자·블러·gradient 남용, 전통문양·한지 texture·붓글씨 같은 직접적 클리셰,
 하단 탭바·사이드바 등 전역 내비게이션.
+
+## 다국어 (한국어 · 영어 · 일본어)
+
+표시 문구는 전부 세 언어를 갖는다. 화면에 보이는 한국어가 남아 있으면 안 된다.
+
+### 두 가지 도구
+- **UI 문구**: `tr(ko, en, ja)` — 코드 안에 직접 쓰는 짧은 문자열.
+- **데이터 문구**: `L10nText(ko, en, ja)` — `dagwa_results.dart`,
+  `quiz_questions.dart`처럼 데이터 파일에 들어가는 문구. 쓸 때는 `.t`로 꺼낸다.
+
+### 로직 키는 절대 번역하지 않는다
+아래 값들은 언어가 바뀌어도 한국어 그대로여야 한다. 번역하면 추천이 깨진다.
+
+| 값 | 쓰이는 곳 |
+|---|---|
+| `QuizOption.title` | 추천 알고리즘 점수표 키 |
+| `DagwaResult.menuName` | `dagwaResults` 맵 키, `toneFor()` 조회 키 |
+| `DagwaResult.runnerUp` | 다음 추천 조회 키 |
+
+그래서 **로직 키와 표시 문구를 분리**해 뒀다. 선택지는 `title`(키)과
+`label`(표시), 다과는 `menuName`(키)과 `name`(표시)을 따로 갖는다.
+
+### 폰트
+Pretendard가 커버하지 못하는 가나·한자는 `kSansFallback`이 이어받는다.
+같은 한자라도 일본어와 한국어의 자형이 달라서 **Hiragino를 한글 폰트보다 앞에**
+둔다. 순서를 바꾸면 일본어 화면에 한국어용 자형이 섞인다.
+
+### 확인
+```bash
+flutter run --dart-define=KIOSK_LANG=ja --dart-define=KIOSK_STAGE=result
+```
+`test/l10n_test.dart`가 세 언어가 모두 채워졌는지, 영어·일본어에 한글이
+남아 있지 않은지, 로직 키가 언어와 무관하게 고정인지 검사한다.
 
 ## 다과 12종
 흑임자다식, 도라지정과, 육포다식, 콩고물 도라지정과, 곶감 호두말이,
