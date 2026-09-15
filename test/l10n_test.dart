@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dagwa_results.dart';
 import 'package:haenggung_dagwa/data/quiz_questions.dart';
 import 'package:haenggung_dagwa/l10n/lang.dart';
+import 'package:haenggung_dagwa/theme/app_colors.dart';
+import 'package:haenggung_dagwa/widgets/lang_toggle.dart';
 
 /// 한글 음절(가–힣)이 하나라도 들어 있는지.
 final _hangul = RegExp(r'[가-힣]');
@@ -36,6 +39,33 @@ Iterable<({String where, L10nText text})> _quizTexts() sync* {
 
 void main() {
   tearDown(() => appLang.value = Lang.ko);
+
+  testWidgets('언어 토글의 선택 배경이 KO에서 EN으로 이동한다', (tester) async {
+    appLang.value = Lang.ko;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: Center(child: LangToggle())),
+      ),
+    );
+
+    Color? background(String label) {
+      final button = tester.widget<TextButton>(
+        find.widgetWithText(TextButton, label),
+      );
+      return button.style?.backgroundColor?.resolve(<WidgetState>{});
+    }
+
+    expect(background('KO'), AppColors.accent);
+    expect(background('EN'), Colors.transparent);
+
+    await tester.tap(find.text('EN'));
+    await tester.pump();
+
+    expect(appLang.value, Lang.en);
+    expect(background('KO'), Colors.transparent);
+    expect(background('EN'), AppColors.accent);
+  });
 
   test('세 언어가 모두 채워져 있다', () {
     for (final item in [..._resultTexts(), ..._quizTexts()]) {

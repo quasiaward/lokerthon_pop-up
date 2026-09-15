@@ -8,44 +8,47 @@ class LangToggle extends StatelessWidget {
   const LangToggle({super.key});
 
   @override
-  Widget build(BuildContext context) => GlassSurface(
-    radius: 22,
-    blurBackdrop: true,
-    child: Padding(
-      padding: const EdgeInsets.all(5),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final lang in Lang.values)
-            Semantics(
-              selected: appLang.value == lang,
-              child: TextButton(
-                onPressed: () => appLang.value = lang,
-                style: TextButton.styleFrom(
-                  minimumSize: const Size(62, 46),
-                  foregroundColor: appLang.value == lang
-                      ? AppColors.surface
-                      : AppColors.muted,
-                  backgroundColor: appLang.value == lang
-                      ? AppColors.accent
-                      : Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(17),
-                  ),
-                ),
-                child: Text(
-                  lang.label,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: appLang.value == lang
+  Widget build(BuildContext context) => ValueListenableBuilder<Lang>(
+    valueListenable: appLang,
+    builder: (context, selectedLang, _) => GlassSurface(
+      radius: 22,
+      blurBackdrop: true,
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final lang in Lang.values)
+              Semantics(
+                selected: selectedLang == lang,
+                child: TextButton(
+                  onPressed: () => appLang.value = lang,
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(62, 46),
+                    foregroundColor: selectedLang == lang
                         ? AppColors.surface
                         : AppColors.muted,
+                    backgroundColor: selectedLang == lang
+                        ? AppColors.accent
+                        : Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(17),
+                    ),
+                  ),
+                  child: Text(
+                    lang.label,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: selectedLang == lang
+                          ? AppColors.surface
+                          : AppColors.muted,
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     ),
   );
