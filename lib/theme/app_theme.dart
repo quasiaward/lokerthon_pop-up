@@ -57,16 +57,18 @@ class Type {
   );
 
   /// Idle 화면 히어로. 84px.
-  static TextStyle get hero => _s(84, height: 1.02);
+  static TextStyle get hero => _s(72, weight: FontWeight.w700, height: 1.18);
 
   /// 결과 화면 다과명. 68px.
-  static TextStyle get resultTitle => _s(68, height: 1.0);
+  static TextStyle get resultTitle =>
+      _s(56, weight: FontWeight.w700, height: 1.15);
 
   /// 질문. 50px.
-  static TextStyle get question => _s(50, height: 1.14);
+  static TextStyle get question =>
+      _s(46, weight: FontWeight.w700, height: 1.28);
 
   /// Intro 헤드라인. 56px.
-  static TextStyle get headline => _s(56, height: 1.15);
+  static TextStyle get headline => _s(60, weight: FontWeight.w700, height: 1.2);
 
   /// 섹션 제목. 32px.
   static TextStyle get section => _s(32, weight: FontWeight.w600, height: 1.25);
@@ -116,7 +118,7 @@ class Type {
     fontSize: size,
     fontWeight: FontWeight.w600,
     height: 1.2,
-    letterSpacing: size * (latin ? 0.24 : 0.01),
+    letterSpacing: size * (latin ? 0.04 : -0.01),
     color: color,
   );
 

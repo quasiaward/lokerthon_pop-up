@@ -13,7 +13,7 @@ import '../screens/transition_screen.dart';
 import '../services/recommendation_engine.dart';
 import '../services/recommendation_service.dart';
 import '../theme/app_colors.dart';
-import '../widgets/kiosk/ambient_field.dart';
+import '../l10n/lang.dart';
 import '../widgets/kiosk/kiosk_canvas.dart';
 import '../widgets/lang_toggle.dart';
 
@@ -21,17 +21,30 @@ enum _Stage { idle, intro, question, transition, result }
 
 /// 팝업 부스 키오스크의 단일 화면. 단계 전환만 관리한다.
 class KioskPage extends StatefulWidget {
-  const KioskPage({super.key});
+  const KioskPage({super.key, this.service});
+
+  final RecommendationService? service;
 
   @override
   State<KioskPage> createState() => _KioskPageState();
 }
 
-class _KioskPageState extends State<KioskPage> {
+class _KioskPageState extends State<KioskPage>
+    with SingleTickerProviderStateMixin {
   /// 앞 사용자의 결과가 남아 있지 않도록 무동작이 이어지면 Idle로 돌아간다.
   static const _inactivity = Duration(seconds: 45);
 
-  final _service = RecommendationService();
+  late final _service = widget.service ?? RecommendationService();
+  late final _motion = AnimationController(
+    vsync: this,
+    value: 1,
+    duration: Motion.base,
+    reverseDuration: Motion.exit,
+  );
+  late final _opacity = CurvedAnimation(parent: _motion, curve: Motion.curve);
+  bool _busy = false;
+  int _session = 0;
+  String? _error;
 
   /// 디자인 확인용 진입 단계. `--dart-define=KIOSK_STAGE=result` 처럼 지정하면
   /// 해당 화면에서 바로 시작한다. 지정하지 않으면 늘 idle에서 시작한다.
@@ -96,7 +109,10 @@ class _KioskPageState extends State<KioskPage> {
     // 미리 올려 둔다. 에셋이 모두 작아서 전부 합쳐도 몇 MB 수준이다.
     for (final q in quizQuestions) {
       for (final o in q.options) {
-        precacheImage(AssetImage(o.imagePath), context);
+        precacheImage(
+          ResizeImage(AssetImage(o.imagePath), width: 216),
+          context,
+        );
       }
     }
     for (final r in dagwaResults.values) {
@@ -107,6 +123,8 @@ class _KioskPageState extends State<KioskPage> {
   @override
   void dispose() {
     _idleTimer?.cancel();
+    _opacity.dispose();
+    _motion.dispose();
     super.dispose();
   }
 
@@ -116,101 +134,147 @@ class _KioskPageState extends State<KioskPage> {
     _idleTimer = Timer(_inactivity, _reset);
   }
 
+  /// Fade out completely before replacing the child. Only ONE screen is
+  /// mounted/painted at a time, so text and images never bleed through.
+  Future<void> _change(VoidCallback update) async {
+    final session = _session;
+    setState(() => _busy = true);
+    final reduced = MediaQuery.disableAnimationsOf(context);
+    try {
+      if (!reduced) await _motion.reverse().orCancel;
+      if (!mounted || session != _session) return;
+      setState(update);
+      _bumpIdleTimer();
+      if (!reduced) await _motion.forward().orCancel;
+      if (mounted && session == _session) setState(() => _busy = false);
+    } on TickerCanceled {
+      // Reset/dispose owns the next screen; an old transition must not resume.
+    }
+  }
+
+  void _clearAnswers() {
+    _step = 0;
+    _answers = List.filled(quizQuestions.length, null);
+    _menuName = null;
+    _error = null;
+  }
+
   void _reset() {
     if (!mounted) return;
+    _session++;
+    _motion.stop();
+    _motion.value = 1;
     setState(() {
+      _clearAnswers();
       _stage = _Stage.idle;
-      _step = 0;
-      _answers = List.filled(quizQuestions.length, null);
-      _menuName = null;
+      _busy = false;
     });
     _bumpIdleTimer();
   }
 
-  void _go(_Stage stage) {
-    setState(() => _stage = stage);
-    _bumpIdleTimer();
+  Future<void> _go(_Stage stage) async {
+    if (_busy) return;
+    await _change(() => _stage = stage);
+  }
+
+  void _home() {
+    if (_busy) return;
+    _session++;
+    unawaited(
+      _change(() {
+        _clearAnswers();
+        _stage = _Stage.idle;
+      }),
+    );
   }
 
   void _restart() {
-    setState(() {
-      _step = 0;
-      _answers = List.filled(quizQuestions.length, null);
-      _menuName = null;
-      _stage = _Stage.intro;
-    });
-    _bumpIdleTimer();
+    if (_busy) return;
+    _session++;
+    unawaited(
+      _change(() {
+        _clearAnswers();
+        _stage = _Stage.intro;
+      }),
+    );
   }
 
   Future<void> _select(QuizOption option) async {
-    setState(() => _answers[_step] = option.title);
-    _bumpIdleTimer();
-
-    // 선택이 눈에 보이도록 잠깐 머문 뒤 넘어간다.
-    await Future<void>.delayed(const Duration(milliseconds: 340));
-    if (!mounted) return;
-
-    if (_step < quizQuestions.length - 1) {
-      setState(() => _step++);
-      _bumpIdleTimer();
-      return;
-    }
-
-    final answers = _answers.map((a) => a ?? '').toList();
-    final menu = await _service.getRecommendation(answers);
-    if (!mounted) return;
+    if (_busy || _stage != _Stage.question) return;
+    final session = _session;
     setState(() {
-      _menuName = menu;
-      _stage = _Stage.transition;
+      _busy = true;
+      _error = null;
+      _answers[_step] = option.title;
     });
     _bumpIdleTimer();
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!mounted || session != _session) return;
+    if (_step < quizQuestions.length - 1) {
+      await _change(() => _step++);
+      return;
+    }
+    try {
+      final menu = await _service.getRecommendation(
+        _answers.map((a) => a ?? '').toList(),
+      );
+      if (!mounted || session != _session) return;
+      if (!dagwaResults.containsKey(menu)) throw StateError('Unknown menu');
+      await _change(() {
+        _menuName = menu;
+        _stage = _Stage.transition;
+      });
+    } catch (_) {
+      if (!mounted || session != _session) return;
+      setState(() {
+        _busy = false;
+        _error = tr(
+          '연결이 원활하지 않아요. 선택지를 눌러 다시 시도해주세요.',
+          'Could not connect. Tap your choice to try again.',
+        );
+      });
+    }
   }
 
   void _back() {
+    if (_busy) return;
     if (_step == 0) {
-      _go(_Stage.intro);
+      unawaited(_go(_Stage.intro));
     } else {
-      setState(() => _step--);
-      _bumpIdleTimer();
+      unawaited(
+        _change(() {
+          _step--;
+          _error = null;
+        }),
+      );
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surround,
-      body: KioskCanvas(
-        child: Listener(
-          onPointerDown: (_) => _bumpIdleTimer(),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AmbientField(key: ValueKey(_stage == _Stage.result)),
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: AppColors.ground,
+    body: KioskCanvas(
+      child: Listener(
+        onPointerDown: (_) => _bumpIdleTimer(),
+        onPointerMove: (_) => _bumpIdleTimer(),
+        child: AbsorbPointer(
+          absorbing: _busy,
+          child: FadeTransition(
+            opacity: _opacity,
+            child: RepaintBoundary(
+              child: Stack(
+                children: [
+                  Positioned.fill(child: _buildStage()),
+                  if (_stage == _Stage.idle || _stage == _Stage.intro)
+                    const Positioned(right: 88, top: 52, child: LangToggle()),
+                ],
               ),
-              Positioned.fill(
-                child: AnimatedSwitcher(
-                  duration: Motion.slow,
-                  switchInCurve: Motion.curve,
-                  switchOutCurve: Motion.curve,
-                  transitionBuilder: (child, animation) =>
-                      FadeTransition(opacity: animation, child: child),
-                  child: _buildStage(),
-                ),
-              ),
-              // 언어 전환은 체험을 시작하기 전에만 보여준다. 질문·결과 화면에서는
-              // 진행 표시·상단 컨트롤과 자리를 다투고 흐름도 끊는다.
-              if (_stage == _Stage.idle || _stage == _Stage.intro)
-                const Positioned(
-                  right: 88,
-                  top: 56,
-                  child: Opacity(opacity: 0.75, child: LangToggle()),
-                ),
-            ],
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildStage() {
     switch (_stage) {
@@ -223,19 +287,19 @@ class _KioskPageState extends State<KioskPage> {
         return IntroScreen(
           key: const ValueKey('intro'),
           onStart: () => _go(_Stage.question),
-          onHome: _reset,
+          onHome: _home,
         );
       case _Stage.question:
         return QuestionScreen(
-          // 단계마다 화면을 갈아끼우면 두 벌이 동시에 그려져 프레임이 밀린다.
-          // 화면은 그대로 두고 QuestionScreen 안에서 내용만 전환한다.
+          // 질문 데이터는 전체 화면이 사라진 뒤 교체한다.
           key: const ValueKey('question'),
           index: _step,
           question: quizQuestions[_step],
           selected: _answers[_step],
+          error: _error,
           onSelect: _select,
           onBack: _back,
-          onHome: _reset,
+          onHome: _home,
         );
       case _Stage.transition:
         return TransitionScreen(
@@ -248,7 +312,7 @@ class _KioskPageState extends State<KioskPage> {
           key: const ValueKey('result'),
           menuName: _menuName!,
           onRestart: _restart,
-          onHome: _reset,
+          onHome: _home,
         );
     }
   }

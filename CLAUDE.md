@@ -28,19 +28,16 @@ lokerthon_pop-up/
 │   │   ├── intro_screen.dart              ← 02 Intro
 │   │   ├── question_screen.dart           ← 03 Question (6문항)
 │   │   ├── transition_screen.dart         ← 결과 공개 직전 연출
-│   │   └── result_screen.dart             ← 결과 (editorial spread)
+│   │   └── result_screen.dart             ← 결과·페어링·다시하기 액션
 │   ├── widgets/
 │   │   ├── kiosk/                         ← 디자인 시스템 컴포넌트
 │   │   │   ├── kiosk_canvas.dart          ← 1366×1024 고정 캔버스
-│   │   │   ├── glass_surface.dart         ← 반투명 유리 표면
 │   │   │   ├── kiosk_button.dart          ← Primary/Secondary/Text
 │   │   │   ├── choice_card.dart           ← 선택 카드
 │   │   │   ├── kiosk_progress.dart        ← 진행 표시
 │   │   │   ├── top_control.dart           ← 이전/처음으로
 │   │   │   ├── dangwa_image.dart          ← 다과 이미지 컨테이너
-│   │   │   ├── metadata_row.dart          ← 부가 정보 조판
 │   │   │   ├── story_sheet.dart           ← 다과 상세 시트
-│   │   │   └── ambient_field.dart         ← 느리게 떠다니는 배경 색
 │   │   └── lang_toggle.dart               ← 한/영 전환 (Idle·Intro에서만 노출)
 │   ├── services/
 │   │   ├── recommendation_engine.dart       ← 엔진 인터페이스 + 다과 12종 목록
@@ -91,19 +88,16 @@ flutter run --dart-define=USE_API=true --dart-define=API_BASE_URL=https://...
 
 ## 디자인 시스템
 
-Figma Make로 만든 키오스크 디자인을 이식했다. 원본은 `~/Downloads/이행 요청 처리`
-(React + Tailwind)이며, 디자인 브리프는 그 안의
-`src/imports/pasted_text/ipad-kiosk-design-brief.md`에 있다.
-
-방향: **"한국 전통 다과를 현대적인 럭셔리 브랜드 경험으로 재해석한 디지털 테이스팅
-인터페이스."** 전통을 직접 그리지 않고 여백·절제·비례·색으로 번역한다.
+모바일 토스 앱의 명확한 정보 계층과 빠른 피드백을 iPad 키오스크에 맞게 적용했다.
+전통 다과의 사진과 이야기는 그대로 두고, 큰 제목·넉넉한 여백·한 번에 하나인
+주요 행동으로 흐름을 단순하게 만든다.
 
 ### 토큰 (`lib/theme/app_colors.dart`)
-- 바탕: warm ivory `#F4F0E8` — 순백은 쓰지 않는다
-- 먹: `#1C1917` / 보조 `#6B6357`
-- accent: deep burgundy `#6D1F2B` **하나만** 쓴다
+- 바탕: cool gray `#F7F8FA`, 카드: white `#FFFFFF`
+- 텍스트: `#191F28` / 보조 `#4E5968`
+- accent: Toss blue `#3182F6`, 선택 배경 `#EAF3FF`
 - 여백은 `Space` 스케일에서만 고른다 (8·12·16·24·32·40·48·64·80·96·120)
-- 깊이는 그림자가 아니라 톤·여백·스케일로 만든다
+- 깊이는 강한 그림자나 블러 대신 배경 톤과 경계로 만든다
 
 ### 타이포 (`lib/theme/app_theme.dart`의 `Type`)
 Pretendard sans가 본문. 영문 accent에만 Fraunces italic을 보조로 쓴다.
@@ -130,8 +124,8 @@ flutter run --dart-define=KIOSK_STAGE=result --dart-define=KIOSK_STORY=true
 ```
 
 ### 하지 않기로 한 것
-그림자 남용, 모든 콘텐츠를 흰 카드에 담기, pill 버튼, gradient 남용,
-전통문양·한지 texture·붓글씨 같은 직접적 클리셰, 하단 탭바·사이드바 등 전역 내비게이션.
+그림자·블러·gradient 남용, 전통문양·한지 texture·붓글씨 같은 직접적 클리셰,
+하단 탭바·사이드바 등 전역 내비게이션.
 
 ## 다과 12종
 흑임자다식, 도라지정과, 육포다식, 콩고물 도라지정과, 곶감 호두말이,
@@ -149,22 +143,17 @@ flutter test
 ## 작업 시 주의
 - **가로 전용이다.** 세로 레이아웃은 지원하지 않는다.
   방향을 바꾸려면 `ios/Runner/Info.plist`와 `lib/main.dart` 양쪽을 고쳐야 한다.
-- 온디바이스 추천은 즉시 끝난다. 기대감은 `TransitionScreen`의 2.2초가 만든다.
+- 온디바이스 추천은 즉시 끝난다. 기대감은 `TransitionScreen`의 1.4초가 만든다.
   spinner나 progress bar는 쓰지 않는다.
-- 결과 화면은 앞 화면이 빠져나갈 시간을 주려고 등장을 380ms 늦춘다.
-  이 값을 0으로 되돌리면 전환 화면과 겹쳐 보인다.
+- 단계 전환은 현재 화면을 완전히 투명하게 만든 뒤 다음 화면으로 교체한다.
+  `AnimatedSwitcher` crossfade를 쓰면 두 화면이 동시에 그려져 잔상이 생기므로
+  `KioskPage._change()`의 순차 fade 방식을 유지한다.
 - `dagwa_results.dart`의 `runnerUp`에 `'견과류 강정'`처럼 메뉴 키와 다른 표기가
   있다. 문구는 그대로 두고 `result_screen.dart`의 `_runnerUpAliases`가 이미지
   조회만 이어 준다.
-- 유리 표면(`GlassSurface`)의 실제 blur(`blurBackdrop`)는 **기본으로 꺼져 있다.**
-  카드 뒤는 이미 부드러운 그라데이션이라 흐리게 해도 보이는 차이가 거의 없는데,
-  `BackdropFilter`는 화면 한 장을 통째로 blur하는 비싼 연산이다. 뒤에 실제
-  콘텐츠가 있어 정말 가려야 하는 곳(상세 시트)에서만 켠다.
 - 질문 단계는 **화면을 갈아끼우지 않는다.** `kiosk_page.dart`의 키가
   `ValueKey('question')`으로 고정이고, `QuestionScreen` 안에서 질문 블록만
-  전환된다. 단계마다 화면째 바꾸면 두 벌이 동시에 그려져 프레임이 밀린다.
-- `AmbientField`는 화면 전체를 덮으므로 위젯을 다시 만들지 않고 `CustomPaint`
-  한 장에 그리고 `RepaintBoundary`로 격리한다.
+  교체된다. 다음 질문도 현재 화면이 완전히 사라진 뒤 내용을 바꾼다.
 - 큰 서브트리에 불투명도를 걸 때는 `RepaintBoundary`로 감싼다. 안 그러면 매
   프레임 `saveLayer`가 생긴다.
 

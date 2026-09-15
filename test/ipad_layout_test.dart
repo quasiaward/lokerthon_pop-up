@@ -24,8 +24,9 @@ Future<void> _pumpKiosk(WidgetTester tester) async {
 
 /// 화면 전환 + 등장 애니메이션이 끝날 때까지 프레임을 흘린다.
 Future<void> _settle(WidgetTester tester, [int ms = 1200]) async {
-  await tester.pump(Duration(milliseconds: ms));
-  await tester.pump(const Duration(milliseconds: 400));
+  for (var elapsed = 0; elapsed < ms; elapsed += 20) {
+    await tester.pump(const Duration(milliseconds: 20));
+  }
 }
 
 Future<void> _tapText(WidgetTester tester, String label) async {
@@ -36,6 +37,25 @@ Future<void> _tapText(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets('전환 중 이전 화면과 다음 화면이 동시에 그려지지 않는다', (tester) async {
+    await _pumpKiosk(tester);
+
+    await tester.tap(find.text('취향 알아보기'));
+    await tester.pump();
+
+    for (var frame = 0; frame < 20; frame++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      final mountedScreens =
+          find.byType(IdleScreen).evaluate().length +
+          find.byType(IntroScreen).evaluate().length;
+      expect(mountedScreens, 1, reason: '$frame번째 전환 프레임');
+    }
+
+    expect(find.byType(IdleScreen), findsNothing);
+    expect(find.byType(IntroScreen), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Idle → Intro → 6문항 → 전환 → 결과까지 예외 없이 진행된다', (tester) async {
     await _pumpKiosk(tester);
 
@@ -57,7 +77,7 @@ void main() {
     // 03 · 6문항. 각 질문의 첫 선택지를 고른다.
     for (var i = 0; i < quizQuestions.length; i++) {
       expect(
-        find.text('TASTE ${(i + 1).toString().padLeft(2, '0')}'),
+        find.text(quizQuestions[i].titleKo),
         findsOneWidget,
         reason: '${i + 1}번째 질문 화면이 아니다',
       );
@@ -68,7 +88,6 @@ void main() {
     }
 
     // 전환 화면 → 결과
-    await _settle(tester, 600);
     expect(find.byType(TransitionScreen), findsOneWidget);
     await tester.pump(TransitionScreen.duration);
     await _settle(tester);

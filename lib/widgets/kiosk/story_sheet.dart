@@ -1,17 +1,11 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-
 import '../../data/dagwa_results.dart';
 import '../../data/dagwa_tones.dart';
 import '../../l10n/lang.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
-import 'glass_surface.dart';
 import 'kiosk_button.dart';
 
-/// 다과 상세 이야기. 화면을 정보 페이지로 만들지 않기 위해 아래에서 올라오는
-/// 시트로 처리한다. 기존 결과 문구를 그대로 조판만 바꿔 보여 준다.
 class StorySheet extends StatefulWidget {
   const StorySheet({
     super.key,
@@ -19,171 +13,189 @@ class StorySheet extends StatefulWidget {
     required this.tone,
     required this.onClose,
   });
-
   final DagwaResult result;
   final DagwaTone tone;
   final VoidCallback onClose;
-
   @override
   State<StorySheet> createState() => _StorySheetState();
 }
 
-class _StorySheetState extends State<StorySheet> {
-  bool _up = false;
+class _StorySheetState extends State<StorySheet>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: Motion.slow,
+    reverseDuration: Motion.base,
+  );
+  late final _curve = CurvedAnimation(
+    parent: _controller,
+    curve: Motion.curve,
+    reverseCurve: Curves.easeInCubic,
+  );
+  final _scroll = ScrollController();
+  bool _closing = false;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.value = 1;
+    } else if (_controller.isDismissed && !_closing) {
+      _controller.forward();
+    }
+  }
+
+  Future<void> _close() async {
+    if (_closing) return;
+    _closing = true;
+    if (!MediaQuery.disableAnimationsOf(context)) {
+      try {
+        await _controller.reverse().orCancel;
+      } on TickerCanceled {
+        return;
+      }
+    }
+    if (mounted) widget.onClose();
+  }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _up = true);
-    });
+  void dispose() {
+    _scroll.dispose();
+    _curve.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final r = widget.result;
-
-    return Stack(
-      children: [
-        // 뒤 화면을 눌러도 닫힌다.
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: widget.onClose,
-            child: AnimatedOpacity(
-              opacity: _up ? 1 : 0,
-              duration: Motion.fast,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: ColoredBox(color: AppColors.ink.withValues(alpha: 0.22)),
+    return Semantics(
+      scopesRoute: true,
+      explicitChildNodes: true,
+      namesRoute: true,
+      label: tr('다과 이야기', 'Dagwa story'),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: FadeTransition(
+              opacity: _curve,
+              child: ModalBarrier(
+                color: AppColors.ink.withValues(alpha: 0.32),
+                dismissible: true,
+                onDismiss: _close,
+                semanticsLabel: tr('닫기', 'Close'),
               ),
             ),
           ),
-        ),
-
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedSlide(
-            offset: _up ? Offset.zero : const Offset(0, 1),
-            duration: Motion.slow,
-            curve: Motion.curve,
-            child: GlassSurface(
-              strong: true,
-              blurBackdrop: true, // 뒤에 결과 화면이 있어 실제로 가려야 한다
-              radius: Radii.sheet,
-              child: SizedBox(
-                width: 1366,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(96, 20, 96, 56),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 손잡이
-                      Center(
-                        child: Container(
-                          width: 52,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: AppColors.lineStrong,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SlideTransition(
+              position: Tween(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(_curve),
+              child: Container(
+                width: 1190,
+                height: 840,
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
+                ),
+                padding: const EdgeInsets.fromLTRB(48, 20, 48, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: AppColors.mist,
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      const SizedBox(height: Space.xl),
-
-                      Text('THE STORY', style: Type.eyebrow(widget.tone.deep)),
-                      const SizedBox(height: Space.md),
-                      Text(
-                        r.menuName,
-                        style: Type.section.copyWith(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: Space.lg),
-
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 7,
-                            child: Text(
-                              r.description,
-                              style: Type.body.copyWith(
-                                fontSize: 20,
-                                height: 1.65,
+                    ),
+                    const SizedBox(height: 28),
+                    Text('THE STORY', style: Type.eyebrow(AppColors.accent)),
+                    const SizedBox(height: 12),
+                    Text(
+                      r.menuName,
+                      style: Type.section.copyWith(fontSize: 40),
+                    ),
+                    const SizedBox(height: 28),
+                    Expanded(
+                      child: Scrollbar(
+                        controller: _scroll,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _scroll,
+                          padding: const EdgeInsets.only(right: 24, bottom: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                r.description,
+                                style: Type.body.copyWith(
+                                  fontSize: 23,
+                                  height: 1.65,
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: Space.x3),
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _Note(
-                                  label: tr(
-                                    '어울리는 차 · ${r.pairing}',
-                                    'Pairs with · ${r.pairing}',
-                                  ),
-                                  body: r.pairingDesc,
-                                  tone: widget.tone.deep,
+                              const SizedBox(height: 32),
+                              _Note(
+                                label: tr(
+                                  '어울리는 차 · ${r.pairing}',
+                                  'Pairs with · ${r.pairing}',
                                 ),
-                                const SizedBox(height: Space.lg),
-                                _Note(
-                                  label: tr(
-                                    '이런 다과도 · ${r.runnerUp}',
-                                    'Also try · ${r.runnerUp}',
-                                  ),
-                                  body: r.runnerUpDesc,
-                                  tone: widget.tone.deep,
+                                body: r.pairingDesc,
+                              ),
+                              const SizedBox(height: 20),
+                              _Note(
+                                label: tr(
+                                  '이런 다과도 · ${r.runnerUp}',
+                                  'Also try · ${r.runnerUp}',
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: Space.xl),
-                      Center(
-                        child: SizedBox(
-                          width: 420,
-                          child: KioskButton(
-                            label: tr('닫기', 'Close'),
-                            onPressed: widget.onClose,
-                            fullWidth: true,
-                            accentColor: widget.tone.deep,
+                                body: r.runnerUpDesc,
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    KioskButton(
+                      label: tr('닫기', 'Close'),
+                      onPressed: _close,
+                      fullWidth: true,
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class _Note extends StatelessWidget {
-  const _Note({required this.label, required this.body, required this.tone});
-
+  const _Note({required this.label, required this.body});
   final String label;
   final String body;
-  final Color tone;
-
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: AppColors.ground,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Type.eyebrow(tone, latin: false, size: 13)),
-        const SizedBox(height: Space.xs),
-        Text(body, style: Type.bodyMuted.copyWith(fontSize: 18, height: 1.55)),
+        Text(label, style: Type.section.copyWith(fontSize: 24)),
+        const SizedBox(height: 12),
+        Text(body, style: Type.bodyMuted.copyWith(fontSize: 21, height: 1.6)),
       ],
-    );
-  }
+    ),
+  );
 }

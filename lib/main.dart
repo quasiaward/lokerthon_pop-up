@@ -29,9 +29,8 @@ class DagwaRecommendationApp extends StatelessWidget {
     return ValueListenableBuilder<Lang>(
       valueListenable: appLang,
       builder: (context, lang, _) {
-        // lang을 key로 줘서 언어가 바뀌면 화면 트리를 새로 빌드한다.
+        // 언어를 바꾸어도 현재 단계와 선택을 유지한다.
         return MaterialApp(
-          key: ValueKey(lang),
           title: tr('나만의 다과 추천', 'Find Your Dagwa'),
           debugShowCheckedModeBanner: false,
           theme: buildAppTheme(),
