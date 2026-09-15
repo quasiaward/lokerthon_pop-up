@@ -59,9 +59,7 @@ class IntroScreen extends StatelessWidget {
                   children: [
                     Text(
                       'YOUR TASTE, OUR HERITAGE',
-                      style: Type.eyebrow(
-                        AppColors.accent,
-                      ).copyWith(letterSpacing: 2.6),
+                      style: Type.eyebrow(AppColors.accent, tracking: 2.6),
                     ),
                     const SizedBox(height: 18),
                     Text(

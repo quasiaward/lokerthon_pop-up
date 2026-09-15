@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dagwa_results.dart';
 import 'package:haenggung_dagwa/data/quiz_questions.dart';
 import 'package:haenggung_dagwa/l10n/lang.dart';
+import 'package:haenggung_dagwa/screens/result_screen.dart';
 import 'package:haenggung_dagwa/theme/app_colors.dart';
+import 'package:haenggung_dagwa/theme/app_theme.dart';
 import 'package:haenggung_dagwa/widgets/lang_toggle.dart';
 
 /// 한글 음절(가–힣)이 하나라도 들어 있는지.
@@ -142,5 +144,59 @@ void main() {
     for (final lang in Lang.values) {
       expect(lang.label.length, 2, reason: '$lang');
     }
+  });
+
+  group('eyebrow 자간', () {
+    test('영문에는 넓은 자간, CJK에는 거의 주지 않는다', () {
+      expect(Type.eyebrow(AppColors.accent, tracking: 3).letterSpacing, 3);
+      expect(
+        Type.eyebrow(AppColors.accent, latin: false, tracking: 3).letterSpacing,
+        lessThanOrEqualTo(0),
+        reason: 'latin:false인데 tracking이 그대로 먹었다',
+      );
+    });
+
+    testWidgets('결과 화면 eyebrow가 한국어·일본어에서 벌어지지 않는다', (tester) async {
+      tester.view.physicalSize = const Size(1366, 1024) * 2;
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // 번역되는 eyebrow 문구. 언어별로 자간이 갈려야 한다.
+      const eyebrow = (
+        ko: '당신과 가장 잘 어울리는 다과',
+        en: 'Your dagwa today',
+        ja: 'あなたにいちばん似合う茶菓',
+      );
+
+      Future<double?> spacingFor(Lang lang, String text) async {
+        appLang.value = lang;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ResultScreen(
+                menuName: '흑임자다식',
+                onRestart: () {},
+                onHome: () {},
+              ),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 900));
+        return tester.widget<Text>(find.text(text).first).style?.letterSpacing;
+      }
+
+      expect(await spacingFor(Lang.en, eyebrow.en), greaterThan(1));
+      expect(
+        await spacingFor(Lang.ko, eyebrow.ko),
+        lessThanOrEqualTo(0),
+        reason: '한국어 eyebrow 자간이 벌어졌다',
+      );
+      expect(
+        await spacingFor(Lang.ja, eyebrow.ja),
+        lessThanOrEqualTo(0),
+        reason: '일본어 eyebrow 자간이 벌어졌다',
+      );
+    });
   });
 }

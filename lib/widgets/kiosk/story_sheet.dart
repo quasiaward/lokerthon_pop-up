@@ -121,7 +121,8 @@ class _StorySheetState extends State<StorySheet>
                                 'THE STORY',
                                 style: Type.eyebrow(
                                   AppColors.accent,
-                                ).copyWith(letterSpacing: 2.8),
+                                  tracking: 2.8,
+                                ),
                               ),
                               const SizedBox(width: 18),
                               IconButton(

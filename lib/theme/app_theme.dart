@@ -113,19 +113,26 @@ class Type {
 
   /// 눈썹 라벨.
   ///
-  /// 영문 대문자에는 넓은 자간이 어울리지만 한글에 그대로 쓰면 글자가 흩어져
-  /// 보인다. [latin]으로 구분해 한글은 자간을 거의 주지 않는다.
+  /// 영문 대문자에는 넓은 자간이 어울리지만, 한글·일본어에 그대로 쓰면 글자가
+  /// 흩어져 보인다. [latin]으로 갈라 CJK는 자간을 거의 주지 않는다.
+  ///
+  /// 번역되는 문구라면 `latin: isEn`을 넘겨야 한다. 고정 영문 문구
+  /// (`THE STORY` 같은)는 기본값 그대로 두면 된다.
+  ///
+  /// 자간을 넓히고 싶을 때는 [tracking]을 쓴다. `copyWith(letterSpacing:)`로
+  /// 덮어쓰면 [latin] 분기가 무력화되어 CJK에서도 자간이 벌어진다.
   static TextStyle eyebrow(
     Color color, {
     bool latin = true,
     double size = 15,
+    double? tracking,
   }) => TextStyle(
     fontFamily: _sans,
     fontFamilyFallback: kSansFallback,
     fontSize: size,
     fontWeight: FontWeight.w600,
     height: 1.2,
-    letterSpacing: size * (latin ? 0.04 : -0.01),
+    letterSpacing: latin ? (tracking ?? size * 0.04) : size * -0.01,
     color: color,
   );
 

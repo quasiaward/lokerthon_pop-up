@@ -36,9 +36,7 @@ class IdleScreen extends StatelessWidget {
                     children: [
                       Text(
                         'TASTE OF HWASEONG',
-                        style: Type.eyebrow(
-                          AppColors.accent,
-                        ).copyWith(letterSpacing: 3.2),
+                        style: Type.eyebrow(AppColors.accent, tracking: 3.2),
                       ),
                       const SizedBox(height: 18),
                       Text(

@@ -78,9 +78,12 @@ class _ResultScreenState extends State<ResultScreen> {
                                 'Your dagwa today',
                                 'あなたにいちばん似合う茶菓',
                               ),
+                              // 번역되는 문구라 언어에 따라 자간을 가른다.
                               style: Type.eyebrow(
                                 AppColors.accent,
-                              ).copyWith(letterSpacing: 3),
+                                latin: isEn,
+                                tracking: 3,
+                              ),
                             ),
                             const SizedBox(height: 14),
                             Text(result.name.t, style: Type.resultTitle),
