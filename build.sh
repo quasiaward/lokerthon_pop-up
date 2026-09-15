@@ -1,5 +1,0 @@
-#!/bin/bash
-git clone https://github.com/flutter/flutter.git -b stable --depth 1 /tmp/flutter
-/tmp/flutter/bin/flutter config --enable-web
-/tmp/flutter/bin/flutter pub get
-/tmp/flutter/bin/flutter build web --release --pwa-strategy=none --dart-define=API_BASE_URL=$API_BASE_URL

@@ -434,11 +434,19 @@ class _AIRecommendationSectionState extends State<AIRecommendationSection> {
     }
   }
 
+  /// 온디바이스 추천은 즉시 끝나서 "분석 중" 화면이 깜빡이고 사라진다.
+  /// 최소 노출 시간을 줘서 분석하는 느낌을 유지한다.
+  static const _minLoadingDuration = Duration(milliseconds: 1400);
+
   Future<void> _fetchRecommendation() async {
     setState(() => _phase = _Phase.loading);
     try {
       final answers = _answers.map((a) => a ?? '').toList();
-      final menu = await _service.getRecommendation(answers);
+      final results = await Future.wait([
+        _service.getRecommendation(answers),
+        Future<void>.delayed(_minLoadingDuration),
+      ]);
+      final menu = results.first as String;
       if (!mounted) return;
       setState(() {
         _menuName = menu;
@@ -763,19 +771,26 @@ class _PreviewMarqueeState extends State<_PreviewMarquee>
             offset: Offset(-_controller.value * _setWidth, 0),
             child: child,
           ),
-          child: SizedBox(
-            width: _setWidth * 3,
-            child: Row(
-              children: [
-                for (final card in loop)
-                  Padding(
-                    padding: const EdgeInsets.only(right: _gap),
-                    child: SizedBox(
-                      width: _itemWidth,
-                      child: _PreviewCard(card: card),
+          // 카드 줄은 화면보다 훨씬 넓다. OverflowBox로 가로 제약을 풀어 줘야
+          // 디버그 빌드에서 overflow 경고가 뜨지 않는다. 실제로 삐져나온 부분은
+          // 바깥 ClipRect가 잘라낸다.
+          child: OverflowBox(
+            alignment: Alignment.centerLeft,
+            maxWidth: double.infinity,
+            child: SizedBox(
+              width: _setWidth * 3,
+              child: Row(
+                children: [
+                  for (final card in loop)
+                    Padding(
+                      padding: const EdgeInsets.only(right: _gap),
+                      child: SizedBox(
+                        width: _itemWidth,
+                        child: _PreviewCard(card: card),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -1,5 +1,5 @@
 name: haenggung_dagwa
-description: "행궁다과 공식 홈페이지 - loker ver1"
+description: "행궁다과 다과 추천 - 아이패드 앱"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -12,9 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  flutter_svg: ^2.2.3
   http: ^1.2.2
-  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -29,7 +27,6 @@ flutter:
     - assets/figma/quiz/
     - assets/figma/logo/
     - assets/figma/deco/
-    - assets/figma/menu/
     - assets/figma/recommend/
 
   fonts:
@@ -48,32 +45,4 @@ flutter:
         - asset: assets/fonts/Inter-Variable.ttf
           weight: 600
         - asset: assets/fonts/Inter-Variable.ttf
-          weight: 700
-    - family: Noto Serif KR
-      fonts:
-        - asset: assets/fonts/NotoSerifKR-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSerifKR-Variable.ttf
-          weight: 500
-        - asset: assets/fonts/NotoSerifKR-Variable.ttf
-          weight: 600
-        - asset: assets/fonts/NotoSerifKR-Variable.ttf
-          weight: 700
-    - family: Plus Jakarta Sans
-      fonts:
-        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
-          weight: 600
-        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
-          weight: 700
-    - family: Pretendard
-      fonts:
-        - asset: assets/fonts/PretendardVariable.ttf
-          weight: 400
-        - asset: assets/fonts/PretendardVariable.ttf
-          weight: 500
-        - asset: assets/fonts/PretendardVariable.ttf
-          weight: 600
-        - asset: assets/fonts/PretendardVariable.ttf
           weight: 700

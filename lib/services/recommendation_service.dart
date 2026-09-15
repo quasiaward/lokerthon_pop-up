@@ -1,29 +1,27 @@
-import 'dart:convert';
+import 'api_recommendation_engine.dart';
+import 'local_recommendation_engine.dart';
+import 'recommendation_engine.dart';
 
-import 'package:http/http.dart' as http;
-
-const _baseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'http://localhost:8000',
-);
-
+/// 화면이 쓰는 추천 진입점. 어떤 엔진을 쓸지는 여기서만 결정한다.
+///
+/// 기본은 온디바이스 알고리즘이라 네트워크도 API 키도 필요 없다.
+/// OpenAI 추천으로 전환하려면 빌드할 때 플래그를 켜면 된다.
+///
+/// ```sh
+/// flutter run --dart-define=USE_API=true \
+///             --dart-define=API_BASE_URL=https://example.com
+/// ```
 class RecommendationService {
-  Future<String> getRecommendation(List<String> answers) async {
-    final response = await http
-        .post(
-          Uri.parse('$_baseUrl/recommend'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'answers': answers}),
-        )
-        .timeout(const Duration(seconds: 4));
-    if (response.statusCode != 200) {
-      throw Exception('추천 요청 실패: ${response.statusCode}');
-    }
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final menu = data['menu'] as String?;
-    if (menu == null || menu.trim().isEmpty) {
-      throw Exception('API가 추천 결과를 주지 않았습니다.');
-    }
-    return menu;
-  }
+  RecommendationService({RecommendationEngine? engine})
+      : engine = engine ?? _defaultEngine();
+
+  static const useApi = bool.fromEnvironment('USE_API');
+
+  final RecommendationEngine engine;
+
+  static RecommendationEngine _defaultEngine() =>
+      useApi ? const ApiRecommendationEngine() : const LocalRecommendationEngine();
+
+  Future<String> getRecommendation(List<String> answers) =>
+      engine.recommend(answers);
 }
