@@ -42,7 +42,8 @@ void main() {
   testWidgets('전환 중 이전 화면과 다음 화면이 동시에 그려지지 않는다', (tester) async {
     await _pumpKiosk(tester);
 
-    await tester.tap(find.text('취향 알아보기'));
+    // 시작 화면에는 버튼이 없다. 화면 어디를 눌러도 시작된다.
+    await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
     await tester.pump();
 
     for (var frame = 0; frame < 20; frame++) {
