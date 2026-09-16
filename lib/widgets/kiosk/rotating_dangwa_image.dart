@@ -12,11 +12,14 @@ import 'dangwa_image.dart';
 ///
 /// 추천에 쓰이는 12개 다과만 순환하며, 이미지는 [KioskPage]가 미리 디코드해
 /// 두었기 때문에 교체 순간에도 프레임이 끊기지 않는다.
+///
+/// [interval]은 화면마다 따로 지정하지 않는다. 시작 화면과 그다음 화면이 서로
+/// 다른 주기로 돌면 넘어갈 때 사진이 어긋난 박자로 바뀌어 거슬린다.
 class RotatingDangwaImage extends StatefulWidget {
   const RotatingDangwaImage({
     super.key,
     this.initialIndex = 0,
-    this.interval = const Duration(milliseconds: 4600),
+    this.interval = const Duration(seconds: 3),
     this.aspectRatio = 1,
     this.padding = 0.12,
   });

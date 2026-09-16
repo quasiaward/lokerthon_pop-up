@@ -124,7 +124,6 @@ class _IntroScreenState extends State<IntroScreen> {
                           flex: 5,
                           child: RotatingDangwaImage(
                             initialIndex: 4,
-                            interval: Duration(milliseconds: 4900),
                             padding: 0.10,
                           ),
                         ),
