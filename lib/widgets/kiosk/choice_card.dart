@@ -35,7 +35,7 @@ class ChoiceCard extends StatelessWidget {
           colors: selected
               ? [
                   AppColors.accentSoft,
-                  AppColors.goldSoft.withValues(alpha: 0.78),
+                  AppColors.celadonSoft.withValues(alpha: 0.62),
                 ]
               : [
                   Colors.white.withValues(alpha: 0.76),
@@ -128,7 +128,9 @@ class ChoiceCard extends StatelessWidget {
                         ? accentColor
                         : Colors.white.withValues(alpha: 0.5),
                     border: Border.all(
-                      color: selected ? AppColors.gold : AppColors.lineStrong,
+                      color: selected
+                          ? AppColors.accentDeep
+                          : AppColors.lineStrong,
                     ),
                   ),
                   child: selected

@@ -98,7 +98,7 @@ A sweet that brings health and flavour together.''',
   ),
   '도라지정과': DagwaResult(
     menuName: '도라지정과',
-    name: L10nText('도라지정과', 'Bellflower Root Jeonggwa', '桔梗の蜜煮'),
+    name: L10nText('도라지정과', 'Bellflower Jeonggwa', '桔梗の蜜煮'),
     title: L10nText(
       '당신은 클래식한 매력을 가진 도라지정과!',
       'You are Bellflower Root Jeonggwa — a classic that grows on you.',
@@ -210,11 +210,7 @@ with nutty soybean powder — new and comforting at the same time.''',
   ),
   '콩고물 도라지정과': DagwaResult(
     menuName: '콩고물 도라지정과',
-    name: L10nText(
-      '콩고물 도라지정과',
-      'Soybean-Dusted Bellflower Jeonggwa',
-      'きな粉桔梗の蜜煮',
-    ),
+    name: L10nText('콩고물 도라지정과', 'Soybean Bellflower Jeonggwa', 'きな粉桔梗の蜜煮'),
     title: L10nText(
       '당신은 부드러운 인품을 가진 콩고물 도라지정과!',
       'You are Soybean-Dusted Bellflower Jeonggwa — gentle and easy to be around.',
@@ -270,7 +266,7 @@ The slower you take it, the deeper it gets — the most comfortable pairing here
   ),
   '곶감 호두말이': DagwaResult(
     menuName: '곶감 호두말이',
-    name: L10nText('곶감 호두말이', 'Dried Persimmon & Walnut Roll', '干し柿のくるみ巻き'),
+    name: L10nText('곶감 호두말이', 'Persimmon Walnut Roll', '干し柿のくるみ巻き'),
     title: L10nText(
       '당신은 다과계의 브레인, 곶감 호두말이!',
       'You are the Dried Persimmon & Walnut Roll — the thinker of the tea table.',

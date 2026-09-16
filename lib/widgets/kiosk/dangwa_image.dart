@@ -32,7 +32,7 @@ class DangwaImage extends StatelessWidget {
                 Colors.white.withValues(alpha: 0.76),
                 Color.lerp(
                   tone.soft,
-                  AppColors.goldSoft,
+                  AppColors.champagneSoft,
                   0.35,
                 )!.withValues(alpha: 0.66),
               ],

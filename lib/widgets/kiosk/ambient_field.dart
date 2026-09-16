@@ -68,11 +68,14 @@ class _AmbientPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // 금색 덩어리를 걷어내고 청자와 자두빛으로 바꿨다. 금빛이 화면 전체를
+    // 누렇게 덮으면서 예스러운 인상을 만들던 가장 큰 원인이었다.
+    // 세기도 낮춰 바탕이 깨끗하게 남도록 했다.
     final orbs = <_Orb>[
-      const _Orb(Color(0xFF773243), 0.18, 660, -0.10, -0.04, 0.0),
-      const _Orb(Color(0xFFD5B36C), 0.16, 580, 0.66, -0.10, 0.3),
-      const _Orb(Color(0xFF5D664F), 0.12, 560, 0.72, 0.58, 0.55),
-      _Orb(tint, 0.10, 500, 0.12, 0.66, 0.8),
+      const _Orb(Color(0xFF7D2742), 0.13, 660, -0.10, -0.04, 0.0),
+      const _Orb(Color(0xFF7E9A90), 0.11, 600, 0.66, -0.10, 0.3),
+      const _Orb(Color(0xFF8E7F9B), 0.08, 560, 0.72, 0.58, 0.55),
+      _Orb(tint, 0.07, 500, 0.12, 0.66, 0.8),
     ];
 
     for (final o in orbs) {

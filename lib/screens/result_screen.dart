@@ -86,7 +86,15 @@ class _ResultScreenState extends State<ResultScreen> {
                               ),
                             ),
                             const SizedBox(height: 14),
-                            Text(result.name.t, style: Type.resultTitle),
+                            // 한국어·일본어 이름은 한 줄, 긴 영어 이름은 두 줄까지
+                            // 흐른다. 칼럼은 세로 가운데 정렬이라 두 줄이 되어도
+                            // 구성이 무너지지 않는다. 억지로 한 줄에 맞추면
+                            // 45px까지 작아져 주인공 자리를 잃는다.
+                            Text(
+                              result.name.t,
+                              maxLines: 2,
+                              style: Type.resultTitle.copyWith(height: 1.12),
+                            ),
                             const SizedBox(height: 20),
                             Text(
                               result.title.t,
@@ -109,7 +117,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                       width: 42,
                                       height: 42,
                                       decoration: const BoxDecoration(
-                                        color: AppColors.goldSoft,
+                                        color: AppColors.celadonSoft,
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -202,7 +210,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.auto_awesome_rounded,
-                            color: AppColors.gold,
+                            color: AppColors.celadon,
                             size: 21,
                           ),
                         ],

@@ -91,7 +91,7 @@ class _TransitionScreenState extends State<TransitionScreen>
           height: 4,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.accent, AppColors.gold],
+              colors: [AppColors.accent, AppColors.celadon],
             ),
             borderRadius: BorderRadius.circular(3),
           ),

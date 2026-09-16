@@ -7,8 +7,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/brand_mark.dart';
 import '../widgets/kiosk/dangwa_image.dart';
-import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/kiosk_button.dart';
+
+/// 언어 토글이 화면 우상단에 떠 있는 만큼, 그 아래 콘텐츠를 내려 주는 여백.
+/// 토글은 `kiosk_page.dart`에서 top: 52에 높이 약 56으로 놓인다.
+const double _langToggleClearance = 48;
 
 class IdleScreen extends StatelessWidget {
   const IdleScreen({super.key, required this.onStart});
@@ -81,57 +84,19 @@ class IdleScreen extends StatelessWidget {
                 const SizedBox(width: 54),
                 Expanded(
                   flex: 5,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: DangwaImage(
-                          assetPath: dagwaResults['수원약과']!.imagePath,
-                          tone: toneFor('수원약과'),
-                          padding: 0.08,
-                          aspectRatio: 0.9,
-                        ),
+                  // 언어 토글이 이 칼럼 바로 위에 떠 있다. 위쪽을 비워 두지 않으면
+                  // 카드가 토글에 붙어 답답해 보인다. 카드도 세로를 꽉 채우는 대신
+                  // 비율로 크기를 잡고 가운데에 둔다.
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: _langToggleClearance),
+                    child: Center(
+                      child: DangwaImage(
+                        assetPath: dagwaResults['수원약과']!.imagePath,
+                        tone: toneFor('수원약과'),
+                        aspectRatio: 0.78,
+                        padding: 0.08,
                       ),
-                      Positioned(
-                        left: -28,
-                        bottom: 48,
-                        child: GlassSurface(
-                          radius: 24,
-                          blurBackdrop: true,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 16,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 9,
-                                  height: 9,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.gold,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  tr(
-                                    '행궁에서 만나는 한입',
-                                    'A bite of Haenggung',
-                                    'ヘングンで出会うひと口',
-                                  ),
-                                  style: Type.caption.copyWith(
-                                    fontSize: 18,
-                                    color: AppColors.charcoal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],

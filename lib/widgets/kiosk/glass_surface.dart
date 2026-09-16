@@ -49,7 +49,7 @@ class GlassSurface extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               strong ? AppColors.glassStrong : AppColors.glass,
-              AppColors.goldSoft.withValues(alpha: strong ? 0.46 : 0.24),
+              AppColors.champagneSoft.withValues(alpha: strong ? 0.30 : 0.16),
             ],
           );
 
@@ -59,7 +59,7 @@ class GlassSurface extends StatelessWidget {
         borderRadius: border,
         border: Border.all(
           color: accented
-              ? AppColors.gold.withValues(alpha: 0.54)
+              ? AppColors.champagne.withValues(alpha: 0.40)
               : Colors.white.withValues(alpha: 0.72),
           width: accented ? 1.2 : 1,
         ),

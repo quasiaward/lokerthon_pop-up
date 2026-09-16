@@ -72,12 +72,15 @@ class IntroScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 590),
+                      constraints: const BoxConstraints(maxWidth: 620),
                       child: Text(
+                        // 한국어·일본어는 음절 단위로 줄이 바뀌어서, 폭에 맡기면
+                        // "골라드/릴게요"처럼 낱말 중간이 끊긴다. 의미 단위로
+                        // 줄바꿈을 직접 넣어 둔다.
                         tr(
-                          '6개의 짧은 질문으로, 당신에게 어울리는 한국 전통 다과를 골라드릴게요.',
-                          'Answer 6 short questions and we will find the Korean confection that suits you.',
-                          '6つの短い質問から、あなたに似合う韓国の伝統茶菓をお選びします。',
+                          '6개의 짧은 질문으로,\n당신에게 어울리는 한국 전통 다과를 골라드릴게요.',
+                          'Answer 6 short questions and we will\nfind the Korean confection that suits you.',
+                          '6つの短い質問から、\nあなたに似合う韓国の伝統茶菓をお選びします。',
                         ),
                         style: Type.bodyMuted.copyWith(
                           fontSize: 23,

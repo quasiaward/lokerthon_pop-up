@@ -23,7 +23,7 @@ class BrandMark extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: AppColors.gold.withValues(alpha: 0.8),
+              color: AppColors.champagne.withValues(alpha: 0.75),
               width: 1.2,
             ),
             boxShadow: [

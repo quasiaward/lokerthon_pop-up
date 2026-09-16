@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 ///
 /// 결과 화면의 배경 tint·구분선·타이포 accent를 다과마다 미묘하게 달리하기 위한
 /// 값이다. 실제 다과 이미지(`assets/figma/result_*.png`)에서 지배색을 뽑은 뒤,
-/// quiet-luxury 팔레트에 맞게 명도와 채도를 낮춰 재해석했다.
+/// 새 팔레트에 맞게 다듬었다.
+///
+/// - [soft]는 채도를 크게 낮춰 거의 중성으로 뒀다. 그대로 쓰면 카드 배경이
+///   베이지로 깔려 화면이 예스러워진다.
+/// - [deep]은 브랜드 와인 쪽으로 절반쯤 섞었다. 다과마다 다르되 한 계열 안에
+///   머물러, 갈색이 따로 노는 일이 없다.
 /// **다과 이미지 자체의 색은 건드리지 않는다.**
 class DagwaTone {
   const DagwaTone({required this.deep, required this.soft});
@@ -17,23 +22,23 @@ class DagwaTone {
 }
 
 const _fallbackTone = DagwaTone(
-  deep: Color(0xFF6D1F2B),
-  soft: Color(0xFFEFE3DD),
+  deep: Color(0xFF7D2742),
+  soft: Color(0xFFF1ECEE),
 );
 
 DagwaTone toneFor(String menuName) => dagwaTones[menuName] ?? _fallbackTone;
 
 const dagwaTones = <String, DagwaTone>{
-  '흑임자다식': DagwaTone(deep: Color(0xFF782321), soft: Color(0xFFEDDEDE)),
-  '도라지정과': DagwaTone(deep: Color(0xFF512315), soft: Color(0xFFEDE1DE)),
-  '육포다식': DagwaTone(deep: Color(0xFF734526), soft: Color(0xFFEDE4DE)),
-  '콩고물 도라지정과': DagwaTone(deep: Color(0xFF7A5F1F), soft: Color(0xFFEDE9DE)),
-  '곶감 호두말이': DagwaTone(deep: Color(0xFF7A511F), soft: Color(0xFFEDE6DE)),
-  '구움 견과 강정': DagwaTone(deep: Color(0xFF7A5B1F), soft: Color(0xFFEDE8DE)),
-  '금귤정과': DagwaTone(deep: Color(0xFF7A4E1F), soft: Color(0xFFEDE6DE)),
-  '깨강정': DagwaTone(deep: Color(0xFF7A5A1F), soft: Color(0xFFEDE8DE)),
-  '영양찰떡': DagwaTone(deep: Color(0xFF7A511F), soft: Color(0xFFEDE6DE)),
-  '양갱': DagwaTone(deep: Color(0xFF4F2117), soft: Color(0xFFEDE1DE)),
-  '매작과': DagwaTone(deep: Color(0xFF7A1F24), soft: Color(0xFFEDDEDF)),
-  '수원약과': DagwaTone(deep: Color(0xFF7A431F), soft: Color(0xFFEDE4DE)),
+  '흑임자다식': DagwaTone(deep: Color(0xFF742530), soft: Color(0xFFF1ECEC)),
+  '도라지정과': DagwaTone(deep: Color(0xFF67282D), soft: Color(0xFFF1EDEC)),
+  '육포다식': DagwaTone(deep: Color(0xFF743530), soft: Color(0xFFF1EEEC)),
+  '콩고물 도라지정과': DagwaTone(deep: Color(0xFF744130), soft: Color(0xFFF1EFEC)),
+  '곶감 호두말이': DagwaTone(deep: Color(0xFF743B30), soft: Color(0xFFF1EFEC)),
+  '구움 견과 강정': DagwaTone(deep: Color(0xFF743F30), soft: Color(0xFFF1EFEC)),
+  '금귤정과': DagwaTone(deep: Color(0xFF743930), soft: Color(0xFFF1EEEC)),
+  '깨강정': DagwaTone(deep: Color(0xFF743F30), soft: Color(0xFFF1EFEC)),
+  '영양찰떡': DagwaTone(deep: Color(0xFF743B30), soft: Color(0xFFF1EFEC)),
+  '양갱': DagwaTone(deep: Color(0xFF67262D), soft: Color(0xFFF1EDEC)),
+  '매작과': DagwaTone(deep: Color(0xFF742433), soft: Color(0xFFF1ECED)),
+  '수원약과': DagwaTone(deep: Color(0xFF743530), soft: Color(0xFFF1EEEC)),
 };

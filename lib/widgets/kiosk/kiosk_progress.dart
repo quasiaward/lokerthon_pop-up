@@ -32,7 +32,7 @@ class KioskProgress extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: i < step
                           ? const LinearGradient(
-                              colors: [AppColors.accent, AppColors.gold],
+                              colors: [AppColors.accent, AppColors.celadon],
                             )
                           : null,
                       color: i < step ? null : AppColors.mist,
