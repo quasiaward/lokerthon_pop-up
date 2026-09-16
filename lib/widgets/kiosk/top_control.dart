@@ -15,22 +15,27 @@ class TopControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     height: 60,
-    child: Row(
+    child: Stack(
+      alignment: Alignment.center,
       children: [
-        if (onBack == null)
-          const SizedBox(width: 142)
-        else
-          _GlassControl(
-            onPressed: onBack!,
-            icon: Icons.arrow_back_rounded,
-            label: tr('이전으로', 'Back', '戻る'),
+        const BrandMark(compact: true),
+        if (onBack != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _GlassControl(
+              onPressed: onBack!,
+              icon: Icons.arrow_back_rounded,
+              label: tr('이전으로', 'Back', '戻る'),
+            ),
           ),
-        const Expanded(child: Center(child: BrandMark(compact: true))),
-        _GlassControl(
-          onPressed: onHome,
-          icon: Icons.home_rounded,
-          label: tr('처음으로', 'Home', 'はじめに戻る'),
-          muted: true,
+        Align(
+          alignment: Alignment.centerRight,
+          child: _GlassControl(
+            onPressed: onHome,
+            icon: Icons.home_rounded,
+            label: tr('처음으로', 'Home', 'はじめに戻る'),
+            muted: true,
+          ),
         ),
       ],
     ),
@@ -54,38 +59,41 @@ class _GlassControl extends StatelessWidget {
   Widget build(BuildContext context) => GlassSurface(
     radius: 23,
     blurBackdrop: true,
-    child: Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(23),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: muted ? AppColors.celadonSoft : AppColors.accentSoft,
-                  shape: BoxShape.circle,
+    child: Semantics(
+      button: true,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(23),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: muted ? AppColors.celadonSoft : AppColors.accentSoft,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: muted ? AppColors.muted : AppColors.accent,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: muted ? AppColors.muted : AppColors.accent,
+                const SizedBox(width: 9),
+                Text(
+                  label,
+                  style: Type.caption.copyWith(
+                    fontSize: 18,
+                    color: muted ? AppColors.muted : AppColors.charcoal,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 9),
-              Text(
-                label,
-                style: Type.caption.copyWith(
-                  fontSize: 18,
-                  color: muted ? AppColors.muted : AppColors.charcoal,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

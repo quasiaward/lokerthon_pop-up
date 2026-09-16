@@ -39,6 +39,10 @@ class DagwaResult {
   final L10nText runnerUpDesc;
 
   final String imagePath;
+
+  /// 기존 콘텐츠의 별칭도 결과 화면과 이야기에서 같은 메뉴로 표시한다.
+  DagwaResult? get runnerUpResult =>
+      dagwaResults[runnerUp == '견과류 강정' ? '구움 견과 강정' : runnerUp];
 }
 
 const dagwaResults = <String, DagwaResult>{

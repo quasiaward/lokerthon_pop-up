@@ -35,8 +35,20 @@ class _RotatingDangwaImageState extends State<RotatingDangwaImage> {
   Timer? _timer;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant RotatingDangwaImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.interval != widget.interval) _updateTimer();
+  }
+
+  void _updateTimer() {
+    _timer?.cancel();
+    if (MediaQuery.disableAnimationsOf(context)) return;
     _timer = Timer.periodic(widget.interval, (_) {
       if (!mounted) return;
       setState(() => _index = (_index + 1) % dagwaMenus.length);

@@ -10,8 +10,6 @@ import '../widgets/kiosk/kiosk_button.dart';
 import '../widgets/kiosk/top_control.dart';
 import '../widgets/kiosk/story_sheet.dart';
 
-const _runnerUpAliases = <String, String>{'견과류 강정': '구움 견과 강정'};
-
 class ResultScreen extends StatefulWidget {
   const ResultScreen({
     super.key,
@@ -39,9 +37,7 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       );
     }
-    final runnerUp =
-        dagwaResults[result.runnerUp] ??
-        dagwaResults[_runnerUpAliases[result.runnerUp]];
+    final runnerUp = result.runnerUpResult;
     final tone = toneFor(result.menuName);
     return Stack(
       children: [
@@ -134,8 +130,8 @@ class _ResultScreenState extends State<ResultScreen> {
                                         fontSize: 19,
                                       ),
                                     ),
-                                    const Spacer(),
-                                    Flexible(
+                                    const SizedBox(width: 24),
+                                    Expanded(
                                       child: Text(
                                         result.pairing.t,
                                         textAlign: TextAlign.right,

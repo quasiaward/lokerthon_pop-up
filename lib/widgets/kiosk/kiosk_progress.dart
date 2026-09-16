@@ -13,7 +13,9 @@ class KioskProgress extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       AnimatedContainer(
-        duration: Motion.base,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : Motion.base,
         curve: Motion.curve,
         width: 42,
         height: 42,
@@ -39,7 +41,9 @@ class KioskProgress extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(right: i == total - 1 ? 0 : 8),
                   child: AnimatedContainer(
-                    duration: Motion.base,
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : Motion.base,
                     curve: Motion.curve,
                     height: i < step ? 6 : 4,
                     decoration: BoxDecoration(

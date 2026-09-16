@@ -55,6 +55,10 @@ flutter test
   전환 → 결과까지 실제로 눌러 가며 오버플로가 없는지, 상세 시트가 열리고 닫히는지,
   12개 다과 결과 화면이 모두 깨지지 않는지, 전환 중 두 화면이 겹치지 않는지 확인합니다.
 
+- `test/release_review_test.dart` — 실제 폰트로 세 언어의 질문·결과·상세 화면,
+  터치 영역, 버튼 접근성, 상단 정렬, 중복 터치, 뒤로 이동, 오류 후 재시도,
+  자동 초기화와 이전 세션의 늦은 응답, 동작 줄이기를 검증합니다.
+
 ## 화면 구성
 
 `lib/pages/kiosk_page.dart`가 단계 전환을 관리합니다.
@@ -64,11 +68,13 @@ flutter test
 | Idle | 팝업 공간의 디지털 포스터. 터치하면 시작 |
 | Intro | 시작해도 된다는 확신을 주는 화면 |
 | Question | 6문항 (기분 색 / 마음의 날씨 / 동행 / 식감 / 계절 / 문양) |
-| Transition | 결과 공개 직전 연출 (1.4초, spinner 없음) |
+| Transition | 결과 공개 직전 연출 (1.6초, spinner 없음) |
 | Result | 다과 이미지·추천 이유·다시하기 액션 |
 | Story | 다과 상세 이야기 (아래에서 올라오는 시트) |
 
-결과 화면에서 45초 동안 아무 조작이 없으면 Idle로 돌아갑니다.
+Intro·질문·결과·상세 이야기에서 45초 동안 아무 조작이 없으면 답변을 지우고 Idle로 돌아갑니다.
+시작 화면과 Intro는 상단 조작 버튼을 제외한 화면 어디든 터치해 진행할 수 있습니다.
+동작 줄이기를 켜면 배경·손가락·이미지의 반복 움직임과 이미지 자동 교체가 멈춥니다.
 KO/EN/JP 토글은 Idle·Intro에서만 보입니다 — 체험 중에는 흐름을 방해하지 않습니다.
 
 ## 다국어
@@ -126,5 +132,6 @@ flutter run --dart-define=KIOSK_STAGE=result   # idle|intro|question|transition|
 
 ```bash
 flutter devices          # 아이패드가 보이는지 확인
-flutter install -d <기기 ID>
+flutter build ios --release
+flutter install --release -d <기기 ID>
 ```

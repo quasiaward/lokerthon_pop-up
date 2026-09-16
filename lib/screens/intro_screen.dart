@@ -32,40 +32,42 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(88, 52, 88, 72),
-    child: Column(
-      children: [
-        // 상단 조작부는 전체 화면 시작 제스처에서 분리한다. 이전 버튼이나
-        // 언어 선택을 눌렀을 때 질문 화면으로 잘못 넘어가는 일을 막는다.
-        SizedBox(
-          height: 62,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              const BrandMark(compact: true),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _IntroBackControl(
-                  onPressed: widget.onHome,
-                  label: tr('이전으로', 'Back', '戻る'),
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    excludeFromSemantics: true,
+    onTap: _start,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(88, 52, 88, 56),
+      child: Column(
+        children: [
+          // 실제 버튼이 시작 제스처보다 먼저 터치를 처리한다.
+          // 여백은 시작 영역으로, 이전·언어 버튼은 각자의 조작으로 유지한다.
+          SizedBox(
+            height: 62,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                const BrandMark(compact: true),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _IntroBackControl(
+                    onPressed: widget.onHome,
+                    label: tr('이전으로', 'Back', '戻る'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Semantics(
-            button: true,
-            excludeSemantics: true,
-            label: tr(
-              '화면을 터치해 다과 추천 질문 시작하기',
-              'Touch the screen to start the recommendation questions',
-              '画面をタッチして茶菓のおすすめ質問を始める',
+              ],
             ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
+          ),
+          Expanded(
+            child: Semantics(
+              button: true,
               onTap: _start,
+              excludeSemantics: true,
+              label: tr(
+                '화면을 터치해 다과 추천 질문 시작하기',
+                'Touch the screen to start the recommendation questions',
+                '画面をタッチして茶菓のおすすめ質問を始める',
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: 20),
@@ -137,9 +139,9 @@ class _IntroScreenState extends State<IntroScreen> {
                     curve: Motion.curve,
                     child: TapCue(
                       supportingText: tr(
-                        '천천히 골라도 약 1분이면 충분해요',
-                        'Take your time—it takes about a minute',
-                        'ゆっくり選んでも約1分で終わります',
+                        '화면 어디든 터치해\n나에게 어울리는 다과를 찾아보세요',
+                        'Touch anywhere to discover\nthe dagwa that suits you',
+                        '画面のどこでもタッチして\nあなたに似合う茶菓を見つけましょう',
                       ),
                     ),
                   ),
@@ -147,8 +149,8 @@ class _IntroScreenState extends State<IntroScreen> {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }
@@ -166,39 +168,42 @@ class _IntroBackControl extends StatelessWidget {
     child: GlassSurface(
       radius: 24,
       blurBackdrop: true,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(6, 5, 17, 5),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                    color: AppColors.accentSoft,
-                    shape: BoxShape.circle,
+      child: Semantics(
+        button: true,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(6, 5, 17, 5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: AppColors.accentSoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: AppColors.accent,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.arrow_back_rounded,
-                    size: 20,
-                    color: AppColors.accent,
+                  const SizedBox(width: 10),
+                  Text(
+                    label,
+                    style: Type.caption.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.charcoal,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: Type.caption.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.charcoal,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

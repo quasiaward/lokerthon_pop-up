@@ -26,7 +26,18 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
   late final _float = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 8),
-  )..repeat(reverse: true);
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _float.stop();
+      _float.value = 0;
+    } else if (!_float.isAnimating) {
+      _float.repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {
@@ -38,16 +49,18 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) => Semantics(
     button: true,
     excludeSemantics: true,
+    onTap: widget.onStart,
     label: tr(
       '화면 어디든 터치해 다과 추천 시작하기',
       'Touch anywhere to start your dagwa recommendation',
       '画面のどこでもタッチして茶菓のおすすめを始める',
     ),
     child: GestureDetector(
+      excludeFromSemantics: true,
       onTap: widget.onStart,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(88, 60, 88, 72),
+        padding: const EdgeInsets.fromLTRB(88, 60, 88, 56),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

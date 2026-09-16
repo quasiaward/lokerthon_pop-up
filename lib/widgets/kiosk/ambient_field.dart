@@ -24,7 +24,18 @@ class _AmbientFieldState extends State<AmbientField>
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 32),
-  )..repeat();
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _c.stop();
+      _c.value = 0;
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
 
   @override
   void dispose() {

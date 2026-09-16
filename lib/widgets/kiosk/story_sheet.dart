@@ -187,55 +187,40 @@ class _StorySheetState extends State<StorySheet>
                               child: Scrollbar(
                                 controller: _scroll,
                                 thumbVisibility: true,
-                                // 다과마다 글 길이가 달라 긴 것은 스크롤된다.
-                                // 아래를 흐리게 걷어 내 "더 있다"를 알린다.
-                                // 이게 없으면 카드가 중간에서 뚝 잘려 고장처럼 보인다.
-                                child: ShaderMask(
-                                  shaderCallback: (rect) =>
-                                      const LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.white,
-                                          Colors.white,
-                                          Colors.transparent,
-                                        ],
-                                        stops: [0, 0.88, 1],
-                                      ).createShader(rect),
-                                  blendMode: BlendMode.dstIn,
-                                  child: SingleChildScrollView(
-                                    controller: _scroll,
-                                    padding: const EdgeInsets.only(
-                                      right: 24,
-                                      bottom: 32,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          result.description.t,
-                                          style: Type.body.copyWith(
-                                            fontSize: 22,
-                                            height: 1.68,
-                                          ),
+                                // 마지막 줄까지 선명하게 읽을 수 있도록 스크롤바로만
+                                // 이어지는 내용을 알린다. 고정 마스크는 끝에서도 글을 가린다.
+                                child: SingleChildScrollView(
+                                  controller: _scroll,
+                                  padding: const EdgeInsets.only(
+                                    right: 24,
+                                    bottom: 32,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        result.description.t,
+                                        style: Type.body.copyWith(
+                                          fontSize: 22,
+                                          height: 1.68,
                                         ),
-                                        const SizedBox(height: 28),
-                                        _Note(
-                                          icon: Icons.local_cafe_rounded,
-                                          label:
-                                              '${tr('어울리는 차', 'Pairs with', '相性のよいお茶')} · ${result.pairing.t}',
-                                          body: result.pairingDesc.t,
-                                        ),
-                                        const SizedBox(height: 18),
-                                        _Note(
-                                          icon: Icons.auto_awesome_rounded,
-                                          label:
-                                              '${tr('이런 다과도', 'Also try', 'こちらの茶菓も')} · ${dagwaResults[result.runnerUp]?.name.t ?? result.runnerUp}',
-                                          body: result.runnerUpDesc.t,
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(height: 28),
+                                      _Note(
+                                        icon: Icons.local_cafe_rounded,
+                                        label:
+                                            '${tr('어울리는 차', 'Pairs with', '相性のよいお茶')} · ${result.pairing.t}',
+                                        body: result.pairingDesc.t,
+                                      ),
+                                      const SizedBox(height: 18),
+                                      _Note(
+                                        icon: Icons.auto_awesome_rounded,
+                                        label:
+                                            '${tr('이런 다과도', 'Also try', 'こちらの茶菓も')} · ${result.runnerUpResult?.name.t ?? result.runnerUp}',
+                                        body: result.runnerUpDesc.t,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

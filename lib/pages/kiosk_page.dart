@@ -113,11 +113,11 @@ class _KioskPageState extends State<KioskPage>
     _precached = true;
     if (PerfProbe.enabled) unawaited(_autoDrive());
     // 화면을 넘길 때 처음 디코드하면 그 프레임이 밀린다. Idle에 머무는 동안
-    // 미리 올려 둔다. 에셋이 모두 작아서 전부 합쳐도 몇 MB 수준이다.
+    // 미리 올려 둔다. 화면에 쓰는 디코드 크기와 맞춰 캐시를 재사용한다.
     for (final q in quizQuestions) {
       for (final o in q.options) {
         precacheImage(
-          ResizeImage(AssetImage(o.imagePath), width: 216),
+          ResizeImage(AssetImage(o.imagePath), width: 224),
           context,
         );
       }
@@ -237,9 +237,9 @@ class _KioskPageState extends State<KioskPage>
       setState(() {
         _busy = false;
         _error = tr(
-          '연결이 원활하지 않아요. 선택지를 눌러 다시 시도해주세요.',
-          'Could not connect. Tap your choice to try again.',
-          '接続がうまくいきません。選択肢をタップしてもう一度お試しください。',
+          '추천을 완료하지 못했어요. 선택지를 눌러 다시 시도해주세요.',
+          'We couldn’t finish your recommendation. Tap your choice to try again.',
+          'おすすめを表示できませんでした。選択肢をタップしてもう一度お試しください。',
         );
       });
     }
@@ -276,7 +276,9 @@ class _KioskPageState extends State<KioskPage>
               Positioned.fill(
                 child: TweenAnimationBuilder<Color?>(
                   tween: ColorTween(end: stageTint),
-                  duration: Motion.slow,
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : Motion.slow,
                   curve: Motion.curve,
                   builder: (context, tint, _) => AmbientField(tint: tint),
                 ),

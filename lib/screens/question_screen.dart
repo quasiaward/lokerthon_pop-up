@@ -109,11 +109,17 @@ class QuestionScreen extends StatelessWidget {
                   ],
                   Text(
                     error ??
-                        tr(
-                          '선택하면 다음 질문으로 넘어가요',
-                          'Choose an answer to continue',
-                          '選ぶと次の質問に進みます',
-                        ),
+                        (index == quizQuestions.length - 1
+                            ? tr(
+                                '선택하면 나에게 어울리는 다과를 알려드려요',
+                                'Choose an answer to discover your dagwa',
+                                '選ぶとあなたに似合う茶菓をご紹介します',
+                              )
+                            : tr(
+                                '선택하면 다음 질문으로 넘어가요',
+                                'Choose an answer to continue',
+                                '選ぶと次の質問に進みます',
+                              )),
                     style: Type.caption.copyWith(
                       fontSize: 18,
                       color: error == null

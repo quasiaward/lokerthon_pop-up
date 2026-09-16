@@ -32,12 +32,23 @@ class _TransitionScreenState extends State<TransitionScreen>
   late final AnimationController _pulse = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
+  );
 
   @override
   void initState() {
     super.initState();
     _timer = Timer(TransitionScreen.duration, widget.onDone);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulse.stop();
+      _pulse.value = 0;
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
   }
 
   @override
@@ -123,26 +134,12 @@ class _TransitionScreenState extends State<TransitionScreen>
         const SizedBox(height: 26),
         Text(
           tr(
-            '당신의 취향을 담아\n다과를 고르고 있어요.',
-            'Choosing a dagwa\nthat matches your taste.',
-            'あなたの好みに合わせて\n茶菓を選んでいます。',
+            '당신의 취향에 어울리는\n다과를 찾았어요.',
+            'We found a dagwa\nthat suits your taste.',
+            'あなたの好みに合う\n茶菓が見つかりました。',
           ),
           textAlign: TextAlign.center,
           style: Type.section.copyWith(fontSize: 32, height: 1.42),
-        ),
-        const SizedBox(height: 26),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(99),
-          child: SizedBox(
-            width: 96,
-            height: 5,
-            child: LinearProgressIndicator(
-              value: null,
-              backgroundColor: AppColors.mist,
-              color: AppColors.accent,
-              borderRadius: BorderRadius.circular(99),
-            ),
-          ),
         ),
       ],
     ),
