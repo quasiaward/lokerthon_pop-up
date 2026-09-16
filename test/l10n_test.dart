@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dagwa_results.dart';
 import 'package:haenggung_dagwa/data/quiz_questions.dart';
 import 'package:haenggung_dagwa/l10n/lang.dart';
+import 'package:haenggung_dagwa/main.dart';
 import 'package:haenggung_dagwa/screens/result_screen.dart';
 import 'package:haenggung_dagwa/theme/app_colors.dart';
 import 'package:haenggung_dagwa/theme/app_theme.dart';
@@ -145,6 +146,31 @@ void main() {
       expect(lang.label.length, 2, reason: '$lang');
     }
     expect(Lang.ja.label, 'JP');
+  });
+
+  testWidgets('시작 화면에서 언어를 바꾸면 터치 안내 문구도 함께 바뀐다', (tester) async {
+    tester.view.physicalSize = const Size(1366, 1024) * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    appLang.value = Lang.ko;
+    await tester.pumpWidget(const DagwaRecommendationApp());
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.text('화면 어디든 터치해 시작하기'), findsOneWidget);
+
+    // 안내 문구가 const 위젯 안에 있으면 언어를 바꿔도 다시 그려지지 않는다.
+    // 헤드라인만 바뀌고 이 문구는 한국어로 남는 것이 실제로 있던 증상이다.
+    for (final lang in [Lang.en, Lang.ja]) {
+      appLang.value = lang;
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(
+        find.text('화면 어디든 터치해 시작하기'),
+        findsNothing,
+        reason: '$lang인데 한국어 안내가 남아 있다',
+      );
+    }
   });
 
   group('eyebrow 자간', () {

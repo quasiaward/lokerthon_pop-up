@@ -92,12 +92,15 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 32),
-                  Expanded(flex: 6, child: _Hero(float: _float)),
+                  const SizedBox(width: 70),
+                  Expanded(flex: 5, child: _Hero(float: _float)),
                 ],
               ),
             ),
-            const Align(alignment: Alignment.bottomCenter, child: TapCue()),
+            // const로 두면 안 된다. 언어가 바뀌어 화면이 다시 그려져도
+            // 같은 const 인스턴스라 Flutter가 이 가지를 건너뛰고,
+            // 안내 문구만 이전 언어로 남는다.
+            Align(alignment: Alignment.bottomCenter, child: TapCue()),
           ],
         ),
       ),
@@ -114,23 +117,17 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      // 오른쪽 칼럼의 정중앙에 카드를 둔다. 바깥쪽으로 밀어내던 오프셋을
-      // 제거해 왼쪽 헤드라인과 오른쪽 이미지의 시각적 무게를 맞춘다.
-      child: SizedBox(
-        height: 580,
-        child: AnimatedBuilder(
-          animation: float,
-          builder: (context, child) => Transform.translate(
-            offset: Offset(0, -12 * float.value),
-            child: child,
-          ),
-          child: RepaintBoundary(
-            child: RotatingDangwaImage(
-              initialIndex: 11,
-              aspectRatio: 0.84,
-              padding: 0.08,
-            ),
-          ),
+      // 오른쪽 칼럼의 정중앙에 카드를 둔다.
+      child: AnimatedBuilder(
+        animation: float,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(0, -12 * float.value),
+          child: child,
+        ),
+        child: const RepaintBoundary(
+          // 다음 화면과 같은 크기·비율·여백으로 둔다. 세로형 카드에 높이를
+          // 따로 박아 두면 전환할 때 카드가 한 번 튀어 보인다.
+          child: RotatingDangwaImage(initialIndex: 11, padding: 0.10),
         ),
       ),
     );
