@@ -37,6 +37,16 @@ ThemeData buildAppTheme() {
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
     splashColor: Colors.transparent,
+    focusColor: AppColors.accentSoft,
+    dividerColor: AppColors.line,
+    iconTheme: const IconThemeData(color: AppColors.charcoal, size: 24),
+    scrollbarTheme: ScrollbarThemeData(
+      thumbColor: WidgetStatePropertyAll(
+        AppColors.accent.withValues(alpha: 0.38),
+      ),
+      thickness: const WidgetStatePropertyAll(5),
+      radius: const Radius.circular(99),
+    ),
   );
 }
 
@@ -64,21 +74,23 @@ class Type {
   );
 
   /// Idle 화면 히어로. 84px.
-  static TextStyle get hero => _s(72, weight: FontWeight.w700, height: 1.18);
+  static TextStyle get hero =>
+      _s(74, weight: FontWeight.w700, height: 1.15, tracking: -0.026);
 
   /// 결과 화면 다과명. 68px.
   static TextStyle get resultTitle =>
-      _s(56, weight: FontWeight.w700, height: 1.15);
+      _s(58, weight: FontWeight.w700, height: 1.12, tracking: -0.025);
 
   /// 질문. 50px.
   static TextStyle get question =>
-      _s(46, weight: FontWeight.w700, height: 1.28);
+      _s(48, weight: FontWeight.w700, height: 1.24, tracking: -0.024);
 
   /// Intro 헤드라인. 56px.
-  static TextStyle get headline => _s(60, weight: FontWeight.w700, height: 1.2);
+  static TextStyle get headline =>
+      _s(62, weight: FontWeight.w700, height: 1.16, tracking: -0.025);
 
   /// 섹션 제목. 32px.
-  static TextStyle get section => _s(32, weight: FontWeight.w600, height: 1.25);
+  static TextStyle get section => _s(32, weight: FontWeight.w600, height: 1.22);
 
   /// 본문. 22px.
   static TextStyle get body => _s(

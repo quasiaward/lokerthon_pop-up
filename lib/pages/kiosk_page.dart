@@ -43,7 +43,11 @@ class _KioskPageState extends State<KioskPage>
     duration: Motion.base,
     reverseDuration: Motion.exit,
   );
-  late final _opacity = CurvedAnimation(parent: _motion, curve: Motion.curve);
+  late final _stageMotion = CurvedAnimation(
+    parent: _motion,
+    curve: Motion.emphasized,
+    reverseCurve: Motion.exitCurve,
+  );
   bool _busy = false;
   int _session = 0;
   String? _error;
@@ -125,7 +129,7 @@ class _KioskPageState extends State<KioskPage>
   @override
   void dispose() {
     _idleTimer?.cancel();
-    _opacity.dispose();
+    _stageMotion.dispose();
     _motion.dispose();
     super.dispose();
   }
@@ -211,7 +215,7 @@ class _KioskPageState extends State<KioskPage>
     });
     _bumpIdleTimer();
     // 선택 상태가 보일 만큼만 머물고, 전체 전환은 0.6초 안에 끝낸다.
-    await Future<void>.delayed(const Duration(milliseconds: 160));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     if (!mounted || session != _session) return;
     if (_step < quizQuestions.length - 1) {
       await _change(() => _step++);
@@ -255,47 +259,68 @@ class _KioskPageState extends State<KioskPage>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.ground,
-    body: KioskCanvas(
-      child: Listener(
-        onPointerDown: (_) => _bumpIdleTimer(),
-        onPointerMove: (_) => _bumpIdleTimer(),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: AmbientField(
-                tint: _stage == _Stage.result && _menuName != null
-                    ? toneFor(_menuName!).deep
-                    : AppColors.accent,
+  Widget build(BuildContext context) {
+    final stageTint = _stage == _Stage.result && _menuName != null
+        ? toneFor(_menuName!).deep
+        : AppColors.accent;
+
+    return Scaffold(
+      backgroundColor: AppColors.ground,
+      body: KioskCanvas(
+        child: Listener(
+          onPointerDown: (_) => _bumpIdleTimer(),
+          onPointerMove: (_) => _bumpIdleTimer(),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: TweenAnimationBuilder<Color?>(
+                  tween: ColorTween(end: stageTint),
+                  duration: Motion.slow,
+                  curve: Motion.curve,
+                  builder: (context, tint, _) => AmbientField(tint: tint),
+                ),
               ),
-            ),
-            Positioned.fill(
-              child: AbsorbPointer(
-                absorbing: _busy,
-                child: FadeTransition(
-                  opacity: _opacity,
-                  child: RepaintBoundary(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(child: _buildStage()),
-                        if (_stage == _Stage.idle || _stage == _Stage.intro)
-                          const Positioned(
-                            right: 88,
-                            top: 52,
-                            child: LangToggle(),
+              Positioned.fill(
+                child: AbsorbPointer(
+                  absorbing: _busy,
+                  child: AnimatedBuilder(
+                    animation: _stageMotion,
+                    builder: (context, child) {
+                      final value = _stageMotion.value;
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, 18 * (1 - value)),
+                          child: Transform.scale(
+                            scale: 0.988 + (0.012 * value),
+                            alignment: Alignment.center,
+                            child: child,
                           ),
-                      ],
+                        ),
+                      );
+                    },
+                    child: RepaintBoundary(
+                      child: Stack(
+                        children: [
+                          Positioned.fill(child: _buildStage()),
+                          if (_stage == _Stage.idle || _stage == _Stage.intro)
+                            const Positioned(
+                              right: 88,
+                              top: 52,
+                              child: LangToggle(),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _buildStage() {
     switch (_stage) {

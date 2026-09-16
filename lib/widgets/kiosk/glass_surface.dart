@@ -40,8 +40,12 @@ class GlassSurface extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              accentColor.withValues(alpha: strong ? 0.94 : 0.86),
-              AppColors.accentDeep.withValues(alpha: strong ? 0.96 : 0.88),
+              Color.lerp(
+                accentColor,
+                AppColors.blossom,
+                0.12,
+              )!.withValues(alpha: strong ? 0.98 : 0.91),
+              AppColors.accentDeep.withValues(alpha: strong ? 0.98 : 0.92),
             ],
           )
         : LinearGradient(
@@ -49,7 +53,7 @@ class GlassSurface extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               strong ? AppColors.glassStrong : AppColors.glass,
-              AppColors.champagneSoft.withValues(alpha: strong ? 0.30 : 0.16),
+              AppColors.celadonSoft.withValues(alpha: strong ? 0.44 : 0.26),
             ],
           );
 
@@ -59,8 +63,8 @@ class GlassSurface extends StatelessWidget {
         borderRadius: border,
         border: Border.all(
           color: accented
-              ? AppColors.champagne.withValues(alpha: 0.40)
-              : Colors.white.withValues(alpha: 0.72),
+              ? AppColors.blossomSoft.withValues(alpha: 0.72)
+              : Colors.white.withValues(alpha: 0.88),
           width: accented ? 1.2 : 1,
         ),
       ),
@@ -78,7 +82,7 @@ class GlassSurface extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.white.withValues(alpha: 0),
-                    Colors.white.withValues(alpha: accented ? 0.48 : 0.92),
+                    Colors.white.withValues(alpha: accented ? 0.58 : 0.96),
                     Colors.white.withValues(alpha: 0),
                   ],
                 ),
@@ -95,9 +99,16 @@ class GlassSurface extends StatelessWidget {
         borderRadius: border,
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentDeep.withValues(alpha: strong ? 0.15 : 0.08),
-            blurRadius: strong ? 34 : 22,
-            offset: const Offset(0, 12),
+            color: AppColors.accentDeep.withValues(
+              alpha: accented ? 0.20 : (strong ? 0.13 : 0.075),
+            ),
+            blurRadius: strong ? 38 : 26,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: accented ? 0.08 : 0.5),
+            blurRadius: 1,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
@@ -106,8 +117,8 @@ class GlassSurface extends StatelessWidget {
         child: blurBackdrop
             ? BackdropFilter(
                 filter: ImageFilter.blur(
-                  sigmaX: strong ? 28 : 18,
-                  sigmaY: strong ? 28 : 18,
+                  sigmaX: strong ? 24 : 14,
+                  sigmaY: strong ? 24 : 14,
                 ),
                 child: surface,
               )

@@ -42,6 +42,7 @@ class _ResultScreenState extends State<ResultScreen> {
     final runnerUp =
         dagwaResults[result.runnerUp] ??
         dagwaResults[_runnerUpAliases[result.runnerUp]];
+    final tone = toneFor(result.menuName);
     return Stack(
       children: [
         ExcludeSemantics(
@@ -60,7 +61,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         flex: 5,
                         child: DangwaImage(
                           assetPath: result.imagePath,
-                          tone: toneFor(result.menuName),
+                          tone: tone,
                           aspectRatio: 0.95,
                           padding: 0.10,
                         ),
@@ -80,7 +81,7 @@ class _ResultScreenState extends State<ResultScreen> {
                               ),
                               // 번역되는 문구라 언어에 따라 자간을 가른다.
                               style: Type.eyebrow(
-                                AppColors.accent,
+                                tone.deep,
                                 latin: isEn,
                                 tracking: 3,
                               ),
@@ -120,9 +121,9 @@ class _ResultScreenState extends State<ResultScreen> {
                                         color: AppColors.celadonSoft,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.local_cafe_outlined,
-                                        color: AppColors.accent,
+                                        color: tone.deep,
                                         size: 23,
                                       ),
                                     ),
@@ -140,7 +141,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                         textAlign: TextAlign.right,
                                         style: Type.section.copyWith(
                                           fontSize: 22,
-                                          color: AppColors.accentDeep,
+                                          color: tone.deep,
                                         ),
                                       ),
                                     ),
@@ -157,6 +158,7 @@ class _ResultScreenState extends State<ResultScreen> {
                               ),
                               fullWidth: true,
                               icon: Icons.arrow_forward_rounded,
+                              accentColor: tone.deep,
                               onPressed: () => setState(() => _story = true),
                             ),
                             const SizedBox(height: 12),
@@ -225,7 +227,7 @@ class _ResultScreenState extends State<ResultScreen> {
         if (_story)
           StorySheet(
             result: result,
-            tone: toneFor(result.menuName),
+            tone: tone,
             onClose: () => setState(() => _story = false),
           ),
       ],

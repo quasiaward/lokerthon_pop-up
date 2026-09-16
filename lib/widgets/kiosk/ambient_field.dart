@@ -36,12 +36,17 @@ class _AmbientFieldState extends State<AmbientField>
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: IgnorePointer(
-        child: CustomPaint(
-          painter: _AmbientPainter(
-            progress: _c,
-            tint: widget.tint ?? AppColors.accent,
-          ),
-          size: Size.infinite,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(
+              painter: _AmbientPainter(
+                progress: _c,
+                tint: widget.tint ?? AppColors.accent,
+              ),
+            ),
+            const RepaintBoundary(child: CustomPaint(painter: _GrainPainter())),
+          ],
         ),
       ),
     );
@@ -68,14 +73,13 @@ class _AmbientPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 금색 덩어리를 걷어내고 청자와 자두빛으로 바꿨다. 금빛이 화면 전체를
-    // 누렇게 덮으면서 예스러운 인상을 만들던 가장 큰 원인이었다.
-    // 세기도 낮춰 바탕이 깨끗하게 남도록 했다.
+    // 워드마크의 열매 분홍, 잎의 연두, 브랜드 와인을 넓고 낮은 농도로
+    // 겹친다. 어느 화면에서도 특정 색 덩어리가 먼저 보이지 않게 한다.
     final orbs = <_Orb>[
-      const _Orb(Color(0xFF7D2742), 0.13, 660, -0.10, -0.04, 0.0),
-      const _Orb(Color(0xFF7E9A90), 0.11, 600, 0.66, -0.10, 0.3),
-      const _Orb(Color(0xFF8E7F9B), 0.08, 560, 0.72, 0.58, 0.55),
-      _Orb(tint, 0.07, 500, 0.12, 0.66, 0.8),
+      const _Orb(AppColors.blossom, 0.10, 720, -0.14, -0.08, 0.0),
+      const _Orb(AppColors.celadon, 0.09, 660, 0.68, -0.12, 0.3),
+      const _Orb(Color(0xFFB6A3C0), 0.055, 620, 0.70, 0.60, 0.55),
+      _Orb(tint, 0.065, 560, 0.08, 0.68, 0.8),
     ];
 
     for (final o in orbs) {
@@ -103,4 +107,25 @@ class _AmbientPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _AmbientPainter old) => old.tint != tint;
+}
+
+/// 한지의 섬유감을 흉내 내는 정적인 미세 패턴. 움직이는 오브와 분리해 두어
+/// 60fps 애니메이션 중에는 다시 그리지 않는다.
+class _GrainPainter extends CustomPainter {
+  const _GrainPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final grain = Paint()..color = AppColors.ink.withValues(alpha: 0.018);
+    const gap = 44.0;
+    for (double y = 18; y < size.height; y += gap) {
+      final row = (y / gap).floor();
+      for (double x = row.isEven ? 20 : 42; x < size.width; x += gap * 1.7) {
+        canvas.drawCircle(Offset(x, y), 0.7, grain);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GrainPainter old) => false;
 }

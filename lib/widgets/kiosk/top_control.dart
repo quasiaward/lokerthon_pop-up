@@ -14,7 +14,7 @@ class TopControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 58,
+    height: 60,
     child: Row(
       children: [
         if (onBack == null)
@@ -52,22 +52,30 @@ class _GlassControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GlassSurface(
-    radius: 22,
+    radius: 23,
     blurBackdrop: true,
     child: Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(23),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 23,
-                color: muted ? AppColors.muted : AppColors.accent,
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: muted ? AppColors.celadonSoft : AppColors.accentSoft,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: muted ? AppColors.muted : AppColors.accent,
+                ),
               ),
               const SizedBox(width: 9),
               Text(

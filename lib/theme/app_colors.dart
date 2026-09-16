@@ -20,41 +20,45 @@ class AppColors {
   /// 화면 바탕. 순백이 아니되 노랗지 않은 본 톤.
   /// 흰 유리 카드가 떠 보이도록 한 단계 낮춰 뒀다. 바탕과 카드가 같은
   /// 밝기면 멀리서 카드가 눌리는 면으로 읽히지 않는다.
-  static const ground = Color(0xFFEEEDE9);
-  static const surface = Color(0xFFFBFAF8);
-  static const cream = Color(0xFFE9E7E2);
-  static const mist = Color(0xFFDDDAD4);
-  static const line = Color(0xFFD4D0CA);
-  static const lineStrong = Color(0xFFA9A49D);
+  static const ground = Color(0xFFF2EFEB);
+  static const surface = Color(0xFFFFFCF9);
+  static const cream = Color(0xFFEAE5DF);
+  static const mist = Color(0xFFDDD7D0);
+  static const line = Color(0xFFD0C8C0);
+  static const lineStrong = Color(0xFF968D86);
 
   // ── 먹 ────────────────────────────────────────────────────────────
-  static const ink = Color(0xFF1B1A19);
-  static const charcoal = Color(0xFF383634);
-  static const muted = Color(0xFF6B6763);
+  static const ink = Color(0xFF262220);
+  static const charcoal = Color(0xFF46403C);
+  static const muted = Color(0xFF6A625D);
 
   /// 캡션용. 부스에서 서서 읽는 화면이라 ground 위에서 4.5:1을 넘긴다.
-  static const faint = Color(0xFF706C67);
+  static const faint = Color(0xFF736A64);
 
   // ── 앵커: 와인 ────────────────────────────────────────────────────
   /// 갈색기를 덜고 붉은기를 살린 와인. 브랜드의 중심.
-  static const accent = Color(0xFF7D2742);
-  static const accentDeep = Color(0xFF4E162A);
-  static const accentSoft = Color(0xFFF3E5E8);
+  static const accent = Color(0xFF873D56);
+  static const accentDeep = Color(0xFF532536);
+  static const accentSoft = Color(0xFFF5E4E8);
+
+  /// 새 워드마크의 열매색. 넓은 면보다 작은 신호와 빛에 사용한다.
+  static const blossom = Color(0xFFE9838D);
+  static const blossomSoft = Color(0xFFFBEAEC);
 
   // ── 보조: 청자 ────────────────────────────────────────────────────
   /// 금빛을 대신하는 차분한 청록. 와인의 열기를 식혀 준다.
-  static const celadon = Color(0xFF7E9A90);
-  static const celadonSoft = Color(0xFFE7EDEA);
+  static const celadon = Color(0xFF8D9B69);
+  static const celadonSoft = Color(0xFFE9ECE0);
 
   /// 아주 절제된 금속기. 헤어라인과 작은 표시에만 쓴다.
-  static const champagne = Color(0xFFC3B49B);
-  static const champagneSoft = Color(0xFFEDE8DF);
+  static const champagne = Color(0xFFC7B59C);
+  static const champagneSoft = Color(0xFFEFE8DF);
 
   /// 캔버스 바깥 여백.
-  static const surround = Color(0xFF151518);
+  static const surround = Color(0xFF171416);
 
-  static const glass = Color(0xB8FBFAF8);
-  static const glassStrong = Color(0xE8FBFAF8);
+  static const glass = Color(0xC8FFFCF9);
+  static const glassStrong = Color(0xF0FFFCF9);
 }
 
 class Space {
@@ -82,10 +86,12 @@ class Radii {
 
 class Motion {
   const Motion._();
-  static const fast = Duration(milliseconds: 140);
-  static const base = Duration(milliseconds: 260);
-  static const slow = Duration(milliseconds: 420);
-  static const reveal = Duration(milliseconds: 520);
-  static const exit = Duration(milliseconds: 140);
-  static const curve = Curves.easeOutQuart;
+  static const fast = Duration(milliseconds: 150);
+  static const base = Duration(milliseconds: 300);
+  static const slow = Duration(milliseconds: 480);
+  static const reveal = Duration(milliseconds: 560);
+  static const exit = Duration(milliseconds: 150);
+  static const curve = Cubic(0.16, 1, 0.3, 1);
+  static const emphasized = Cubic(0.22, 1, 0.36, 1);
+  static const exitCurve = Cubic(0.4, 0, 1, 1);
 }

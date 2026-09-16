@@ -21,28 +21,43 @@ class LangToggle extends StatelessWidget {
             for (final lang in Lang.values)
               Semantics(
                 selected: selectedLang == lang,
-                child: TextButton(
-                  onPressed: () => appLang.value = lang,
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(62, 46),
-                    foregroundColor: selectedLang == lang
-                        ? AppColors.surface
-                        : AppColors.muted,
-                    backgroundColor: selectedLang == lang
-                        ? AppColors.accent
-                        : Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
-                    ),
-                  ),
-                  child: Text(
-                    lang.label,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: selectedLang == lang
-                          ? AppColors.surface
-                          : AppColors.muted,
+                child: AnimatedScale(
+                  scale: selectedLang == lang ? 1 : 0.97,
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : Motion.base,
+                  curve: Motion.curve,
+                  child: TextButton(
+                    onPressed: () => appLang.value = lang,
+                    style:
+                        TextButton.styleFrom(
+                          minimumSize: const Size(62, 46),
+                          foregroundColor: selectedLang == lang
+                              ? AppColors.surface
+                              : AppColors.muted,
+                          backgroundColor: selectedLang == lang
+                              ? AppColors.accent
+                              : Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(17),
+                          ),
+                          elevation: 0,
+                        ).copyWith(
+                          animationDuration:
+                              MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : Motion.base,
+                        ),
+                    child: Text(
+                      lang.label,
+                      style: TextStyle(
+                        fontSize: 17,
+                        letterSpacing: 0.3,
+                        fontWeight: FontWeight.w700,
+                        color: selectedLang == lang
+                            ? AppColors.surface
+                            : AppColors.muted,
+                      ),
                     ),
                   ),
                 ),

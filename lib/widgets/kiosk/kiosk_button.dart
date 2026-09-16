@@ -36,7 +36,8 @@ class _KioskButtonState extends State<KioskButton> {
     final primary = widget.variant == KioskButtonVariant.primary;
     final textOnly = widget.variant == KioskButtonVariant.text;
     final enabled = widget.onPressed != null;
-    final foreground = primary ? AppColors.surface : AppColors.charcoal;
+    final foreground = primary ? AppColors.surface : AppColors.accentDeep;
+    final reduced = MediaQuery.disableAnimationsOf(context);
 
     final content = Semantics(
       button: true,
@@ -50,7 +51,7 @@ class _KioskButtonState extends State<KioskButton> {
               : null,
           borderRadius: BorderRadius.circular(Radii.button),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Row(
               mainAxisSize: widget.fullWidth
                   ? MainAxisSize.max
@@ -66,7 +67,12 @@ class _KioskButtonState extends State<KioskButton> {
                 ),
                 if (widget.icon != null) ...[
                   const SizedBox(width: 14),
-                  Icon(widget.icon, size: 25, color: foreground),
+                  AnimatedSlide(
+                    offset: _pressed ? const Offset(0.12, 0) : Offset.zero,
+                    duration: reduced ? Duration.zero : Motion.fast,
+                    curve: Motion.curve,
+                    child: Icon(widget.icon, size: 25, color: foreground),
+                  ),
                 ],
               ],
             ),
@@ -76,14 +82,14 @@ class _KioskButtonState extends State<KioskButton> {
     );
 
     return AnimatedScale(
-      scale: _pressed ? 0.975 : 1,
-      duration: Motion.fast,
+      scale: _pressed ? 0.97 : 1,
+      duration: reduced ? Duration.zero : Motion.fast,
       curve: Motion.curve,
       child: Opacity(
         opacity: enabled ? 1 : 0.45,
         child: SizedBox(
           width: widget.fullWidth ? double.infinity : null,
-          height: textOnly ? 58 : 74,
+          height: textOnly ? 56 : 72,
           child: textOnly
               ? content
               : GlassSurface(

@@ -12,11 +12,24 @@ class KioskProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Text(
-        '$step',
-        style: Type.section.copyWith(fontSize: 22, color: AppColors.accent),
+      AnimatedContainer(
+        duration: Motion.base,
+        curve: Motion.curve,
+        width: 42,
+        height: 42,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.accentSoft,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.accent.withValues(alpha: 0.18)),
+        ),
+        child: Text(
+          '$step',
+          style: Type.section.copyWith(fontSize: 20, color: AppColors.accent),
+        ),
       ),
-      Text(' / $total', style: Type.bodyMuted.copyWith(fontSize: 21)),
+      const SizedBox(width: 9),
+      Text('/ $total', style: Type.bodyMuted.copyWith(fontSize: 19)),
       const SizedBox(width: 22),
       Expanded(
         child: Row(
@@ -28,7 +41,7 @@ class KioskProgress extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: Motion.base,
                     curve: Motion.curve,
-                    height: 5,
+                    height: i < step ? 6 : 4,
                     decoration: BoxDecoration(
                       gradient: i < step
                           ? const LinearGradient(

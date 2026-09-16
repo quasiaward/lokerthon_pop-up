@@ -53,29 +53,74 @@ class _TransitionScreenState extends State<TransitionScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         const BrandMark(compact: true),
-        const SizedBox(height: 32),
-        AnimatedBuilder(
-          animation: _pulse,
-          builder: (context, child) => Transform.scale(
-            scale: 0.985 + (_pulse.value * 0.025),
-            child: child,
-          ),
-          child: GlassSurface(
-            radius: 48,
-            blurBackdrop: true,
-            child: Padding(
-              padding: const EdgeInsets.all(22),
-              child: SizedBox(
-                width: 250,
-                child: DangwaImage(
-                  assetPath: dagwaResults[widget.menuName]!.imagePath,
-                  tone: toneFor(widget.menuName),
+        const SizedBox(height: 26),
+        SizedBox(
+          width: 350,
+          height: 350,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _pulse,
+                builder: (context, _) {
+                  final value = Curves.easeInOut.transform(_pulse.value);
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 318 + (14 * value),
+                        height: 318 + (14 * value),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.accent.withValues(
+                              alpha: 0.10 + (0.08 * value),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 292 - (8 * value),
+                        height: 292 - (8 * value),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.celadon.withValues(
+                              alpha: 0.18 + (0.08 * (1 - value)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              AnimatedBuilder(
+                animation: _pulse,
+                builder: (context, child) => Transform.scale(
+                  scale: 0.99 + (_pulse.value * 0.018),
+                  child: child,
+                ),
+                child: GlassSurface(
+                  radius: 54,
+                  blurBackdrop: true,
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: SizedBox(
+                      width: 250,
+                      child: DangwaImage(
+                        assetPath: dagwaResults[widget.menuName]!.imagePath,
+                        tone: toneFor(widget.menuName),
+                        padding: 0.13,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
-        const SizedBox(height: 34),
+        const SizedBox(height: 26),
         Text(
           tr(
             '당신의 취향을 담아\n다과를 고르고 있어요.',
@@ -85,15 +130,18 @@ class _TransitionScreenState extends State<TransitionScreen>
           textAlign: TextAlign.center,
           style: Type.section.copyWith(fontSize: 32, height: 1.42),
         ),
-        const SizedBox(height: 24),
-        Container(
-          width: 72,
-          height: 4,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.accent, AppColors.celadon],
+        const SizedBox(height: 26),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: SizedBox(
+            width: 96,
+            height: 5,
+            child: LinearProgressIndicator(
+              value: null,
+              backgroundColor: AppColors.mist,
+              color: AppColors.accent,
+              borderRadius: BorderRadius.circular(99),
             ),
-            borderRadius: BorderRadius.circular(3),
           ),
         ),
       ],

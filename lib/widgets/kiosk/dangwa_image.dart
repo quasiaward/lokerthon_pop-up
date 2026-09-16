@@ -25,32 +25,73 @@ class DangwaImage extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Radii.asset),
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.76),
-                Color.lerp(
-                  tone.soft,
-                  AppColors.champagneSoft,
-                  0.35,
-                )!.withValues(alpha: 0.66),
-              ],
+              colors: [Color(0xEFFFFFFF), Color(0xBFFFFFFF)],
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.78)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.92)),
             boxShadow: [
               BoxShadow(
-                color: tone.deep.withValues(alpha: 0.13),
-                blurRadius: 44,
-                offset: const Offset(0, 22),
+                color: tone.deep.withValues(alpha: 0.14),
+                blurRadius: 52,
+                spreadRadius: -4,
+                offset: const Offset(0, 24),
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.56),
+                blurRadius: 2,
+                offset: const Offset(0, -1),
               ),
             ],
           ),
-          padding: EdgeInsets.all(constraints.maxWidth * padding),
-          child: Image.asset(
-            assetPath,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.medium,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned(
+                width: constraints.maxWidth * 0.78,
+                height: constraints.maxWidth * 0.78,
+                right: -constraints.maxWidth * 0.18,
+                top: -constraints.maxWidth * 0.24,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        tone.soft.withValues(alpha: 0.82),
+                        tone.soft.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 28,
+                right: 28,
+                top: 0,
+                child: Container(
+                  height: 1.2,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0),
+                        Colors.white,
+                        Colors.white.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(constraints.maxWidth * padding),
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+            ],
           ),
         ),
       ),

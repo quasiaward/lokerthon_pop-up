@@ -75,16 +75,54 @@ class QuestionScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Center(
-          child: Text(
-            error ??
-                tr(
-                  '선택하면 다음 질문으로 넘어가요',
-                  'Choose an answer to continue',
-                  '選ぶと次の質問に進みます',
+          child: AnimatedSwitcher(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : Motion.base,
+            switchInCurve: Motion.curve,
+            child: Container(
+              key: ValueKey(error),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+              decoration: BoxDecoration(
+                color: error == null
+                    ? Colors.white.withValues(alpha: 0.45)
+                    : Colors.red.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(
+                  color: error == null
+                      ? Colors.white.withValues(alpha: 0.68)
+                      : Colors.red.withValues(alpha: 0.16),
                 ),
-            style: Type.caption.copyWith(
-              fontSize: 19,
-              color: error == null ? AppColors.muted : Colors.red.shade700,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    error == null
+                        ? Icons.touch_app_outlined
+                        : Icons.refresh_rounded,
+                    size: 19,
+                    color: error == null
+                        ? AppColors.accent
+                        : Colors.red.shade700,
+                  ),
+                  const SizedBox(width: 9),
+                  Text(
+                    error ??
+                        tr(
+                          '선택하면 다음 질문으로 넘어가요',
+                          'Choose an answer to continue',
+                          '選ぶと次の質問に進みます',
+                        ),
+                    style: Type.caption.copyWith(
+                      fontSize: 18,
+                      color: error == null
+                          ? AppColors.muted
+                          : Colors.red.shade700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
