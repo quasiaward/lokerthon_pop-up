@@ -17,14 +17,18 @@ class BloomBackdrop extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 우상단 — 청자빛 꽃
+          // 우상단 — 청자빛 꽃.
+          //
+          // 이 에셋은 원본에서 화면 밖으로 넘기려고 한쪽이 평평하게 잘린 채
+          // export됐다. 잘린 단면(오른쪽)이 반드시 화면 밖으로 나가도록 음수로
+          // 밀어 둔다. 안으로 들어오면 칼로 자른 듯한 직선이 그대로 보인다.
           Positioned(
-            right: -168,
-            top: -186,
+            right: -70,
+            top: -140,
             child: Image.asset(
               'assets/figma/deco/deco_bloom_celadon.png',
-              width: 620,
-              cacheWidth: 1240,
+              width: 380,
+              cacheWidth: 760,
               // 청록은 같은 농도에서도 분홍보다 눈에 띈다. 좌하단과 무게를
               // 맞추려고 한 단계 눌러 둔다. Image의 opacity는 saveLayer 없이
               // 그리기 단계에서 처리돼 Opacity 위젯보다 싸다.
