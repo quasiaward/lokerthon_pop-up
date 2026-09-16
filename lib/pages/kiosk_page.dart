@@ -57,10 +57,17 @@ class _KioskPageState extends State<KioskPage>
   /// 해당 화면에서 바로 시작한다. 지정하지 않으면 늘 idle에서 시작한다.
   static const _debugStage = String.fromEnvironment('KIOSK_STAGE');
 
+  /// 결과 화면을 특정 다과로 띄워 보기 위한 확인용 값.
+  /// `--dart-define=KIOSK_MENU=금귤정과` 처럼 지정한다. 목록에 없는 이름이면
+  /// 무시하고 첫 번째 다과를 쓴다.
+  static const _debugMenu = String.fromEnvironment('KIOSK_MENU');
+
   late _Stage _stage = _initialStage();
   int _step = 0;
   late List<String?> _answers = List.filled(quizQuestions.length, null);
-  late String? _menuName = _debugStage.isEmpty ? null : dagwaMenus.first;
+  late String? _menuName = _debugStage.isEmpty
+      ? null
+      : (dagwaMenus.contains(_debugMenu) ? _debugMenu : dagwaMenus.first);
   Timer? _idleTimer;
 
   _Stage _initialStage() => switch (_debugStage) {

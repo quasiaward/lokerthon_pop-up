@@ -226,7 +226,7 @@ void main() {
             .widgetList<Text>(find.byType(Text))
             .map((t) => t.data ?? '')
             .join();
-        expect(title.contains('오늘, 나와'), lang == Lang.ko);
+        expect(title.contains('오늘, 나에게'), lang == Lang.ko);
       }
       await tester.tap(find.byType(IdleScreen));
       await frames(tester);

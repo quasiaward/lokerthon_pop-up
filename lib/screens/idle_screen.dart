@@ -83,7 +83,7 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
                         const SizedBox(height: 18),
                         Text(
                           tr(
-                            '오늘, 나와\n어울리는 다과는?',
+                            '오늘, 나에게\n어울리는 다과는?',
                             'Which dagwa\nsuits you today?',
                             '今日のあなたに\n似合う茶菓は？',
                           ),

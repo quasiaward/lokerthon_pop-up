@@ -90,7 +90,7 @@ void main() {
 
     // 01 · Idle
     expect(find.byType(IdleScreen), findsOneWidget);
-    expect(find.text('오늘, 나와\n어울리는 다과는?'), findsOneWidget);
+    expect(find.text('오늘, 나에게\n어울리는 다과는?'), findsOneWidget);
 
     // 화면 아무 곳이나 터치하면 Intro로
     await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
