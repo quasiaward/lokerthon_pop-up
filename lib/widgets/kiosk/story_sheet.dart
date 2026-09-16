@@ -222,14 +222,14 @@ class _StorySheetState extends State<StorySheet>
                                         ),
                                         const SizedBox(height: 28),
                                         _Note(
-                                          icon: Icons.local_cafe_outlined,
+                                          icon: Icons.local_cafe_rounded,
                                           label:
                                               '${tr('어울리는 차', 'Pairs with', '相性のよいお茶')} · ${result.pairing.t}',
                                           body: result.pairingDesc.t,
                                         ),
                                         const SizedBox(height: 18),
                                         _Note(
-                                          icon: Icons.auto_awesome_outlined,
+                                          icon: Icons.auto_awesome_rounded,
                                           label:
                                               '${tr('이런 다과도', 'Also try', 'こちらの茶菓も')} · ${dagwaResults[result.runnerUp]?.name.t ?? result.runnerUp}',
                                           body: result.runnerUpDesc.t,

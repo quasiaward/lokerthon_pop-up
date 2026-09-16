@@ -97,16 +97,16 @@ class QuestionScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    error == null
-                        ? Icons.touch_app_outlined
-                        : Icons.refresh_rounded,
-                    size: 19,
-                    color: error == null
-                        ? AppColors.accent
-                        : Colors.red.shade700,
-                  ),
-                  const SizedBox(width: 9),
+                  // 아이콘은 할 일이 생겼을 때만 나온다. 평상시 안내는 문구로
+                  // 충분하고, 장식으로 얹은 아이콘은 의미를 만들지 못한다.
+                  if (error != null) ...[
+                    Icon(
+                      Icons.refresh_rounded,
+                      size: 20,
+                      color: Colors.red.shade700,
+                    ),
+                    const SizedBox(width: 9),
+                  ],
                   Text(
                     error ??
                         tr(

@@ -171,7 +171,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
                             ? const Icon(
                                 Icons.check_rounded,
                                 key: ValueKey('selected'),
-                                size: 21,
+                                size: 20,
                                 color: Colors.white,
                               )
                             : const SizedBox(key: ValueKey('unselected')),

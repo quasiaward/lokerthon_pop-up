@@ -71,7 +71,7 @@ class _KioskButtonState extends State<KioskButton> {
                     offset: _pressed ? const Offset(0.12, 0) : Offset.zero,
                     duration: reduced ? Duration.zero : Motion.fast,
                     curve: Motion.curve,
-                    child: Icon(widget.icon, size: 25, color: foreground),
+                    child: Icon(widget.icon, size: 24, color: foreground),
                   ),
                 ],
               ],

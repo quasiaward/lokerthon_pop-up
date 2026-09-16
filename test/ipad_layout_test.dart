@@ -9,6 +9,7 @@ import 'package:haenggung_dagwa/screens/intro_screen.dart';
 import 'package:haenggung_dagwa/screens/question_screen.dart';
 import 'package:haenggung_dagwa/screens/result_screen.dart';
 import 'package:haenggung_dagwa/screens/transition_screen.dart';
+import 'package:haenggung_dagwa/widgets/kiosk/tap_cue.dart';
 
 /// iPad Pro 12.9형(5세대) 가로 논리 해상도.
 const _iPadLandscape = Size(1366, 1024);
@@ -39,6 +40,31 @@ Future<void> _tapText(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets('Idle과 Intro의 시작 안내가 같은 하단 중심축을 유지한다', (tester) async {
+    await _pumpKiosk(tester);
+
+    final idleCue = tester.getCenter(
+      find.descendant(
+        of: find.byType(TapCue),
+        matching: find.byKey(const ValueKey('tap-cue-surface')),
+      ),
+    );
+
+    await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
+    await _settle(tester);
+
+    final introCue = tester.getCenter(
+      find.descendant(
+        of: find.byType(TapCue),
+        matching: find.byKey(const ValueKey('tap-cue-surface')),
+      ),
+    );
+
+    expect(idleCue.dx, closeTo(_iPadLandscape.width / 2, 0.5));
+    expect(introCue.dx, closeTo(idleCue.dx, 0.5));
+    expect(introCue.dy, closeTo(idleCue.dy, 0.5));
+  });
+
   testWidgets('전환 중 이전 화면과 다음 화면이 동시에 그려지지 않는다', (tester) async {
     await _pumpKiosk(tester);
 
@@ -108,7 +134,8 @@ void main() {
     await _pumpKiosk(tester);
     await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
     await _settle(tester);
-    await _tapText(tester, '화면을 터치해 시작하기');
+    // Intro도 화면 전체가 탭 영역이다. 안내 문구는 버튼이 아니다.
+    await tester.tap(find.byType(IntroScreen), warnIfMissed: false);
     await _settle(tester);
 
     for (final q in quizQuestions) {

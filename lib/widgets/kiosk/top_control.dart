@@ -28,7 +28,7 @@ class TopControl extends StatelessWidget {
         const Expanded(child: Center(child: BrandMark(compact: true))),
         _GlassControl(
           onPressed: onHome,
-          icon: Icons.home_outlined,
+          icon: Icons.home_rounded,
           label: tr('처음으로', 'Home', 'はじめに戻る'),
           muted: true,
         ),

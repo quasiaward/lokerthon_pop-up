@@ -4,7 +4,7 @@ import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/brand_mark.dart';
-import '../widgets/kiosk/glass_surface.dart';
+import '../widgets/kiosk/tap_cue.dart';
 import '../widgets/kiosk/rotating_dangwa_image.dart';
 
 /// 01 · Attract / Idle — 아무도 쓰지 않을 때 보이는 화면.
@@ -28,23 +28,9 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
     duration: const Duration(seconds: 8),
   )..repeat(reverse: true);
 
-  /// 터치 신호의 파문. 2~3m 밖에서도 눈에 들어오게 하는 유일한 움직임이다.
-  late final _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2200),
-  )..repeat();
-
-  /// 안내 문구의 숨소리. 파문과 주기를 어긋나게 둬서 기계적으로 보이지 않는다.
-  late final _breathe = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 3),
-  )..repeat(reverse: true);
-
   @override
   void dispose() {
     _float.dispose();
-    _pulse.dispose();
-    _breathe.dispose();
     super.dispose();
   }
 
@@ -98,7 +84,7 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            _TapCue(pulse: _pulse, breathe: _breathe),
+            const Align(alignment: Alignment.bottomCenter, child: TapCue()),
           ],
         ),
       ),
@@ -134,81 +120,6 @@ class _Hero extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// 하단의 터치 신호 — 파문이 퍼지는 원과 손가락 아이콘, 그리고 안내 문구.
-class _TapCue extends StatelessWidget {
-  const _TapCue({required this.pulse, required this.breathe});
-
-  final Animation<double> pulse;
-  final Animation<double> breathe;
-
-  static const _size = 60.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        RepaintBoundary(
-          child: SizedBox(
-            width: _size,
-            height: _size,
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                // 밖으로 번져 나가는 파문.
-                AnimatedBuilder(
-                  animation: pulse,
-                  builder: (context, _) => Transform.scale(
-                    scale: 1 + 0.55 * pulse.value,
-                    child: Opacity(
-                      opacity: (0.5 * (1 - pulse.value)).clamp(0.0, 1.0),
-                      child: Container(
-                        width: _size,
-                        height: _size,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.accent),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                GlassSurface(
-                  radius: _size / 2,
-                  child: const SizedBox(
-                    width: _size,
-                    height: _size,
-                    child: Icon(
-                      Icons.touch_app_outlined,
-                      color: AppColors.accent,
-                      size: 26,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        AnimatedBuilder(
-          animation: breathe,
-          builder: (context, child) =>
-              Opacity(opacity: 0.55 + 0.45 * breathe.value, child: child),
-          child: Text(
-            tr('화면 어디든 터치해 시작하기', 'Touch anywhere to begin', '画面のどこでもタッチして開始'),
-            style: Type.section.copyWith(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: AppColors.charcoal,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

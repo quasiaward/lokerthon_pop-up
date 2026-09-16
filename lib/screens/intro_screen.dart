@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/kiosk/tap_cue.dart';
 import '../widgets/kiosk/brand_mark.dart';
 import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/rotating_dangwa_image.dart';
@@ -32,7 +33,7 @@ class _IntroScreenState extends State<IntroScreen> {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(88, 52, 88, 58),
+    padding: const EdgeInsets.fromLTRB(88, 52, 88, 72),
     child: Column(
       children: [
         // 상단 조작부는 전체 화면 시작 제스처에서 분리한다. 이전 버튼이나
@@ -54,96 +55,96 @@ class _IntroScreenState extends State<IntroScreen> {
           ),
         ),
         Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: _start,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'YOUR TASTE, OUR HERITAGE',
-                              style: Type.eyebrow(
-                                AppColors.accent,
-                                tracking: 2.6,
+          child: Semantics(
+            button: true,
+            excludeSemantics: true,
+            label: tr(
+              '화면을 터치해 다과 추천 질문 시작하기',
+              'Touch the screen to start the recommendation questions',
+              '画面をタッチして茶菓のおすすめ質問を始める',
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _start,
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'YOUR TASTE, OUR HERITAGE',
+                                style: Type.eyebrow(
+                                  AppColors.accent,
+                                  tracking: 2.6,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              tr(
-                                '몇 가지 취향을\n알려주세요.',
-                                'Tell us a few\nof your tastes.',
-                                'いくつかの好みを\n教えてください。',
-                              ),
-                              style: Type.headline,
-                            ),
-                            const SizedBox(height: 28),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 620),
-                              child: Text(
-                                // 한국어·일본어는 음절 단위로 줄이 바뀌어서, 폭에 맡기면
-                                // "골라드/릴게요"처럼 낱말 중간이 끊긴다. 의미 단위로
-                                // 줄바꿈을 직접 넣어 둔다.
+                              const SizedBox(height: 18),
+                              Text(
                                 tr(
-                                  '6개의 짧은 질문으로,\n당신에게 어울리는 한국 전통 다과를 골라드릴게요.',
-                                  'Answer 6 short questions and we will\nfind the Korean confection that suits you.',
-                                  '6つの短い質問から、\nあなたに似合う韓国の伝統茶菓をお選びします。',
+                                  '몇 가지 취향을\n알려주세요.',
+                                  'Tell us a few\nof your tastes.',
+                                  'いくつかの好みを\n教えてください。',
                                 ),
-                                style: Type.bodyMuted.copyWith(
-                                  fontSize: 23,
-                                  height: 1.55,
+                                style: Type.headline,
+                              ),
+                              const SizedBox(height: 28),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 620,
+                                ),
+                                child: Text(
+                                  // 한국어·일본어는 음절 단위로 줄이 바뀌어서, 폭에 맡기면
+                                  // "골라드/릴게요"처럼 낱말 중간이 끊긴다. 의미 단위로
+                                  // 줄바꿈을 직접 넣어 둔다.
+                                  tr(
+                                    '6개의 짧은 질문으로,\n당신에게 어울리는 한국 전통 다과를 골라드릴게요.',
+                                    'Answer 6 short questions and we will\nfind the Korean confection that suits you.',
+                                    '6つの短い質問から、\nあなたに似合う韓国の伝統茶菓をお選びします。',
+                                  ),
+                                  style: Type.bodyMuted.copyWith(
+                                    fontSize: 23,
+                                    height: 1.55,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 70),
-                      Expanded(
-                        flex: 5,
-                        child: RotatingDangwaImage(
-                          initialIndex: 4,
-                          interval: Duration(milliseconds: 4900),
-                          padding: 0.10,
+                        const SizedBox(width: 70),
+                        Expanded(
+                          flex: 5,
+                          child: RotatingDangwaImage(
+                            initialIndex: 4,
+                            interval: Duration(milliseconds: 4900),
+                            padding: 0.10,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                AnimatedScale(
-                  scale: _starting ? 0.985 : 1,
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : Motion.fast,
-                  curve: Motion.curve,
-                  child: _StartCue(
-                    onPressed: _start,
-                    label: tr(
-                      '화면을 터치해 시작하기',
-                      'Touch anywhere to begin',
-                      '画面をタップして始める',
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  tr(
-                    '천천히 골라도 약 1분이면 충분해요',
-                    'Take your time—it takes about a minute',
-                    'ゆっくり選んでも約1分で終わります',
+                  AnimatedScale(
+                    scale: _starting ? 0.985 : 1,
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : Motion.fast,
+                    curve: Motion.curve,
+                    child: TapCue(
+                      supportingText: tr(
+                        '천천히 골라도 약 1분이면 충분해요',
+                        'Take your time—it takes about a minute',
+                        'ゆっくり選んでも約1分で終わります',
+                      ),
+                    ),
                   ),
-                  style: Type.caption.copyWith(fontSize: 18),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -184,7 +185,7 @@ class _IntroBackControl extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.arrow_back_rounded,
-                    size: 21,
+                    size: 20,
                     color: AppColors.accent,
                   ),
                 ),
@@ -198,77 +199,6 @@ class _IntroBackControl extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-/// 화면 전체가 터치 영역임을 알려 주는 작고 가벼운 플로팅 안내 캡슐.
-class _StartCue extends StatelessWidget {
-  const _StartCue({required this.onPressed, required this.label});
-
-  final VoidCallback onPressed;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Center(
-    child: SizedBox(
-      width: 440,
-      height: 68,
-      child: GlassSurface(
-        radius: 34,
-        blurBackdrop: true,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(34),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppColors.accent, AppColors.accentDeep],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.accent.withValues(alpha: 0.24),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.touch_app_rounded,
-                      size: 23,
-                      color: AppColors.surface,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: Type.section.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.charcoal,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 52),
-                ],
-              ),
             ),
           ),
         ),
