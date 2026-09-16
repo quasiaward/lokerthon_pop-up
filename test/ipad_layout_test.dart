@@ -72,8 +72,8 @@ void main() {
     expect(find.byType(IntroScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    // 02 · Intro → 질문
-    await _tapText(tester, '다과 추천 시작하기');
+    // 02 · Intro → 질문. 버튼 밖의 설명 영역을 눌러도 시작된다.
+    await _tapText(tester, '몇 가지 취향을\n알려주세요.');
     await _settle(tester);
     expect(find.byType(QuestionScreen), findsOneWidget);
 
@@ -108,7 +108,7 @@ void main() {
     await _pumpKiosk(tester);
     await tester.tap(find.byType(IdleScreen), warnIfMissed: false);
     await _settle(tester);
-    await _tapText(tester, '다과 추천 시작하기');
+    await _tapText(tester, '화면을 터치해 시작하기');
     await _settle(tester);
 
     for (final q in quizQuestions) {

@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../data/dagwa_results.dart';
-import '../data/dagwa_tones.dart';
 import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
-import '../widgets/kiosk/bloom_backdrop.dart';
 import '../widgets/kiosk/brand_mark.dart';
-import '../widgets/kiosk/dangwa_image.dart';
 import '../widgets/kiosk/glass_surface.dart';
-
-/// 히어로가 오른쪽 여백을 넘어 나가는 정도. 화면에 갇힌 카드가 아니라
-/// 지면 밖으로 흐르는 편집물처럼 보이게 한다.
-const double _heroBleed = 60;
+import '../widgets/kiosk/rotating_dangwa_image.dart';
 
 /// 01 · Attract / Idle — 아무도 쓰지 않을 때 보이는 화면.
 ///
@@ -67,55 +60,47 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
     child: GestureDetector(
       onTap: widget.onStart,
       behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          const Positioned.fill(child: BloomBackdrop()),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(88, 60, 88, 72),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 우상단은 언어 토글이 차지하므로 브랜드 마크만 둔다.
-                const BrandMark(),
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'TASTE OF HWASEONG',
-                              style: Type.eyebrow(
-                                AppColors.accent,
-                                tracking: 3.2,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              tr(
-                                '오늘, 나와\n어울리는 다과는?',
-                                'Which dagwa\nsuits you today?',
-                                '今日のあなたに\n似合う茶菓は？',
-                              ),
-                              style: Type.hero,
-                            ),
-                          ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(88, 60, 88, 72),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 우상단은 언어 토글이 차지하므로 브랜드 마크만 둔다.
+            const BrandMark(),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 6,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'TASTE OF HWASEONG',
+                          style: Type.eyebrow(AppColors.accent, tracking: 3.2),
                         ),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(flex: 6, child: _Hero(float: _float)),
-                    ],
+                        const SizedBox(height: 18),
+                        Text(
+                          tr(
+                            '오늘, 나와\n어울리는 다과는?',
+                            'Which dagwa\nsuits you today?',
+                            '今日のあなたに\n似合う茶菓は？',
+                          ),
+                          style: Type.hero,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                _TapCue(pulse: _pulse, breathe: _breathe),
-              ],
+                  const SizedBox(width: 32),
+                  Expanded(flex: 6, child: _Hero(float: _float)),
+                ],
+              ),
             ),
-          ),
-        ],
+            _TapCue(pulse: _pulse, breathe: _breathe),
+          ],
+        ),
       ),
     ),
   );
@@ -129,26 +114,22 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: const Offset(_heroBleed, 0),
-      child: Center(
-        // 세로 크기를 묶어 둔다. 칼럼 높이에 맡기면 카드가 위로 자라
-        // 우상단 언어 토글에 붙고, 왼쪽 문구보다 무거워진다.
-        child: SizedBox(
-          height: 600,
-          child: AnimatedBuilder(
-            animation: float,
-            builder: (context, child) => Transform.translate(
-              offset: Offset(0, -14 * float.value),
-              child: child,
-            ),
-            child: RepaintBoundary(
-              child: DangwaImage(
-                assetPath: dagwaResults['수원약과']!.imagePath,
-                tone: toneFor('수원약과'),
-                aspectRatio: 0.82,
-                padding: 0.08,
-              ),
+    return Center(
+      // 오른쪽 칼럼의 정중앙에 카드를 둔다. 바깥쪽으로 밀어내던 오프셋을
+      // 제거해 왼쪽 헤드라인과 오른쪽 이미지의 시각적 무게를 맞춘다.
+      child: SizedBox(
+        height: 580,
+        child: AnimatedBuilder(
+          animation: float,
+          builder: (context, child) => Transform.translate(
+            offset: Offset(0, -12 * float.value),
+            child: child,
+          ),
+          child: RepaintBoundary(
+            child: RotatingDangwaImage(
+              initialIndex: 11,
+              aspectRatio: 0.84,
+              padding: 0.08,
             ),
           ),
         ),

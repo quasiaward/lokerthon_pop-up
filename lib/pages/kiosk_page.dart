@@ -16,6 +16,7 @@ import '../services/recommendation_service.dart';
 import '../theme/app_colors.dart';
 import '../l10n/lang.dart';
 import '../widgets/kiosk/ambient_field.dart';
+import '../widgets/kiosk/bloom_backdrop.dart';
 import '../widgets/kiosk/kiosk_canvas.dart';
 import '../widgets/lang_toggle.dart';
 
@@ -280,6 +281,9 @@ class _KioskPageState extends State<KioskPage>
                   builder: (context, tint, _) => AmbientField(tint: tint),
                 ),
               ),
+              // 홈페이지 시안과 같은 두 수채화 조각을 모든 단계에 고정한다.
+              // 화면 콘텐츠와 함께 교체하지 않아 전환 중 위치가 흔들리지 않는다.
+              const Positioned.fill(child: BloomBackdrop()),
               Positioned.fill(
                 child: AbsorbPointer(
                   absorbing: _busy,
