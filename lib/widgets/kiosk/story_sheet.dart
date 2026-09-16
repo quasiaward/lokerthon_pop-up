@@ -209,15 +209,25 @@ class _StorySheetState extends State<StorySheet>
                                       const SizedBox(height: 28),
                                       _Note(
                                         icon: Icons.local_cafe_rounded,
-                                        label:
-                                            '${tr('어울리는 차', 'Pairs with', '相性のよいお茶')} · ${result.pairing.t}',
+                                        label: tr(
+                                          '어울리는 차',
+                                          'Pairs with',
+                                          '相性のよいお茶',
+                                        ),
+                                        value: result.pairing.t,
                                         body: result.pairingDesc.t,
                                       ),
                                       const SizedBox(height: 18),
                                       _Note(
                                         icon: Icons.auto_awesome_rounded,
-                                        label:
-                                            '${tr('이런 다과도', 'Also try', 'こちらの茶菓も')} · ${result.runnerUpResult?.name.t ?? result.runnerUp}',
+                                        label: tr(
+                                          '이런 다과도',
+                                          'Also try',
+                                          'こちらの茶菓も',
+                                        ),
+                                        value:
+                                            result.runnerUpResult?.name.t ??
+                                            result.runnerUp,
                                         body: result.runnerUpDesc.t,
                                       ),
                                     ],
@@ -246,11 +256,22 @@ class _StorySheetState extends State<StorySheet>
   }
 }
 
+/// 상세 시트 하단의 부가 정보 한 칸.
+///
+/// [label]은 무엇에 대한 항목인지, [value]는 그 답이다. 둘을 하나의 문자열로
+/// 이어 붙이면 같은 굵기로 나란히 놓여 어디까지가 항목이고 어디부터가 답인지
+/// 눈이 구분하지 못한다. 크기와 색을 갈라 답이 먼저 읽히게 한다.
 class _Note extends StatelessWidget {
-  const _Note({required this.icon, required this.label, required this.body});
+  const _Note({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.body,
+  });
 
   final IconData icon;
   final String label;
+  final String value;
   final String body;
 
   @override
@@ -279,14 +300,33 @@ class _Note extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Type.section.copyWith(
-                  fontSize: 22,
-                  color: AppColors.accentDeep,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    label,
+                    style: Type.caption.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.muted,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Type.section.copyWith(
+                        fontSize: 23,
+                        color: AppColors.accentDeep,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 body,
                 style: Type.bodyMuted.copyWith(fontSize: 20, height: 1.55),
