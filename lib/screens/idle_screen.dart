@@ -5,6 +5,7 @@ import '../data/dagwa_tones.dart';
 import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/kiosk/bloom_backdrop.dart';
 import '../widgets/kiosk/brand_mark.dart';
 import '../widgets/kiosk/dangwa_image.dart';
 import '../widgets/kiosk/glass_surface.dart';
@@ -66,47 +67,55 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
     child: GestureDetector(
       onTap: widget.onStart,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(88, 60, 88, 72),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 우상단은 언어 토글이 차지하므로 브랜드 마크만 둔다.
-            const BrandMark(),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'TASTE OF HWASEONG',
-                          style: Type.eyebrow(AppColors.accent, tracking: 3.2),
+      child: Stack(
+        children: [
+          const Positioned.fill(child: BloomBackdrop()),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(88, 60, 88, 72),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 우상단은 언어 토글이 차지하므로 브랜드 마크만 둔다.
+                const BrandMark(),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'TASTE OF HWASEONG',
+                              style: Type.eyebrow(
+                                AppColors.accent,
+                                tracking: 3.2,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              tr(
+                                '오늘, 나와\n어울리는 다과는?',
+                                'Which dagwa\nsuits you today?',
+                                '今日のあなたに\n似合う茶菓は？',
+                              ),
+                              style: Type.hero,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 18),
-                        Text(
-                          tr(
-                            '오늘, 나와\n어울리는 다과는?',
-                            'Which dagwa\nsuits you today?',
-                            '今日のあなたに\n似合う茶菓は？',
-                          ),
-                          style: Type.hero,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 32),
+                      Expanded(flex: 6, child: _Hero(float: _float)),
+                    ],
                   ),
-                  const SizedBox(width: 32),
-                  Expanded(flex: 6, child: _Hero(float: _float)),
-                ],
-              ),
+                ),
+                _TapCue(pulse: _pulse, breathe: _breathe),
+              ],
             ),
-            _TapCue(pulse: _pulse, breathe: _breathe),
-          ],
-        ),
+          ),
+        ],
       ),
     ),
   );

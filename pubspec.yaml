@@ -26,6 +26,7 @@ flutter:
     - assets/branding/
     - assets/figma/
     - assets/figma/quiz/
+    - assets/figma/deco/
 
   fonts:
     - family: Pretendard
