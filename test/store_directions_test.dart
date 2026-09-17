@@ -65,6 +65,26 @@ void main() {
     }
   });
 
+  testWidgets('상단 문구가 시트 가운데에 온다', (tester) async {
+    await _pumpSheet(tester);
+    await tester.pump(const Duration(seconds: 1));
+    final sheet = tester.getRect(
+      find
+          .ancestor(
+            of: find.byKey(const ValueKey('directions-eyebrow')),
+            matching: find.byType(SizedBox),
+          )
+          .last,
+    );
+    final text = tester.getRect(
+      find.byKey(const ValueKey('directions-eyebrow')),
+    );
+    expect(sheet.width, 1188);
+    // 자간 보정(2.8)의 절반 이내로 가운데에 맞아야 한다.
+    expect(text.center.dx - 1.4, closeTo(sheet.center.dx, 0.5));
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('경로 애니메이션이 끝나지 않고 반복된다', (tester) async {
     await _pumpSheet(tester);
     for (var i = 0; i < 12 * 20; i++) {

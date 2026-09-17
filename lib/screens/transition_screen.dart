@@ -22,7 +22,11 @@ class TransitionScreen extends StatefulWidget {
 
   final String menuName;
   final VoidCallback onDone;
-  static const duration = Duration(milliseconds: 4200);
+  static const duration = Duration(milliseconds: 3000);
+
+  /// 둘레를 도는 점이 로딩 동안 도는 바퀴 수. 딱 떨어져야 한 바퀴를 다 돈
+  /// 뒤 결과로 넘어가 어색하게 끊기지 않는다.
+  static const laps = 3;
 
   @override
   State<TransitionScreen> createState() => _TransitionScreenState();
@@ -42,7 +46,7 @@ class _TransitionScreenState extends State<TransitionScreen>
 
   late final AnimationController _spin = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1400),
+    duration: TransitionScreen.duration ~/ TransitionScreen.laps,
   );
   late final AnimationController _pulse = AnimationController(
     vsync: this,
@@ -144,7 +148,7 @@ class _TransitionScreenState extends State<TransitionScreen>
           // 앞 문구가 완전히 사라진 뒤 다음 문구가 올라온다. 두 문구가
           // 겹쳐 보이면 급하게 넘기는 인상을 준다.
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 700),
+            duration: const Duration(milliseconds: 600),
             switchInCurve: const Interval(0.5, 1, curve: Motion.curve),
             switchOutCurve: const Interval(0.5, 1),
             transitionBuilder: (child, animation) => FadeTransition(

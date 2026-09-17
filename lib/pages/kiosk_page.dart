@@ -22,6 +22,7 @@ import '../widgets/kiosk/bloom_backdrop.dart';
 import '../widgets/kiosk/kiosk_canvas.dart';
 import '../widgets/kiosk/admin_inventory_sheet.dart';
 import '../widgets/kiosk/admin_pin_pad.dart';
+import '../widgets/kiosk/store_directions_sheet.dart';
 import '../widgets/lang_toggle.dart';
 
 enum _Stage { idle, intro, question, transition, result }
@@ -178,6 +179,7 @@ class _KioskPageState extends State<KioskPage> with TickerProviderStateMixin {
     for (final r in dagwaResults.values) {
       precacheImage(AssetImage(r.imagePath), context);
     }
+    StoreDirectionsSheet.precache(context);
   }
 
   @override
