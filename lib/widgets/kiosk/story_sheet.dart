@@ -217,19 +217,6 @@ class _StorySheetState extends State<StorySheet>
                                         value: result.pairing.t,
                                         body: result.pairingDesc.t,
                                       ),
-                                      const SizedBox(height: 18),
-                                      _Note(
-                                        icon: Icons.auto_awesome_rounded,
-                                        label: tr(
-                                          '이런 다과도',
-                                          'Also try',
-                                          'こちらの茶菓も',
-                                        ),
-                                        value:
-                                            result.runnerUpResult?.name.t ??
-                                            result.runnerUp,
-                                        body: result.runnerUpDesc.t,
-                                      ),
                                     ],
                                   ),
                                 ),

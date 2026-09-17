@@ -127,7 +127,18 @@ void main() {
 
     expect(find.byType(ResultScreen), findsOneWidget);
     expect(find.text('당신과 가장 잘 어울리는 다과'), findsOneWidget);
+    expect(find.text('추천받은 다과를 받아가세요'), findsOneWidget);
+    expect(find.text('행궁다과도 만나보세요'), findsOneWidget);
+    expect(find.text('도보 약 1분 · 98m'), findsOneWidget);
+    expect(find.text('이런 다과도 잘 어울려요'), findsNothing);
     expect(tester.takeException(), isNull, reason: '결과 화면');
+
+    await _tapText(tester, '행궁다과도 만나보세요');
+    await _settle(tester);
+    expect(find.text('행궁다과까지\n걸어서 1분이에요'), findsOneWidget);
+    expect(find.text('가회당 · 팝업'), findsOneWidget);
+    expect(find.text('행궁다과 · 2층'), findsOneWidget);
+    expect(tester.takeException(), isNull, reason: '앱 내부 길 안내 화면');
   });
 
   testWidgets('결과 화면에서 다과 이야기 시트를 열고 닫을 수 있다', (tester) async {

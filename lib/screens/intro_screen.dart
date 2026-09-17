@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/dangwa_catalog.dart';
 import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -9,10 +10,16 @@ import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/rotating_dangwa_image.dart';
 
 class IntroScreen extends StatefulWidget {
-  const IntroScreen({super.key, required this.onStart, required this.onHome});
+  const IntroScreen({
+    super.key,
+    required this.onStart,
+    required this.onHome,
+    this.availableMenus = activeDagwaMenus,
+  });
 
   final VoidCallback onStart;
   final VoidCallback onHome;
+  final List<String> availableMenus;
 
   @override
   State<IntroScreen> createState() => _IntroScreenState();
@@ -125,6 +132,7 @@ class _IntroScreenState extends State<IntroScreen> {
                           child: RotatingDangwaImage(
                             initialIndex: 4,
                             padding: 0.10,
+                            menus: widget.availableMenus,
                           ),
                         ),
                       ],

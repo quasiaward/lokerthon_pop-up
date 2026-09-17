@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/lang.dart';
 import 'perf_probe.dart';
 import 'pages/kiosk_page.dart';
+import 'services/admin_settings.dart';
+import 'services/dangwa_inventory.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -26,6 +28,9 @@ Future<void> main() async {
       orElse: () => Lang.ko,
     );
   }
+
+  await dagwaInventory.initialize();
+  await adminSettings.initialize();
 
   PerfProbe.start();
   runApp(const DagwaRecommendationApp());

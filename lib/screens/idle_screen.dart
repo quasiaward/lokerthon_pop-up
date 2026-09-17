@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/lang.dart';
+import '../data/dangwa_catalog.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/brand_mark.dart';
@@ -13,9 +14,16 @@ import '../widgets/kiosk/rotating_dangwa_image.dart';
 /// 맥박 신호가 "여기를 누르면 된다"를 말한다. 버튼과 안내 문구를 함께 두면
 /// 어디를 눌러야 하는지 오히려 흐려진다.
 class IdleScreen extends StatefulWidget {
-  const IdleScreen({super.key, required this.onStart});
+  const IdleScreen({
+    super.key,
+    required this.onStart,
+    this.onAdmin,
+    this.availableMenus = activeDagwaMenus,
+  });
 
   final VoidCallback onStart;
+  final VoidCallback? onAdmin;
+  final List<String> availableMenus;
 
   @override
   State<IdleScreen> createState() => _IdleScreenState();
@@ -65,7 +73,12 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 우상단은 언어 토글이 차지하므로 브랜드 마크만 둔다.
-            const BrandMark(),
+            GestureDetector(
+              key: const ValueKey('admin-entry'),
+              behavior: HitTestBehavior.opaque,
+              onLongPress: widget.onAdmin,
+              child: const BrandMark(),
+            ),
             Expanded(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,7 +106,13 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(width: 70),
-                  Expanded(flex: 5, child: _Hero(float: _float)),
+                  Expanded(
+                    flex: 5,
+                    child: _Hero(
+                      float: _float,
+                      availableMenus: widget.availableMenus,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -110,9 +129,10 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
 
 /// 오른쪽 여백을 살짝 넘어가며 느리게 떠오르내리는 다과.
 class _Hero extends StatelessWidget {
-  const _Hero({required this.float});
+  const _Hero({required this.float, required this.availableMenus});
 
   final Animation<double> float;
+  final List<String> availableMenus;
 
   @override
   Widget build(BuildContext context) {
@@ -124,10 +144,14 @@ class _Hero extends StatelessWidget {
           offset: Offset(0, -12 * float.value),
           child: child,
         ),
-        child: const RepaintBoundary(
+        child: RepaintBoundary(
           // 다음 화면과 같은 크기·비율·여백으로 둔다. 세로형 카드에 높이를
           // 따로 박아 두면 전환할 때 카드가 한 번 튀어 보인다.
-          child: RotatingDangwaImage(initialIndex: 11, padding: 0.10),
+          child: RotatingDangwaImage(
+            initialIndex: 11,
+            padding: 0.10,
+            menus: availableMenus,
+          ),
         ),
       ),
     );

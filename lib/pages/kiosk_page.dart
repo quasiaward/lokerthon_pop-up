@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../data/dagwa_results.dart';
+import '../data/dangwa_catalog.dart';
 import '../data/dagwa_tones.dart';
 import '../perf_probe.dart';
 import '../data/quiz_questions.dart';
@@ -11,33 +12,46 @@ import '../screens/intro_screen.dart';
 import '../screens/question_screen.dart';
 import '../screens/result_screen.dart';
 import '../screens/transition_screen.dart';
-import '../services/recommendation_engine.dart';
 import '../services/recommendation_service.dart';
+import '../services/admin_settings.dart';
+import '../services/dangwa_inventory.dart';
 import '../theme/app_colors.dart';
 import '../l10n/lang.dart';
 import '../widgets/kiosk/ambient_field.dart';
 import '../widgets/kiosk/bloom_backdrop.dart';
 import '../widgets/kiosk/kiosk_canvas.dart';
+import '../widgets/kiosk/admin_inventory_sheet.dart';
+import '../widgets/kiosk/admin_pin_pad.dart';
 import '../widgets/lang_toggle.dart';
 
 enum _Stage { idle, intro, question, transition, result }
 
+enum _AdminStage { closed, pin, open }
+
 /// 팝업 부스 키오스크의 단일 화면. 단계 전환만 관리한다.
 class KioskPage extends StatefulWidget {
-  const KioskPage({super.key, this.service});
+  const KioskPage({
+    super.key,
+    this.service,
+    this.inventory,
+    this.adminSettings,
+  });
 
   final RecommendationService? service;
+  final DagwaInventory? inventory;
+  final AdminSettings? adminSettings;
 
   @override
   State<KioskPage> createState() => _KioskPageState();
 }
 
-class _KioskPageState extends State<KioskPage>
-    with SingleTickerProviderStateMixin {
+class _KioskPageState extends State<KioskPage> with TickerProviderStateMixin {
   /// 앞 사용자의 결과가 남아 있지 않도록 무동작이 이어지면 Idle로 돌아간다.
   static const _inactivity = Duration(seconds: 45);
 
   late final _service = widget.service ?? RecommendationService();
+  late final _inventory = widget.inventory ?? dagwaInventory;
+  late final _adminSettings = widget.adminSettings ?? adminSettings;
   late final _motion = AnimationController(
     vsync: this,
     value: 1,
@@ -49,9 +63,26 @@ class _KioskPageState extends State<KioskPage>
     curve: Motion.emphasized,
     reverseCurve: Motion.exitCurve,
   );
+
+  /// 질문끼리 넘길 때는 상단 조작·진행 표시를 그대로 두고 질문 블록만
+  /// 사라졌다 나타난다. 진행 선이 화면과 함께 깜빡이지 않게 하기 위해서다.
+  late final _questionMotion = AnimationController(
+    vsync: this,
+    value: 1,
+    duration: Motion.base,
+    reverseDuration: Motion.exit,
+  );
+  late final _questionBodyMotion = CurvedAnimation(
+    parent: _questionMotion,
+    curve: Motion.emphasized,
+    reverseCurve: Motion.exitCurve,
+  );
   bool _busy = false;
   int _session = 0;
   String? _error;
+
+  /// 관리자 진입 단계. 로고를 길게 누르면 암호 패드부터 뜬다.
+  _AdminStage _admin = _AdminStage.closed;
 
   /// 디자인 확인용 진입 단계. `--dart-define=KIOSK_STAGE=result` 처럼 지정하면
   /// 해당 화면에서 바로 시작한다. 지정하지 않으면 늘 idle에서 시작한다.
@@ -79,6 +110,21 @@ class _KioskPageState extends State<KioskPage>
   };
 
   bool _precached = false;
+
+  List<String> get _availableMenus => [
+    for (final menu in activeDagwaMenus)
+      if (_inventory.value.contains(menu)) menu,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _inventory.addListener(_inventoryChanged);
+  }
+
+  void _inventoryChanged() {
+    if (mounted) setState(() {});
+  }
 
   /// 계측용 자동 주행. 사람이 누르는 것과 같은 경로로 단계를 넘기며
   /// 프레임 시간을 재려고 쓴다. PERF_PROBE가 켜졌을 때만 돈다.
@@ -136,9 +182,12 @@ class _KioskPageState extends State<KioskPage>
 
   @override
   void dispose() {
+    _inventory.removeListener(_inventoryChanged);
     _idleTimer?.cancel();
     _stageMotion.dispose();
     _motion.dispose();
+    _questionBodyMotion.dispose();
+    _questionMotion.dispose();
     super.dispose();
   }
 
@@ -150,16 +199,25 @@ class _KioskPageState extends State<KioskPage>
 
   /// Fade out completely before replacing the child. Only ONE screen is
   /// mounted/painted at a time, so text and images never bleed through.
-  Future<void> _change(VoidCallback update) async {
+  Future<void> _change(VoidCallback update) => _fadeSwap(_motion, update);
+
+  /// 질문 → 질문. 질문 블록만 순차 fade 한다.
+  Future<void> _changeQuestion(VoidCallback update) =>
+      _fadeSwap(_questionMotion, update);
+
+  Future<void> _fadeSwap(
+    AnimationController motion,
+    VoidCallback update,
+  ) async {
     final session = _session;
     setState(() => _busy = true);
     final reduced = MediaQuery.disableAnimationsOf(context);
     try {
-      if (!reduced) await _motion.reverse().orCancel;
+      if (!reduced) await motion.reverse().orCancel;
       if (!mounted || session != _session) return;
       setState(update);
       _bumpIdleTimer();
-      if (!reduced) await _motion.forward().orCancel;
+      if (!reduced) await motion.forward().orCancel;
       if (mounted && session == _session) setState(() => _busy = false);
     } on TickerCanceled {
       // Reset/dispose owns the next screen; an old transition must not resume.
@@ -178,10 +236,13 @@ class _KioskPageState extends State<KioskPage>
     _session++;
     _motion.stop();
     _motion.value = 1;
+    _questionMotion.stop();
+    _questionMotion.value = 1;
     setState(() {
       _clearAnswers();
       _stage = _Stage.idle;
       _busy = false;
+      _admin = _AdminStage.closed;
     });
     _bumpIdleTimer();
   }
@@ -226,15 +287,19 @@ class _KioskPageState extends State<KioskPage>
     await Future<void>.delayed(const Duration(milliseconds: 100));
     if (!mounted || session != _session) return;
     if (_step < quizQuestions.length - 1) {
-      await _change(() => _step++);
+      await _changeQuestion(() => _step++);
       return;
     }
     try {
       final menu = await _service.getRecommendation(
         _answers.map((a) => a ?? '').toList(),
+        availableMenus: _inventory.value,
+        weights: _adminSettings.weights,
       );
       if (!mounted || session != _session) return;
-      if (!dagwaResults.containsKey(menu)) throw StateError('Unknown menu');
+      if (!dagwaResults.containsKey(menu) || !_inventory.value.contains(menu)) {
+        throw StateError('Unavailable menu');
+      }
       await _change(() {
         _menuName = menu;
         _stage = _Stage.transition;
@@ -258,12 +323,27 @@ class _KioskPageState extends State<KioskPage>
       unawaited(_go(_Stage.intro));
     } else {
       unawaited(
-        _change(() {
+        _changeQuestion(() {
           _step--;
           _error = null;
         }),
       );
     }
+  }
+
+  void _openInventory() {
+    if (_stage != _Stage.idle || _busy || _admin != _AdminStage.closed) return;
+    setState(() => _admin = _AdminStage.pin);
+  }
+
+  void _unlockInventory() {
+    if (_admin != _AdminStage.pin) return;
+    setState(() => _admin = _AdminStage.open);
+  }
+
+  void _closeInventory() {
+    if (_admin == _AdminStage.closed) return;
+    setState(() => _admin = _AdminStage.closed);
   }
 
   @override
@@ -328,6 +408,22 @@ class _KioskPageState extends State<KioskPage>
                   ),
                 ),
               ),
+              if (_admin == _AdminStage.pin)
+                Positioned.fill(
+                  child: AdminPinPad(
+                    settings: _adminSettings,
+                    onCancel: _closeInventory,
+                    onDone: _unlockInventory,
+                  ),
+                ),
+              if (_admin == _AdminStage.open)
+                Positioned.fill(
+                  child: AdminInventorySheet(
+                    inventory: _inventory,
+                    settings: _adminSettings,
+                    onClose: _closeInventory,
+                  ),
+                ),
             ],
           ),
         ),
@@ -341,12 +437,15 @@ class _KioskPageState extends State<KioskPage>
         return IdleScreen(
           key: const ValueKey('idle'),
           onStart: () => _go(_Stage.intro),
+          onAdmin: _openInventory,
+          availableMenus: _availableMenus,
         );
       case _Stage.intro:
         return IntroScreen(
           key: const ValueKey('intro'),
           onStart: () => _go(_Stage.question),
           onHome: _home,
+          availableMenus: _availableMenus,
         );
       case _Stage.question:
         return QuestionScreen(
@@ -356,6 +455,7 @@ class _KioskPageState extends State<KioskPage>
           question: quizQuestions[_step],
           selected: _answers[_step],
           error: _error,
+          bodyMotion: _questionBodyMotion,
           onSelect: _select,
           onBack: _back,
           onHome: _home,

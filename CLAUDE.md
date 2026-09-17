@@ -66,17 +66,24 @@ lokerthon_pop-up/
 
 ## 추천 알고리즘
 
-`lib/services/local_recommendation_engine.dart`의 `_scoreTable` 하나가 전부다.
+`lib/services/local_recommendation_engine.dart`의 **취향 프로필 매칭**이다.
+추천 대상은 `activeDagwaMenus`의 5종(금귤정과·매작과·양갱·콩고물 도라지정과·흑임자다식)이다.
 
-- 6개 답변마다 어울리는 다과에 가중치를 더하고, 총점 최고인 다과를 고른다.
-- Q4 식감 / Q5 계절 / Q6 문양은 메뉴를 직접 가리키는 신호라 최대 4점.
-- Q1 기분 / Q2 날씨 / Q3 동행은 분위기 신호라 최대 3점.
-- 가중치는 `backend/ai/prompts.py`의 "각 질문의 의미"를 그대로 옮긴 값이다.
-- 추천 성향을 바꾸려면 `_scoreTable`의 숫자만 고치면 된다.
+1. `_profiles`: 다과마다 맛·식감·분위기·자리·계절·모양·색 특성을 0~1로 매겼다.
+   값의 근거(조리법, 다식판 문양, 제철, 쓰임)는 파일 상단 주석에 있다.
+2. `_answerTraits`: 답변 하나가 "원하는 특성"과 그 비중이 된다.
+3. 질문마다 가중 평균 일치도(0~1) × `_questionWeights`를 더한다.
+   식감 1.4 · 계절 1.1 · 문양 1.0 · 기분 0.9 · 날씨 0.9 · 동행 0.8.
+4. 총점 최고 다과. 동점이면 식감 → 계절 → 문양 점수, 그래도 같으면 답변 해시 순서.
 
-> ⚠️ `_scoreTable`의 키는 `ai_recommendation_section.dart`의 `_QuizOption.title`과
-> **정확히** 같아야 한다. 표시용 번역 문자열(`titleEn`, `displayTitle`)이 아니라
-> 로직 키를 쓴다. 선택지 문구를 바꿀 때는 양쪽을 함께 고쳐야 한다.
+- 추천 성향을 바꾸려면 프로필 값이나 질문 가중치를 고친다. `rank()`가 점수 내역을 준다.
+- 4096개 조합 기준 각 다과 16~23%, 모든 질문이 결과를 바꿀 수 있고 동점 없음.
+  `test/widget_test.dart`가 분포(10~30%)·질문 영향력·대표 조합을 검사한다.
+
+> ⚠️ `_answerTraits`의 키는 `quiz_questions.dart`의 `QuizOption.title`과
+> **정확히** 같아야 한다. 표시용 번역 문자열(`label`)이 아니라 로직 키를 쓴다.
+> 선택지 문구를 바꿀 때는 양쪽을 함께 고쳐야 한다.
+> 메뉴를 새로 활성화하면 `_profiles`에도 프로필을 추가해야 한다.
 
 ### OpenAI 추천으로 전환
 `RecommendationService`가 엔진을 고르는 유일한 지점이다.
@@ -85,6 +92,23 @@ lokerthon_pop-up/
 flutter run --dart-define=USE_API=true --dart-define=API_BASE_URL=https://...
 ```
 
+
+## 관리자 설정
+
+Idle 화면의 로고를 길게 누르면 **암호 패드**(`admin_pin_pad.dart`)가 먼저 뜬다.
+초기 암호는 `2003`, 5번 연속 틀리면 30초 잠긴다. 운영자용이라 한국어만 쓴다.
+
+- **재고 관리**: 품절 다과를 끄면 다음 추천부터 제외 (`DagwaInventory`)
+- **간단 설정**: 다과마다 낮음(0.85)·보통(1.00)·높음(1.15) 버튼. `WeightLevel`
+  낮음은 그 다과의 추천 비율을 약 절반, 높음은 약 1.5배로 바꾼다.
+  고급 설정과 같은 비중 값을 쓰므로 한쪽을 바꾸면 다른 쪽에 바로 반영된다.
+  고급 설정에서 단계 밖의 값을 고르면 간단 설정은 어느 버튼도 켜지 않는다.
+- **고급 설정**: 다과별 추천 비중(0.80~1.20, 0.01 단위)과 암호 변경
+  - 비중은 추천 총점에 곱한다. 옆에 4096개 조합 기준 예상 추천 비율을 바로 보여 준다
+    (`LocalRecommendationEngine.expectedShares`).
+  - 점수 차가 작아 비중에 민감하다. 1.10이면 비율이 대략 1.4배가 된다.
+- 암호·비중은 `AdminSettings`가 SharedPreferences에 저장한다(평문). 앱을 지워야
+  초기 암호로 돌아간다.
 
 ## 디자인 시스템
 
@@ -210,8 +234,9 @@ flutter test
 ## 작업 시 주의
 - **가로 전용이다.** 세로 레이아웃은 지원하지 않는다.
   방향을 바꾸려면 `ios/Runner/Info.plist`와 `lib/main.dart` 양쪽을 고쳐야 한다.
-- 온디바이스 추천은 즉시 끝난다. 기대감은 `TransitionScreen`의 1.4초가 만든다.
-  spinner나 progress bar는 쓰지 않는다.
+- 온디바이스 추천은 즉시 끝난다. 기대감은 `TransitionScreen`의 4.2초 로딩
+  연출(도는 점 + 단계별 문구)이 만든다. 여기서 결과 다과 이미지나 이름을 미리
+  보여 주지 않는다. progress bar는 쓰지 않는다.
 - 단계 전환은 현재 화면을 완전히 투명하게 만든 뒤 다음 화면으로 교체한다.
   `AnimatedSwitcher` crossfade를 쓰면 두 화면이 동시에 그려져 잔상이 생기므로
   `KioskPage._change()`의 순차 fade 방식을 유지한다.

@@ -23,6 +23,34 @@ class RecommendationService {
       ? const ApiRecommendationEngine()
       : const LocalRecommendationEngine();
 
-  Future<String> getRecommendation(List<String> answers) =>
-      engine.recommend(answers);
+  /// [weights]는 관리자가 정한 추천 비중이다. 온디바이스 엔진에만 적용된다.
+  Future<String> getRecommendation(
+    List<String> answers, {
+    Iterable<String>? availableMenus,
+    Map<String, double> weights = const {},
+  }) async {
+    final available = {
+      for (final menu in activeDagwaMenus)
+        if (availableMenus == null || availableMenus.contains(menu)) menu,
+    };
+    if (available.isEmpty) throw StateError('추천 가능한 재고가 없습니다.');
+
+    if (engine is LocalRecommendationEngine) {
+      return LocalRecommendationEngine.pick(
+        answers,
+        availableMenus: available,
+        weights: weights,
+      );
+    }
+
+    final menu = await engine.recommend(answers);
+    if (available.contains(menu)) return menu;
+
+    // API나 교체 엔진이 품절·비활성 메뉴를 돌려줘도 관람객에게 노출하지 않는다.
+    return LocalRecommendationEngine.pick(
+      answers,
+      availableMenus: available,
+      weights: weights,
+    );
+  }
 }

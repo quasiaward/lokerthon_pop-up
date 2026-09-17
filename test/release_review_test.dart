@@ -14,12 +14,14 @@ import 'package:haenggung_dagwa/screens/intro_screen.dart';
 import 'package:haenggung_dagwa/screens/question_screen.dart';
 import 'package:haenggung_dagwa/screens/result_screen.dart';
 import 'package:haenggung_dagwa/screens/transition_screen.dart';
+import 'package:haenggung_dagwa/services/dangwa_inventory.dart';
 import 'package:haenggung_dagwa/services/recommendation_engine.dart';
 import 'package:haenggung_dagwa/services/recommendation_service.dart';
 import 'package:haenggung_dagwa/theme/app_theme.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/brand_mark.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/choice_card.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/story_sheet.dart';
+import 'package:haenggung_dagwa/widgets/kiosk/store_directions_sheet.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/top_control.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/ambient_field.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/dangwa_image.dart';
@@ -39,12 +41,19 @@ void size(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-Future<void> start(WidgetTester tester, {RecommendationEngine? engine}) async {
+Future<void> start(
+  WidgetTester tester, {
+  RecommendationEngine? engine,
+  DagwaInventory? inventory,
+}) async {
   size(tester);
   await tester.pumpWidget(
     MaterialApp(
       theme: buildAppTheme(),
-      home: KioskPage(service: RecommendationService(engine: engine)),
+      home: KioskPage(
+        service: RecommendationService(engine: engine),
+        inventory: inventory,
+      ),
     ),
   );
   await frames(tester);
@@ -78,6 +87,16 @@ class RetryEngine implements RecommendationEngine {
     if (++calls == 1) throw StateError('test failure');
     return dagwaMenus.first;
   }
+}
+
+class MemoryInventoryPersistence implements DagwaInventoryPersistence {
+  Set<String>? stored;
+
+  @override
+  Future<Set<String>?> load() async => stored?.toSet();
+
+  @override
+  Future<void> save(Set<String> menus) async => stored = menus.toSet();
 }
 
 void main() {
@@ -248,6 +267,52 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a long press opens inventory settings and hides sold-out items',
+    (tester) async {
+      size(tester);
+      final inventory = DagwaInventory(
+        persistence: MemoryInventoryPersistence(),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          home: KioskPage(inventory: inventory),
+        ),
+      );
+      await frames(tester);
+
+      await tester.longPress(find.byKey(const ValueKey('admin-entry')));
+      await frames(tester, 300);
+      // 관리자 설정은 암호(초기값 2003)를 거쳐야 열린다.
+      for (final digit in '2003'.split('')) {
+        await tester.tap(find.byKey(ValueKey('pin-key-$digit')));
+        await tester.pump();
+      }
+      await frames(tester, 300);
+      expect(
+        find.byKey(const ValueKey('admin-inventory-sheet')),
+        findsOneWidget,
+      );
+      expect(find.byType(Switch), findsNWidgets(activeDagwaMenus.length));
+
+      final soldOut = activeDagwaMenus.first;
+      await tester.tap(find.byType(Switch).first);
+      await frames(tester, 300);
+      expect(inventory.value, isNot(contains(soldOut)));
+
+      await tester.tap(find.text('설정 완료'));
+      await frames(tester, 300);
+      expect(find.byKey(const ValueKey('admin-inventory-sheet')), findsNothing);
+      expect(
+        tester
+            .widget<RotatingDangwaImage>(find.byType(RotatingDangwaImage))
+            .menus,
+        isNot(contains(soldOut)),
+      );
+    },
+  );
+
   testWidgets('intro edges start once and back remains independent', (
     tester,
   ) async {
@@ -358,6 +423,68 @@ void main() {
             );
           }
         }
+      }
+    },
+  );
+
+  testWidgets(
+    'store route card opens and closes the illustrated in-app guide',
+    (tester) async {
+      size(tester);
+      for (final lang in Lang.values) {
+        appLang.value = lang;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildAppTheme(),
+            home: Scaffold(
+              body: ResultScreen(
+                key: ValueKey('route-${lang.name}'),
+                menuName: activeDagwaMenus.first,
+                onRestart: () {},
+                onHome: () {},
+              ),
+            ),
+          ),
+        );
+        await frames(tester, 40);
+
+        await tester.tap(
+          find.text(
+            tr('행궁다과도 만나보세요', 'Visit Haenggung Dagwa', '行宮茶菓にもお立ち寄りください'),
+          ),
+        );
+        await frames(tester, 800);
+
+        expect(find.byType(StoreDirectionsSheet), findsOneWidget);
+        expect(
+          find.text(
+            tr(
+              '행궁다과까지\n걸어서 1분이에요',
+              'Haenggung Dagwa is\njust a 1-minute walk',
+              '行宮茶菓まで\n歩いて約1分です',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('98 m'), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: lang.label);
+
+        if (lang != Lang.ko) {
+          final routeText = tester
+              .widgetList<Text>(
+                find.descendant(
+                  of: find.byType(StoreDirectionsSheet),
+                  matching: find.byType(Text),
+                ),
+              )
+              .map((text) => text.data ?? '')
+              .join();
+          expect(RegExp(r'[가-힣]').hasMatch(routeText), isFalse);
+        }
+
+        await tester.tap(find.text(tr('확인했어요', 'Got it', '確認しました')));
+        await frames(tester, 400);
+        expect(find.byType(StoreDirectionsSheet), findsNothing);
       }
     },
   );

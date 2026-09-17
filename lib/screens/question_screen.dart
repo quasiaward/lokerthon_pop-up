@@ -16,6 +16,7 @@ class QuestionScreen extends StatelessWidget {
     required this.onSelect,
     required this.onBack,
     required this.onHome,
+    this.bodyMotion = kAlwaysCompleteAnimation,
     this.error,
   });
   final int index;
@@ -25,6 +26,9 @@ class QuestionScreen extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback onHome;
   final String? error;
+
+  /// 질문 블록의 등장 정도(0~1). 상단 조작과 진행 표시는 여기에 묶지 않는다.
+  final Animation<double> bodyMotion;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(88, 48, 88, 40),
@@ -35,104 +39,123 @@ class QuestionScreen extends StatelessWidget {
         const SizedBox(height: 40),
         KioskProgress(step: index + 1, total: quizQuestions.length),
         const SizedBox(height: 20),
-        Semantics(
-          header: true,
-          child: Text.rich(
-            TextSpan(
-              style: Type.question,
-              children: [
-                TextSpan(text: question.before.t),
-                TextSpan(
-                  text: question.keyword.t,
-                  style: Type.question.copyWith(color: AppColors.accent),
-                ),
-                TextSpan(text: question.after.t),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(question.hint.t, style: Type.bodyMuted.copyWith(fontSize: 23)),
-        const SizedBox(height: 36),
         Expanded(
-          child: GridView.count(
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 22,
-            crossAxisSpacing: 22,
-            childAspectRatio: 2.4,
-            children: [
-              for (final option in question.options)
-                ChoiceCard(
-                  key: ValueKey(option.title),
-                  option: option,
-                  selected: selected == option.title,
-                  onTap: () => onSelect(option),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Center(
-          child: AnimatedSwitcher(
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : Motion.base,
-            switchInCurve: Motion.curve,
-            child: Container(
-              key: ValueKey(error),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-              decoration: BoxDecoration(
-                color: error == null
-                    ? Colors.white.withValues(alpha: 0.45)
-                    : Colors.red.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(99),
-                border: Border.all(
-                  color: error == null
-                      ? Colors.white.withValues(alpha: 0.68)
-                      : Colors.red.withValues(alpha: 0.16),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 아이콘은 할 일이 생겼을 때만 나온다. 평상시 안내는 문구로
-                  // 충분하고, 장식으로 얹은 아이콘은 의미를 만들지 못한다.
-                  if (error != null) ...[
-                    Icon(
-                      Icons.refresh_rounded,
-                      size: 20,
-                      color: Colors.red.shade700,
-                    ),
-                    const SizedBox(width: 9),
-                  ],
-                  Text(
-                    error ??
-                        (index == quizQuestions.length - 1
-                            ? tr(
-                                '선택하면 나에게 어울리는 다과를 알려드려요',
-                                'Choose an answer to discover your dagwa',
-                                '選ぶとあなたに似合う茶菓をご紹介します',
-                              )
-                            : tr(
-                                '선택하면 다음 질문으로 넘어가요',
-                                'Choose an answer to continue',
-                                '選ぶと次の質問に進みます',
-                              )),
-                    style: Type.caption.copyWith(
-                      fontSize: 18,
-                      color: error == null
-                          ? AppColors.muted
-                          : Colors.red.shade700,
-                    ),
-                  ),
-                ],
+          child: AnimatedBuilder(
+            animation: bodyMotion,
+            builder: (context, child) => Opacity(
+              opacity: bodyMotion.value,
+              child: Transform.translate(
+                offset: Offset(0, 14 * (1 - bodyMotion.value)),
+                child: child,
               ),
             ),
+            child: RepaintBoundary(child: _body(context)),
           ),
         ),
       ],
     ),
+  );
+
+  Widget _body(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Semantics(
+        header: true,
+        child: Text.rich(
+          TextSpan(
+            style: Type.question,
+            children: [
+              TextSpan(text: question.before.t),
+              TextSpan(
+                text: question.keyword.t,
+                style: Type.question.copyWith(color: AppColors.accent),
+              ),
+              TextSpan(text: question.after.t),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      Text(question.hint.t, style: Type.bodyMuted.copyWith(fontSize: 23)),
+      const SizedBox(height: 36),
+      Expanded(
+        child: GridView.count(
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 22,
+          crossAxisSpacing: 22,
+          childAspectRatio: 2.4,
+          children: [
+            for (final option in question.options)
+              ChoiceCard(
+                key: ValueKey(option.title),
+                option: option,
+                selected: selected == option.title,
+                onTap: () => onSelect(option),
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      Center(
+        child: AnimatedSwitcher(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : Motion.base,
+          switchInCurve: Motion.curve,
+          child: Container(
+            key: ValueKey(error),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            decoration: BoxDecoration(
+              color: error == null
+                  ? Colors.white.withValues(alpha: 0.45)
+                  : Colors.red.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(
+                color: error == null
+                    ? Colors.white.withValues(alpha: 0.68)
+                    : Colors.red.withValues(alpha: 0.16),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 아이콘은 할 일이 생겼을 때만 나온다. 평상시 안내는 문구로
+                // 충분하고, 장식으로 얹은 아이콘은 의미를 만들지 못한다.
+                if (error != null) ...[
+                  Icon(
+                    Icons.refresh_rounded,
+                    size: 20,
+                    color: Colors.red.shade700,
+                  ),
+                  const SizedBox(width: 9),
+                ],
+                Text(
+                  error ??
+                      (index == quizQuestions.length - 1
+                          ? tr(
+                              '선택하면 나에게 어울리는 다과를 알려드려요',
+                              'Choose an answer to discover your dagwa',
+                              '選ぶとあなたに似合う茶菓をご紹介します',
+                            )
+                          : tr(
+                              '선택하면 다음 질문으로 넘어가요',
+                              'Choose an answer to continue',
+                              '選ぶと次の質問に進みます',
+                            )),
+                  style: Type.caption.copyWith(
+                    fontSize: 18,
+                    color: error == null
+                        ? AppColors.muted
+                        : Colors.red.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 }

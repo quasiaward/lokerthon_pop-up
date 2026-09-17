@@ -1,16 +1,17 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/dagwa_results.dart';
+import '../../data/dangwa_catalog.dart';
 import '../../data/dagwa_tones.dart';
-import '../../services/recommendation_engine.dart';
 import '../../theme/app_colors.dart';
 import 'dangwa_image.dart';
 
 /// 여러 다과 이미지를 느린 크로스페이드로 보여 주는 히어로 이미지.
 ///
-/// 추천에 쓰이는 12개 다과만 순환하며, 이미지는 [KioskPage]가 미리 디코드해
+/// 현재 추천 가능한 다과만 순환하며, 이미지는 [KioskPage]가 미리 디코드해
 /// 두었기 때문에 교체 순간에도 프레임이 끊기지 않는다.
 ///
 /// [interval]은 화면마다 따로 지정하지 않는다. 시작 화면과 그다음 화면이 서로
@@ -22,19 +23,21 @@ class RotatingDangwaImage extends StatefulWidget {
     this.interval = const Duration(seconds: 3),
     this.aspectRatio = 1,
     this.padding = 0.12,
+    this.menus = activeDagwaMenus,
   });
 
   final int initialIndex;
   final Duration interval;
   final double aspectRatio;
   final double padding;
+  final List<String> menus;
 
   @override
   State<RotatingDangwaImage> createState() => _RotatingDangwaImageState();
 }
 
 class _RotatingDangwaImageState extends State<RotatingDangwaImage> {
-  late int _index = widget.initialIndex % dagwaMenus.length;
+  late int _index = widget.initialIndex % widget.menus.length;
   Timer? _timer;
 
   @override
@@ -46,7 +49,11 @@ class _RotatingDangwaImageState extends State<RotatingDangwaImage> {
   @override
   void didUpdateWidget(covariant RotatingDangwaImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.interval != widget.interval) _updateTimer();
+    if (oldWidget.interval != widget.interval ||
+        !listEquals(oldWidget.menus, widget.menus)) {
+      _index %= widget.menus.length;
+      _updateTimer();
+    }
   }
 
   void _updateTimer() {
@@ -54,7 +61,7 @@ class _RotatingDangwaImageState extends State<RotatingDangwaImage> {
     if (MediaQuery.disableAnimationsOf(context)) return;
     _timer = Timer.periodic(widget.interval, (_) {
       if (!mounted) return;
-      setState(() => _index = (_index + 1) % dagwaMenus.length);
+      setState(() => _index = (_index + 1) % widget.menus.length);
     });
   }
 
@@ -66,7 +73,7 @@ class _RotatingDangwaImageState extends State<RotatingDangwaImage> {
 
   @override
   Widget build(BuildContext context) {
-    final menuName = dagwaMenus[_index];
+    final menuName = widget.menus[_index];
     final result = dagwaResults[menuName]!;
     final reduced = MediaQuery.disableAnimationsOf(context);
 
