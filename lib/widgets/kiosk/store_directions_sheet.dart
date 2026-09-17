@@ -10,7 +10,9 @@ import 'glass_surface.dart';
 import 'kiosk_button.dart';
 
 /// 팝업 장소에서 행궁다과까지의 짧은 도보 경로를 앱 안에서 보여 주는 안내 시트.
-/// 실제 지도 대신 거리의 구조와 출발·도착 관계만 남긴 안내 그림으로 빠르게 읽힌다.
+/// 실제 지도 캡처에서 도로·건물 모양만 뽑아 앱 색으로 다시 칠한 배경
+/// (`assets/map/route_map.png`, `tool/build_route_map.py`) 위에 경로와
+/// 이름표를 그리고, 경로가 출발지에서 도착지까지 반복해서 이어진다.
 class StoreDirectionsSheet extends StatefulWidget {
   const StoreDirectionsSheet({super.key, required this.onClose});
 
@@ -21,7 +23,7 @@ class StoreDirectionsSheet extends StatefulWidget {
 }
 
 class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 760),
@@ -32,6 +34,12 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
     curve: Motion.emphasized,
     reverseCurve: Curves.easeInCubic,
   );
+
+  /// 경로가 그려지고 도착지가 한 번 반짝인 뒤 다시 시작한다.
+  late final AnimationController _loop = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 4200),
+  );
   bool _closing = false;
 
   @override
@@ -39,8 +47,12 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
     super.didChangeDependencies();
     if (MediaQuery.disableAnimationsOf(context)) {
       _controller.value = 1;
-    } else if (_controller.isDismissed && !_closing) {
-      _controller.forward();
+      _loop
+        ..stop()
+        ..value = _RouteOverlayPainter.drawEnd;
+    } else {
+      if (_controller.isDismissed && !_closing) _controller.forward();
+      if (!_loop.isAnimating) _loop.repeat();
     }
   }
 
@@ -59,6 +71,7 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
 
   @override
   void dispose() {
+    _loop.dispose();
     _curve.dispose();
     _controller.dispose();
     super.dispose();
@@ -154,7 +167,7 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
                               children: [
                                 Expanded(
                                   flex: 6,
-                                  child: _RouteIllustration(progress: _curve),
+                                  child: _RouteIllustration(loop: _loop),
                                 ),
                                 const SizedBox(width: 34),
                                 Expanded(
@@ -178,88 +191,357 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
   );
 }
 
-class _RouteIllustration extends StatelessWidget {
-  const _RouteIllustration({required this.progress});
+/// 지도 배경 좌표. 캡처를 가로 2000px로 줄인 기준이며
+/// `tool/build_route_map.py`의 CROP과 같아야 한다.
+abstract final class _MapGeo {
+  static const asset = 'assets/map/route_map.png';
+  static const crop = Rect.fromLTWH(520, 0, 1120, 1194);
 
-  final Animation<double> progress;
+  /// 가회당 입구 → 행궁로 → 행궁다과 입구.
+  static const route = [
+    Offset(1170, 902),
+    Offset(1146, 916),
+    Offset(1015, 162),
+    Offset(1040, 176),
+  ];
+  static const start = Offset(1205, 868);
+  static const destination = Offset(1092, 196);
+  static const walkBadge = Offset(1128, 540);
+
+  /// [size] 영역을 BoxFit.cover로 채운 배경에서 [point]가 놓이는 위치.
+  static Offset place(Offset point, Size size) {
+    final scale = math.max(size.width / crop.width, size.height / crop.height);
+    final dx = (size.width - crop.width * scale) / 2;
+    final dy = (size.height - crop.height * scale) / 2;
+    return Offset(
+      dx + (point.dx - crop.left) * scale,
+      dy + (point.dy - crop.top) * scale,
+    );
+  }
+}
+
+class _RouteIllustration extends StatelessWidget {
+  const _RouteIllustration({required this.loop});
+
+  final Animation<double> loop;
 
   @override
   Widget build(BuildContext context) => Semantics(
     image: true,
     label: tr(
-      '가회당에서 행궁로를 따라 행궁다과 2층까지 이동하는 길 안내 그림',
-      'Illustrated route from Gahoedang along Haenggung-ro to Haenggung Dagwa on the second floor',
-      'カフェダンから行宮路を通り、行宮茶菓2階までの案内図',
+      '가회당에서 행궁로를 따라 행궁다과 2층까지 이동하는 길 안내 지도',
+      'Map of the route from Gahoedang along Haenggung-ro to Haenggung Dagwa on the second floor',
+      'カフェダンから行宮路を通り、行宮茶菓2階までの案内地図',
     ),
     child: Container(
       decoration: BoxDecoration(
-        color: AppColors.ground.withValues(alpha: 0.78),
+        color: AppColors.ground,
         borderRadius: BorderRadius.circular(34),
         border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(34),
-        child: AnimatedBuilder(
-          animation: progress,
-          builder: (context, _) => Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(painter: _RouteMapPainter(progress.value)),
-              ),
-              Positioned(
-                left: 30,
-                top: 36,
-                child: _PlaceLabel(
-                  eyebrow: tr('출발', 'START', '出発'),
-                  title: tr('가회당 · 팝업', 'Gahoedang · Pop-up', 'カフェダン・ポップアップ'),
-                  detail: tr('행궁로 33', '33 Haenggung-ro', '行宮路33'),
-                  icon: Icons.storefront_rounded,
-                  color: AppColors.celadon,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final size = constraints.biggest;
+            Offset at(Offset p) => _MapGeo.place(p, size);
+            return Stack(
+              children: [
+                const Positioned.fill(
+                  child: Image(
+                    image: AssetImage(_MapGeo.asset),
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.medium,
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 30,
-                bottom: 34,
-                child: _PlaceLabel(
-                  eyebrow: tr('도착', 'ARRIVE', '到着'),
-                  title: tr('행궁다과 · 2층', 'Haenggung Dagwa · 2F', '行宮茶菓・2階'),
-                  detail: tr('행궁로 25', '25 Haenggung-ro', '行宮路25'),
-                  icon: Icons.location_on_rounded,
-                  color: AppColors.accent,
-                  alignEnd: true,
-                ),
-              ),
-              Center(
-                child: Transform.rotate(
-                  angle: -0.16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 13,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.88),
-                      borderRadius: BorderRadius.circular(99),
-                      border: Border.all(color: AppColors.line),
-                    ),
-                    child: Text(
-                      tr('행궁로', 'HAENGGUNG-RO', '行宮路'),
-                      style: Type.eyebrow(
-                        AppColors.muted,
-                        latin: isEn,
-                        size: 12,
-                        tracking: 1.4,
-                      ),
+                ..._roadLabels(at),
+                ..._landmarks(at),
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _RouteOverlayPainter(loop, [
+                        for (final p in _MapGeo.route) at(p),
+                      ], at(_MapGeo.destination)),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                _anchored(
+                  at(_MapGeo.walkBadge),
+                  const Alignment(-1, 0),
+                  _WalkBadge(tr('1분', '1 min', '1分')),
+                ),
+                _anchored(
+                  at(_MapGeo.start),
+                  Alignment.bottomCenter,
+                  const _MapPin(
+                    color: AppColors.celadon,
+                    icon: Icons.storefront_rounded,
+                  ),
+                ),
+                _anchored(
+                  at(_MapGeo.destination),
+                  Alignment.bottomCenter,
+                  const _MapPin(
+                    color: AppColors.accent,
+                    icon: Icons.local_cafe_rounded,
+                  ),
+                ),
+                _besidePin(
+                  at(_MapGeo.destination),
+                  size,
+                  _PlaceLabel(
+                    eyebrow: tr('도착', 'ARRIVE', '到着'),
+                    title: tr('행궁다과 · 2층', 'Haenggung Dagwa · 2F', '行宮茶菓・2階'),
+                    detail: tr('행궁로 25', '25 Haenggung-ro', '行宮路25'),
+                    color: AppColors.accent,
+                  ),
+                ),
+                _besidePin(
+                  at(_MapGeo.start),
+                  size,
+                  _PlaceLabel(
+                    eyebrow: tr('출발 · 현재 위치', 'START · YOU ARE HERE', '出発・現在地'),
+                    title: tr('가회당 · 팝업', 'Gahoedang · Pop-up', 'カフェダン・ポップアップ'),
+                    detail: tr('행궁로 33', '33 Haenggung-ro', '行宮路33'),
+                    color: AppColors.celadon,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     ),
   );
+
+  /// 핀 머리 오른쪽에 이름표를 붙인다. 지도 밖으로 넘치지 않게 폭을 줄인다.
+  static Widget _besidePin(Offset tip, Size size, _PlaceLabel label) {
+    const gap = 26.0;
+    const edge = 12.0;
+    final left = tip.dx + gap;
+    return Positioned(
+      left: left,
+      // 핀 머리(끝에서 약 32px 위)와 이름표의 세로 가운데를 맞춘다.
+      top: tip.dy - 32,
+      child: FractionalTranslation(
+        translation: const Offset(0, -0.5),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: math.max(120, size.width - left - edge),
+          ),
+          child: label,
+        ),
+      ),
+    );
+  }
+
+  /// [point]에 자식의 [anchor] 지점이 오도록 놓는다.
+  static Widget _anchored(Offset point, Alignment anchor, Widget child) =>
+      Positioned(
+        left: point.dx,
+        top: point.dy,
+        child: FractionalTranslation(
+          translation: Offset(-(anchor.x + 1) / 2, -(anchor.y + 1) / 2),
+          child: child,
+        ),
+      );
+
+  static List<Widget> _roadLabels(Offset Function(Offset) at) => [
+    _anchored(
+      at(const Offset(1180, 1085)),
+      Alignment.center,
+      _RoadLabel(tr('행궁로', 'Haenggung-ro', '行宮路'), angle: 1.39),
+    ),
+    _anchored(
+      at(const Offset(790, 418)),
+      Alignment.center,
+      _RoadLabel(
+        tr('행궁로26번길', 'Haenggung-ro 26beon-gil', '行宮路26番ギル'),
+        angle: -0.58,
+      ),
+    ),
+    _anchored(
+      at(const Offset(1275, 446)),
+      Alignment.center,
+      _RoadLabel(
+        tr('정조로801번길', 'Jeongjo-ro 801beon-gil', '正祖路801番ギル'),
+        angle: 0.55,
+      ),
+    ),
+  ];
+
+  /// 주변 건물 이름. 경로를 가리지 않도록 행궁로 왼쪽 건물은 이름이
+  /// 왼쪽으로 뻗게([Alignment.centerRight]) 놓는다.
+  static List<Widget> _landmarks(Offset Function(Offset) at) => [
+    for (final (point, anchor, name) in [
+      (
+        const Offset(1080, 60),
+        Alignment.centerLeft,
+        tr('공차', 'Gong cha', 'ゴンチャ'),
+      ),
+      (
+        const Offset(1050, 684),
+        Alignment.centerRight,
+        tr('메가MGC커피', 'MEGA MGC COFFEE', 'メガMGCコーヒー'),
+      ),
+      (
+        const Offset(1352, 594),
+        Alignment.center,
+        tr('남양마트', 'Namyang Mart', 'ナミャンマート'),
+      ),
+      (
+        const Offset(906, 776),
+        Alignment.center,
+        tr('남창동 열린문화공간', 'Namchang Culture Space', '南昌洞文化空間'),
+      ),
+      (
+        const Offset(1306, 344),
+        Alignment.center,
+        tr('사진공예사', 'Photo Studio', '写真館'),
+      ),
+    ])
+      _anchored(at(point), anchor, _Landmark(name)),
+  ];
+}
+
+class _RoadLabel extends StatelessWidget {
+  const _RoadLabel(this.text, {required this.angle});
+
+  final String text;
+  final double angle;
+
+  @override
+  Widget build(BuildContext context) => Transform.rotate(
+    angle: angle,
+    child: Text(
+      text,
+      style: Type.caption.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.4,
+        color: AppColors.faint,
+      ),
+    ),
+  );
+}
+
+class _Landmark extends StatelessWidget {
+  const _Landmark(this.name);
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 7,
+        height: 7,
+        decoration: const BoxDecoration(
+          color: AppColors.champagne,
+          shape: BoxShape.circle,
+        ),
+      ),
+      const SizedBox(width: 5),
+      Text(
+        name,
+        style: Type.caption.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.muted,
+          shadows: const [Shadow(color: Colors.white, blurRadius: 4)],
+        ),
+      ),
+    ],
+  );
+}
+
+class _WalkBadge extends StatelessWidget {
+  const _WalkBadge(this.label);
+
+  /// 번역 문구는 밖에서 받는다. const 위젯 안에서 tr()을 부르면 언어가
+  /// 바뀌어도 다시 그려지지 않을 수 있다.
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: AppColors.accent,
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.directions_walk_rounded,
+          size: 20,
+          color: Colors.white,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: Type.caption.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// 물방울 모양 지도 핀. 아래 꼭짓점이 좌표에 닿는다.
+class _MapPin extends StatelessWidget {
+  const _MapPin({required this.color, required this.icon});
+
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 44,
+    height: 54,
+    child: CustomPaint(
+      painter: _PinPainter(color),
+      child: Align(
+        alignment: const Alignment(0, -0.42),
+        child: Icon(icon, size: 20, color: Colors.white),
+      ),
+    ),
+  );
+}
+
+class _PinPainter extends CustomPainter {
+  const _PinPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.width / 2;
+    final tip = Offset(r, size.height);
+    final path = Path()
+      ..moveTo(tip.dx, tip.dy)
+      ..cubicTo(r - 6, size.height - 10, 0, r + 12, 0, r)
+      ..arcToPoint(Offset(size.width, r), radius: Radius.circular(r))
+      ..cubicTo(size.width, r + 12, r + 6, size.height - 10, tip.dx, tip.dy)
+      ..close();
+    canvas
+      ..drawShadow(path, AppColors.accentDeep, 4, false)
+      ..drawPath(path, Paint()..color = color)
+      ..drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..color = Colors.white,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_PinPainter oldDelegate) => oldDelegate.color != color;
 }
 
 class _PlaceLabel extends StatelessWidget {
@@ -267,76 +549,47 @@ class _PlaceLabel extends StatelessWidget {
     required this.eyebrow,
     required this.title,
     required this.detail,
-    required this.icon,
     required this.color,
-    this.alignEnd = false,
   });
 
   final String eyebrow;
   final String title;
   final String detail;
-  final IconData icon;
   final Color color;
-  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) => Container(
-    constraints: const BoxConstraints(maxWidth: 250),
-    padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
+    constraints: const BoxConstraints(maxWidth: 230),
+    padding: const EdgeInsets.fromLTRB(14, 10, 16, 11),
     decoration: BoxDecoration(
-      color: AppColors.surface.withValues(alpha: 0.94),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white),
+      color: AppColors.surface.withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(18),
+      border: Border(left: BorderSide(color: color, width: 4)),
       boxShadow: [
         BoxShadow(
           color: AppColors.accentDeep.withValues(alpha: 0.1),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
+          blurRadius: 18,
+          offset: const Offset(0, 6),
         ),
       ],
     ),
-    child: Row(
+    child: Column(
       mainAxisSize: MainAxisSize.min,
-      textDirection: alignEnd ? TextDirection.rtl : TextDirection.ltr,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, color: Colors.white, size: 22),
+        Text(
+          eyebrow,
+          style: Type.eyebrow(color, latin: isEn, size: 11, tracking: 1.2),
         ),
-        const SizedBox(width: 11),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: alignEnd
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
-            children: [
-              Text(
-                eyebrow,
-                style: Type.eyebrow(
-                  color,
-                  latin: isEn,
-                  size: 11,
-                  tracking: 1.3,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.ltr,
-                style: Type.section.copyWith(fontSize: 18),
-              ),
-              Text(
-                detail,
-                textDirection: TextDirection.ltr,
-                style: Type.caption.copyWith(fontSize: 13),
-              ),
-            ],
-          ),
+        const SizedBox(height: 3),
+        // 핀 옆 폭이 좁으면 잘리지 않고 두 줄로 흐른다.
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Type.section.copyWith(fontSize: 17, height: 1.25),
         ),
+        Text(detail, style: Type.caption.copyWith(fontSize: 13)),
       ],
     ),
   );
@@ -494,158 +747,137 @@ class _RouteStep extends StatelessWidget {
   );
 }
 
-class _RouteMapPainter extends CustomPainter {
-  const _RouteMapPainter(this.progress);
+/// 경로 한 바퀴: 옅은 전체 경로 위로 진한 선이 출발지에서 도착지까지
+/// 이어지고, 도착지에서 물결이 한 번 퍼진 뒤 사라졌다가 다시 시작한다.
+class _RouteOverlayPainter extends CustomPainter {
+  _RouteOverlayPainter(this.loop, this.points, this.destination)
+    : super(repaint: loop);
 
-  final double progress;
+  /// 한 바퀴 중 선이 다 그려지는 시점.
+  static const drawEnd = 0.55;
+  static const _fadeStart = 0.86;
 
-  Path _route(Size size) => Path()
-    ..moveTo(size.width * 0.30, size.height * 0.20)
-    ..cubicTo(
-      size.width * 0.34,
-      size.height * 0.37,
-      size.width * 0.58,
-      size.height * 0.58,
-      size.width * 0.72,
-      size.height * 0.80,
-    );
+  final Animation<double> loop;
+  final List<Offset> points;
+  final Offset destination;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final wash = Paint()..style = PaintingStyle.fill;
-    wash.color = AppColors.blossomSoft.withValues(alpha: 0.55);
-    canvas.drawCircle(Offset(size.width * 0.03, size.height * 0.84), 120, wash);
-    wash.color = AppColors.celadonSoft.withValues(alpha: 0.78);
-    canvas.drawCircle(Offset(size.width * 0.98, size.height * 0.11), 118, wash);
-
-    final blocks = Paint()..color = AppColors.surface.withValues(alpha: 0.72);
-    final outlines = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = AppColors.line.withValues(alpha: 0.45);
-    final blockRects = <RRect>[
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(-18, size.height * 0.28, size.width * 0.25, 112),
-        const Radius.circular(22),
-      ),
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          size.width * 0.08,
-          size.height * 0.56,
-          size.width * 0.27,
-          124,
-        ),
-        const Radius.circular(22),
-      ),
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          size.width * 0.66,
-          size.height * 0.17,
-          size.width * 0.38,
-          118,
-        ),
-        const Radius.circular(22),
-      ),
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(
-          size.width * 0.77,
-          size.height * 0.51,
-          size.width * 0.28,
-          116,
-        ),
-        const Radius.circular(22),
-      ),
-    ];
-    for (final block in blockRects) {
-      canvas
-        ..drawRRect(block, blocks)
-        ..drawRRect(block, outlines);
+    final path = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final p in points.skip(1)) {
+      path.lineTo(p.dx, p.dy);
     }
+    final metric = path.computeMetrics().first;
+    final t = loop.value;
 
-    final route = _route(size);
-    canvas.drawPath(
-      route,
-      Paint()
+    // 전체 경로 (옅게)
+    canvas
+      ..drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 12
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = Colors.white,
+      )
+      ..drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = AppColors.accent.withValues(alpha: 0.22),
+      );
+
+    final draw = Curves.easeInOutCubic.transform((t / drawEnd).clamp(0.0, 1.0));
+    final fade = t < _fadeStart
+        ? 1.0
+        : 1 - Curves.easeIn.transform((t - _fadeStart) / (1 - _fadeStart));
+    if (draw > 0 && fade > 0) {
+      final shown = metric.extractPath(0, metric.length * draw);
+      canvas.drawPath(
+        shown,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = AppColors.accent.withValues(alpha: fade),
+      );
+
+      // 진행 방향 화살표
+      final arrow = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 86
+        ..strokeWidth = 1.8
         ..strokeCap = StrokeCap.round
-        ..color = AppColors.cream.withValues(alpha: 0.92),
-    );
-    canvas.drawPath(
-      route,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = AppColors.lineStrong.withValues(alpha: 0.28),
-    );
-
-    final metric = route.computeMetrics().first;
-    final shown = metric.extractPath(0, metric.length * progress);
-    final dashPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..strokeCap = StrokeCap.round
-      ..color = AppColors.accent;
-    for (final shownMetric in shown.computeMetrics()) {
-      var cursor = 0.0;
-      while (cursor < shownMetric.length) {
+        ..strokeJoin = StrokeJoin.round
+        ..color = Colors.white.withValues(alpha: 0.9 * fade);
+      for (var d = 26.0; d < metric.length * draw - 10; d += 24) {
+        final tan = metric.getTangentForOffset(d)!;
+        final dir = tan.vector;
+        final normal = Offset(-dir.dy, dir.dx);
+        final c = tan.position;
         canvas.drawPath(
-          shownMetric.extractPath(
-            cursor,
-            math.min(cursor + 13, shownMetric.length),
-          ),
-          dashPaint,
+          Path()
+            ..moveTo(
+              (c - dir * 2.5 + normal * 2.6).dx,
+              (c - dir * 2.5 + normal * 2.6).dy,
+            )
+            ..lineTo((c + dir * 1.5).dx, (c + dir * 1.5).dy)
+            ..lineTo(
+              (c - dir * 2.5 - normal * 2.6).dx,
+              (c - dir * 2.5 - normal * 2.6).dy,
+            ),
+          arrow,
         );
-        cursor += 23;
+      }
+
+      // 걷는 사람 위치
+      if (draw < 1) {
+        final head = metric.getTangentForOffset(metric.length * draw)!.position;
+        canvas
+          ..drawCircle(
+            head,
+            14,
+            Paint()..color = AppColors.accent.withValues(alpha: 0.18),
+          )
+          ..drawCircle(head, 7.5, Paint()..color = Colors.white)
+          ..drawCircle(head, 5, Paint()..color = AppColors.accent);
       }
     }
 
-    final current = metric.getTangentForOffset(metric.length * progress);
-    if (current != null) {
+    // 도착 물결
+    if (t >= drawEnd && t < _fadeStart + 0.1) {
+      final p = ((t - drawEnd) / (_fadeStart + 0.1 - drawEnd)).clamp(0.0, 1.0);
+      final eased = Curves.easeOutCubic.transform(p);
       canvas.drawCircle(
-        current.position,
-        17,
-        Paint()..color = AppColors.accent.withValues(alpha: 0.13),
+        destination,
+        10 + 34 * eased,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..color = AppColors.accent.withValues(alpha: 0.45 * (1 - p)),
       );
-      canvas.drawCircle(current.position, 7, Paint()..color = AppColors.accent);
     }
 
-    final end = metric.getTangentForOffset(metric.length)?.position;
-    if (end != null) {
-      final pin = Path()
-        ..moveTo(end.dx, end.dy + 16)
-        ..cubicTo(
-          end.dx - 5,
-          end.dy + 7,
-          end.dx - 15,
-          end.dy - 1,
-          end.dx - 15,
-          end.dy - 12,
-        )
-        ..arcToPoint(
-          Offset(end.dx + 15, end.dy - 12),
-          radius: const Radius.circular(15),
-          largeArc: true,
-        )
-        ..cubicTo(
-          end.dx + 15,
-          end.dy - 1,
-          end.dx + 5,
-          end.dy + 7,
-          end.dx,
-          end.dy + 16,
-        )
-        ..close();
-      canvas.drawPath(pin, Paint()..color = AppColors.accentDeep);
-      canvas.drawCircle(
-        Offset(end.dx, end.dy - 12),
-        5,
-        Paint()..color = AppColors.surface,
-      );
-    }
+    // 출발점
+    canvas
+      ..drawCircle(points.first, 7, Paint()..color = Colors.white)
+      ..drawCircle(points.first, 4.5, Paint()..color = AppColors.celadon);
   }
 
   @override
-  bool shouldRepaint(_RouteMapPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+  bool shouldRepaint(_RouteOverlayPainter oldDelegate) =>
+      oldDelegate.destination != destination ||
+      !_samePoints(oldDelegate.points, points);
+
+  static bool _samePoints(List<Offset> a, List<Offset> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }
