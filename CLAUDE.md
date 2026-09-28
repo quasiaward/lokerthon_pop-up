@@ -14,7 +14,7 @@ build.sh)은 모두 제거했다.
 - **백엔드**: FastAPI (`backend/`) — 지금은 쓰지 않음. 추후 OpenAI 추천 전환용으로 보관
 
 ## 대상 기기
-iPad Pro 12.9형(5세대), iPadOS 26.6. **가로 전용.**
+iPad Pro 12.9형(5세대) 및 11형(3세대). **가로 전용.**
 
 ## 디렉토리 구조
 ```
@@ -31,7 +31,7 @@ lokerthon_pop-up/
 │   │   └── result_screen.dart             ← 결과·페어링·다시하기 액션
 │   ├── widgets/
 │   │   ├── kiosk/                         ← 디자인 시스템 컴포넌트
-│   │   │   ├── kiosk_canvas.dart          ← 1366×1024 고정 캔버스
+│   │   │   ├── kiosk_canvas.dart          ← 1366×1024 기준, 넓은 화면에서 폭 확장
 │   │   │   ├── kiosk_button.dart          ← Primary/Secondary/Text
 │   │   │   ├── choice_card.dart           ← 선택 카드
 │   │   │   ├── kiosk_progress.dart        ← 진행 표시
@@ -61,7 +61,7 @@ lokerthon_pop-up/
 ├── backend/                               ← FastAPI (현재 미사용)
 └── test/
     ├── widget_test.dart                   ← 추천 알고리즘 전수 검증
-    └── ipad_layout_test.dart              ← 12.9형 가로 레이아웃 검증
+    └── ipad_layout_test.dart              ← 11형 화면 채움·12.9형 가로 레이아웃 검증
 ```
 
 ## 추천 알고리즘
@@ -141,8 +141,8 @@ Pretendard sans가 본문. 영문 accent에만 Fraunces italic을 보조로 쓴�
 가른다 — 영문 대문자에는 넓은 자간, 한글에는 거의 주지 않는다.
 
 ### 레이아웃
-모든 화면은 `KioskCanvas` 안의 **1366×1024 고정 좌표**로 그린다. 대상 기기에서
-배율이 정확히 1이고, 비율이 다른 태블릿에서도 구조가 깨지지 않는다.
+모든 화면은 `KioskCanvas` 안의 **1366×1024 기준 좌표**로 그린다. 11형처럼
+가로 비율이 넓은 기기에서는 높이를 유지하고 캔버스 폭을 확장한다.
 좌우 여백 88~96px, 상하 72~80px.
 
 ### 화면 흐름
