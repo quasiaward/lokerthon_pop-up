@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../data/dangwa_catalog.dart';
@@ -223,8 +225,8 @@ class _AdminInventorySheetState extends State<AdminInventorySheet> {
                   onChanged: _setStock,
                 ),
         ),
-        SizedBox(
-          height: 30,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 30),
           child: _message != null
               ? Row(
                   children: [
@@ -234,11 +236,13 @@ class _AdminInventorySheetState extends State<AdminInventorySheet> {
                       color: Colors.red.shade700,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      _message!,
-                      style: Type.caption.copyWith(
-                        fontSize: 17,
-                        color: Colors.red.shade700,
+                    Expanded(
+                      child: Text(
+                        _message!,
+                        style: Type.caption.copyWith(
+                          fontSize: 17,
+                          color: Colors.red.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -252,11 +256,13 @@ class _AdminInventorySheetState extends State<AdminInventorySheet> {
                       color: AppColors.celadon,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      _notice!,
-                      style: Type.caption.copyWith(
-                        fontSize: 17,
-                        color: AppColors.charcoal,
+                    Expanded(
+                      child: Text(
+                        _notice!,
+                        style: Type.caption.copyWith(
+                          fontSize: 17,
+                          color: AppColors.charcoal,
+                        ),
                       ),
                     ),
                   ],
@@ -390,6 +396,14 @@ class _WeightPanel extends StatefulWidget {
 }
 
 class _WeightPanelState extends State<_WeightPanel> {
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
   /// 슬라이더를 끄는 동안 보여 줄 값. 손을 떼면 저장한다.
   final Map<String, double> _dragging = {};
 
@@ -418,12 +432,17 @@ class _WeightPanelState extends State<_WeightPanel> {
     final baseline = LocalRecommendationEngine.expectedShares(
       availableMenus: widget.inStock,
     );
-    return Column(
-      children: [
-        for (final menu in activeDagwaMenus) ...[
-          if (menu != activeDagwaMenus.first) const SizedBox(height: 10),
-          Expanded(
-            child: _WeightRow(
+    return Scrollbar(
+      controller: _scroll,
+      thumbVisibility: true,
+      child: ListView(
+        controller: _scroll,
+        key: const PageStorageKey('admin-weights-scroll'),
+        padding: const EdgeInsets.only(right: 12),
+        children: [
+          for (final menu in activeDagwaMenus) ...[
+            if (menu != activeDagwaMenus.first) const SizedBox(height: 10),
+            _WeightRow(
               menu: menu,
               inStock: widget.inStock.contains(menu),
               weight: weights[menu]!,
@@ -453,15 +472,15 @@ class _WeightPanelState extends State<_WeightPanel> {
                       },
                     ),
             ),
+          ],
+          const SizedBox(height: 10),
+          Text(
+            '예상 추천 비율은 4,096가지 답변 조합이 고르게 나온다고 보고 계산한 값이에요. '
+            '품절 다과는 0%입니다.',
+            style: Type.caption.copyWith(fontSize: 15, color: AppColors.muted),
           ),
         ],
-        const SizedBox(height: 10),
-        Text(
-          '예상 추천 비율은 4,096가지 답변 조합이 고르게 나온다고 보고 계산한 값이에요. '
-          '품절 다과는 0%입니다.',
-          style: Type.caption.copyWith(fontSize: 15, color: AppColors.muted),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -491,77 +510,76 @@ class _WeightRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final result = dagwaResults[menu]!;
     final changed = (share - baselineShare).abs() >= 0.005;
+    final stacked = MediaQuery.textScalerOf(context).scale(20) > 22;
+    final details = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(result.name.ko, style: Type.section.copyWith(fontSize: 20)),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: Type.caption.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: inStock ? AppColors.muted : AppColors.faint,
+          ),
+        ),
+      ],
+    );
+    final shareLabel = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          _percent(share),
+          key: ValueKey('share-$menu'),
+          style: Type.section.copyWith(fontSize: 24, color: AppColors.accent),
+        ),
+        Text(
+          changed ? '기본 ${_percent(baselineShare)}' : '예상 추천 비율',
+          style: Type.caption.copyWith(fontSize: 14, color: AppColors.muted),
+        ),
+      ],
+    );
     return AnimatedOpacity(
       opacity: inStock ? 1 : 0.55,
       duration: Motion.fast,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: stacked ? 12 : 0,
+        ),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: inStock ? 0.68 : 0.38),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: 0.92)),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 64,
-              child: DangwaImage(
-                assetPath: result.imagePath,
-                tone: toneFor(menu),
-                padding: 0.08,
-              ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: DangwaImage(
+                    assetPath: result.imagePath,
+                    tone: toneFor(menu),
+                    padding: 0.08,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                if (stacked)
+                  Expanded(child: details)
+                else
+                  SizedBox(width: 190, child: details),
+                if (!stacked) Expanded(child: control),
+                const SizedBox(width: 18),
+                SizedBox(width: stacked ? 200 : 150, child: shareLabel),
+              ],
             ),
-            const SizedBox(width: 14),
-            SizedBox(
-              width: 190,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    result.name.ko,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Type.section.copyWith(fontSize: 20),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: Type.caption.copyWith(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: inStock ? AppColors.muted : AppColors.faint,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(child: control),
-            const SizedBox(width: 18),
-            SizedBox(
-              width: 150,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    _percent(share),
-                    key: ValueKey('share-$menu'),
-                    style: Type.section.copyWith(
-                      fontSize: 24,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                  Text(
-                    changed ? '기본 ${_percent(baselineShare)}' : '예상 추천 비율',
-                    style: Type.caption.copyWith(
-                      fontSize: 14,
-                      color: AppColors.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            if (stacked) ...[const SizedBox(height: 12), control],
           ],
         ),
       ),
@@ -594,6 +612,7 @@ class _CountBadge extends StatelessWidget {
 
 class _InventoryTile extends StatelessWidget {
   const _InventoryTile({
+    super.key,
     required this.menu,
     required this.inStock,
     required this.enabled,
@@ -640,8 +659,6 @@ class _InventoryTile extends StatelessWidget {
                 children: [
                   Text(
                     result.name.ko,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: Type.section.copyWith(fontSize: 22),
                   ),
                   const SizedBox(height: 8),
@@ -758,8 +775,8 @@ class _LevelButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: Motion.fast,
-        width: 104,
-        height: 48,
+        constraints: const BoxConstraints(minWidth: 104, minHeight: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: active
@@ -781,8 +798,8 @@ class _LevelButton extends StatelessWidget {
   );
 }
 
-/// 재고 타일 두 칸씩. 남는 높이를 행마다 나눠 가져 잘리지 않는다.
-class _InventoryGrid extends StatelessWidget {
+/// 재고 타일 두 칸씩. 글자가 커지면 행 높이를 늘리고 스크롤한다.
+class _InventoryGrid extends StatefulWidget {
   const _InventoryGrid({
     required this.inStock,
     required this.enabled,
@@ -793,43 +810,62 @@ class _InventoryGrid extends StatelessWidget {
   final bool enabled;
   final void Function(String menu, bool inStock) onChanged;
 
+  @override
+  State<_InventoryGrid> createState() => _InventoryGridState();
+}
+
+class _InventoryGridState extends State<_InventoryGrid> {
   static const _columns = 2;
   static const _gap = 14.0;
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final rows = <List<String>>[
-      for (var i = 0; i < activeDagwaMenus.length; i += _columns)
-        activeDagwaMenus.sublist(
-          i,
-          (i + _columns).clamp(0, activeDagwaMenus.length),
-        ),
-    ];
-    return Column(
-      children: [
-        for (var r = 0; r < rows.length; r++) ...[
-          if (r > 0) const SizedBox(height: _gap),
-          Expanded(
-            child: Row(
-              children: [
-                for (var c = 0; c < _columns; c++) ...[
-                  if (c > 0) const SizedBox(width: _gap),
-                  Expanded(
-                    child: c < rows[r].length
-                        ? _InventoryTile(
-                            menu: rows[r][c],
-                            inStock: inStock.contains(rows[r][c]),
-                            enabled: enabled,
-                            onChanged: (value) => onChanged(rows[r][c], value),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ],
-            ),
+    final scaler = MediaQuery.textScalerOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rows = (activeDagwaMenus.length / _columns).ceil();
+        final rowHeight = math.max(
+          (constraints.maxHeight - _gap * (rows - 1)) / rows,
+          // 이름 두 줄과 재고 안내 한 줄, 카드 안쪽 여백을 확보한다.
+          math.max(
+            116.0,
+            scaler.scale(22) * 1.25 * 2 + 8 + scaler.scale(16) * 1.6 + 24,
           ),
-        ],
-      ],
+        );
+        return Scrollbar(
+          controller: _scroll,
+          thumbVisibility: true,
+          child: GridView.builder(
+            controller: _scroll,
+            key: const PageStorageKey('admin-inventory-scroll'),
+            padding: const EdgeInsets.only(right: 12),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _columns,
+              crossAxisSpacing: _gap,
+              mainAxisSpacing: _gap,
+              mainAxisExtent: rowHeight,
+            ),
+            itemCount: activeDagwaMenus.length,
+            itemBuilder: (context, index) {
+              final menu = activeDagwaMenus[index];
+              return _InventoryTile(
+                key: ValueKey('stock-$menu'),
+                menu: menu,
+                inStock: widget.inStock.contains(menu),
+                enabled: widget.enabled,
+                onChanged: (value) => widget.onChanged(menu, value),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dagwa_results.dart';
@@ -108,6 +109,94 @@ void main() {
   });
   setUp(() => appLang.value = Lang.ko);
   tearDown(() => appLang.value = Lang.ko);
+
+  testWidgets(
+    'VoiceOver story, scroll and close actions renew inactivity timeout',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 1.6;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final semantics = tester.ensureSemantics();
+      await start(tester);
+      await answerAll(tester);
+      await tester.pump(TransitionScreen.duration);
+      await frames(tester);
+      await tester.ensureVisible(find.widgetWithText(InkWell, '이 다과 이야기 보기'));
+      await frames(tester);
+      await tester.pump(const Duration(seconds: 40));
+
+      void activate(Finder target) {
+        final node = tester.getSemantics(target);
+        expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+        tester.binding.renderViews.single.owner!.semanticsOwner!.performAction(
+          node.id,
+          SemanticsAction.tap,
+        );
+      }
+
+      activate(find.widgetWithText(InkWell, '이 다과 이야기 보기'));
+      await frames(tester);
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.byType(StorySheet), findsOneWidget);
+      expect(find.byType(IdleScreen), findsNothing);
+
+      // Assistive scroll actions also have no pointer-down event.
+      await tester.pump(const Duration(seconds: 33));
+      final scrollable = find
+          .descendant(
+            of: find.byType(StorySheet),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      SemanticsNode? scrollNode;
+      void visit(SemanticsNode node) {
+        if (node.getSemanticsData().hasAction(SemanticsAction.scrollUp)) {
+          scrollNode = node;
+        }
+        node.visitChildren((child) {
+          visit(child);
+          return true;
+        });
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .single
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      expect(scrollNode, isNotNull);
+      tester.binding.renderViews.single.owner!.semanticsOwner!.performAction(
+        scrollNode!.id,
+        SemanticsAction.scrollUp,
+      );
+      await frames(tester);
+      expect(
+        tester.state<ScrollableState>(scrollable).position.pixels,
+        greaterThan(0),
+      );
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.byType(StorySheet), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 33));
+      activate(
+        find.descendant(
+          of: find.byType(StorySheet),
+          matching: find.byType(IconButton),
+        ),
+      );
+      await frames(tester);
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.byType(ResultScreen), findsOneWidget);
+      expect(find.byType(IdleScreen), findsNothing);
+      await tester.pump(const Duration(seconds: 40));
+      await frames(tester);
+      expect(find.byType(IdleScreen), findsOneWidget);
+      semantics.dispose();
+    },
+  );
 
   testWidgets(
     'every question shows four complete cards in all three languages',

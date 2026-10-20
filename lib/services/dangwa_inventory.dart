@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/dangwa_catalog.dart';
+import 'serial_task_queue.dart';
 
 abstract interface class DagwaInventoryPersistence {
   Future<Set<String>?> load();
@@ -40,6 +41,7 @@ class DagwaInventory extends ValueNotifier<Set<String>> {
       super(Set<String>.unmodifiable(activeDagwaMenus));
 
   final DagwaInventoryPersistence _persistence;
+  final _writes = SerialTaskQueue();
 
   bool get isEmpty => value.isEmpty;
   bool isInStock(String menu) => value.contains(menu);
@@ -56,7 +58,7 @@ class DagwaInventory extends ValueNotifier<Set<String>> {
   }
 
   /// 변경에 성공하면 true, 마지막 재고를 끄려는 요청이면 false를 돌려준다.
-  Future<bool> setInStock(String menu, bool inStock) async {
+  Future<bool> setInStock(String menu, bool inStock) => _writes.run(() async {
     if (!activeDagwaMenuSet.contains(menu)) return false;
 
     final previous = value;
@@ -73,9 +75,9 @@ class DagwaInventory extends ValueNotifier<Set<String>> {
       value = previous;
       rethrow;
     }
-  }
+  });
 
-  Future<void> restoreAll() async {
+  Future<void> restoreAll() => _writes.run(() async {
     final previous = value;
     value = Set<String>.unmodifiable(activeDagwaMenus);
     try {
@@ -84,7 +86,7 @@ class DagwaInventory extends ValueNotifier<Set<String>> {
       value = previous;
       rethrow;
     }
-  }
+  });
 }
 
 final dagwaInventory = DagwaInventory();

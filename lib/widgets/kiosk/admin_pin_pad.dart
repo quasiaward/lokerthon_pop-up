@@ -188,72 +188,75 @@ class _AdminPinPadState extends State<AdminPinPad>
             child: SizedBox(
               key: const ValueKey('admin-pin-pad'),
               width: 460,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Space.xxl,
-                  Space.xl,
-                  Space.xxl,
-                  Space.xl,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accentSoft,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.lock_rounded,
-                        color: AppColors.accent,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(height: Space.md),
-                    Text(_title, style: Type.section.copyWith(fontSize: 28)),
-                    const SizedBox(height: Space.xs),
-                    Text(
-                      _subtitle,
-                      style: Type.bodyMuted.copyWith(fontSize: 18),
-                    ),
-                    const SizedBox(height: Space.lg),
-                    AnimatedBuilder(
-                      animation: _shake,
-                      builder: (context, child) => Transform.translate(
-                        offset: Offset(
-                          math.sin(_shake.value * math.pi * 6) *
-                              12 *
-                              (1 - _shake.value),
-                          0,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Space.xxl,
+                    Space.xl,
+                    Space.xxl,
+                    Space.xl,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                          color: AppColors.accentSoft,
+                          shape: BoxShape.circle,
                         ),
-                        child: child,
+                        child: const Icon(
+                          Icons.lock_rounded,
+                          color: AppColors.accent,
+                          size: 24,
+                        ),
                       ),
-                      child: _Dots(filled: _input.length),
-                    ),
-                    const SizedBox(height: Space.sm),
-                    SizedBox(
-                      height: 48,
-                      child: Center(
-                        child: Text(
-                          _message ?? '',
-                          textAlign: TextAlign.center,
-                          style: Type.caption.copyWith(
-                            fontSize: 16,
-                            color: Colors.red.shade700,
+                      const SizedBox(height: Space.md),
+                      Text(_title, style: Type.section.copyWith(fontSize: 28)),
+                      const SizedBox(height: Space.xs),
+                      Text(
+                        _subtitle,
+                        style: Type.bodyMuted.copyWith(fontSize: 18),
+                      ),
+                      const SizedBox(height: Space.lg),
+                      AnimatedBuilder(
+                        animation: _shake,
+                        builder: (context, child) => Transform.translate(
+                          offset: Offset(
+                            math.sin(_shake.value * math.pi * 6) *
+                                12 *
+                                (1 - _shake.value),
+                            0,
+                          ),
+                          child: child,
+                        ),
+                        child: _Dots(filled: _input.length),
+                      ),
+                      const SizedBox(height: Space.sm),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 48),
+                        child: Center(
+                          child: Text(
+                            _message ?? '',
+                            textAlign: TextAlign.center,
+                            style: Type.caption.copyWith(
+                              fontSize: 16,
+                              color: Colors.red.shade700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: Space.sm),
-                    _Keypad(
-                      enabled: !_busy && !_locked,
-                      onDigit: _press,
-                      onDelete: _delete,
-                      onCancel: widget.onCancel,
-                    ),
-                  ],
+                      const SizedBox(height: Space.sm),
+                      _Keypad(
+                        enabled: !_busy && !_locked,
+                        onDigit: _press,
+                        onDelete: _delete,
+                        onCancel: widget.onCancel,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -13,13 +13,18 @@ import 'kiosk_button.dart';
 /// (`assets/map/route_map.png`, `tool/build_route_map.py`) 위에 경로와
 /// 이름표를 그리고, 경로가 출발지에서 도착지까지 반복해서 이어진다.
 class StoreDirectionsSheet extends StatefulWidget {
-  const StoreDirectionsSheet({super.key, required this.onClose});
+  const StoreDirectionsSheet({
+    super.key,
+    required this.onClose,
+    this.onActivity,
+  });
 
   /// 지도 배경을 미리 디코드한다. 앱 시작 때 한 번 부른다.
   static Future<void> precache(BuildContext context) =>
       _MapGeo.precache(context);
 
   final VoidCallback onClose;
+  final VoidCallback? onActivity;
 
   @override
   State<StoreDirectionsSheet> createState() => _StoreDirectionsSheetState();
@@ -64,6 +69,7 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
 
   Future<void> _close() async {
     if (_closing) return;
+    widget.onActivity?.call();
     _closing = true;
     _loop.stop();
     if (!MediaQuery.disableAnimationsOf(context)) {

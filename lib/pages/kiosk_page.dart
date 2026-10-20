@@ -373,63 +373,69 @@ class _KioskPageState extends State<KioskPage> with TickerProviderStateMixin {
             const Positioned.fill(child: BloomBackdrop()),
           ],
         ),
-        child: Listener(
-          onPointerDown: (_) => _bumpIdleTimer(),
-          onPointerMove: (_) => _bumpIdleTimer(),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AbsorbPointer(
-                  absorbing: _busy,
-                  child: AnimatedBuilder(
-                    animation: _stageMotion,
-                    builder: (context, child) {
-                      final value = _stageMotion.value;
-                      return Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, 18 * (1 - value)),
-                          child: Transform.scale(
-                            scale: 0.988 + (0.012 * value),
-                            alignment: Alignment.center,
-                            child: child,
-                          ),
-                        ),
-                      );
-                    },
-                    child: RepaintBoundary(
-                      child: Stack(
-                        children: [
-                          Positioned.fill(child: _buildStage()),
-                          if (_stage == _Stage.idle || _stage == _Stage.intro)
-                            const Positioned(
-                              right: 88,
-                              top: 52,
-                              child: LangToggle(),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollUpdateNotification) _bumpIdleTimer();
+            return false;
+          },
+          child: Listener(
+            onPointerDown: (_) => _bumpIdleTimer(),
+            onPointerMove: (_) => _bumpIdleTimer(),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AbsorbPointer(
+                    absorbing: _busy,
+                    child: AnimatedBuilder(
+                      animation: _stageMotion,
+                      builder: (context, child) {
+                        final value = _stageMotion.value;
+                        return Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, 18 * (1 - value)),
+                            child: Transform.scale(
+                              scale: 0.988 + (0.012 * value),
+                              alignment: Alignment.center,
+                              child: child,
                             ),
-                        ],
+                          ),
+                        );
+                      },
+                      child: RepaintBoundary(
+                        child: Stack(
+                          children: [
+                            Positioned.fill(child: _buildStage()),
+                            if (_stage == _Stage.idle || _stage == _Stage.intro)
+                              Positioned(
+                                right: 88,
+                                top: 52,
+                                child: LangToggle(onActivity: _bumpIdleTimer),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (_admin == _AdminStage.pin)
-                Positioned.fill(
-                  child: AdminPinPad(
-                    settings: _adminSettings,
-                    onCancel: _closeInventory,
-                    onDone: _unlockInventory,
+                if (_admin == _AdminStage.pin)
+                  Positioned.fill(
+                    child: AdminPinPad(
+                      settings: _adminSettings,
+                      onCancel: _closeInventory,
+                      onDone: _unlockInventory,
+                    ),
                   ),
-                ),
-              if (_admin == _AdminStage.open)
-                Positioned.fill(
-                  child: AdminInventorySheet(
-                    inventory: _inventory,
-                    settings: _adminSettings,
-                    onClose: _closeInventory,
+                if (_admin == _AdminStage.open)
+                  Positioned.fill(
+                    child: AdminInventorySheet(
+                      inventory: _inventory,
+                      settings: _adminSettings,
+                      onClose: _closeInventory,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -475,6 +481,7 @@ class _KioskPageState extends State<KioskPage> with TickerProviderStateMixin {
         return ResultScreen(
           key: const ValueKey('result'),
           menuName: _menuName!,
+          onActivity: _bumpIdleTimer,
           onRestart: _restart,
           onHome: _home,
         );

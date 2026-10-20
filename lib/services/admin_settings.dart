@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/dangwa_catalog.dart';
+import 'serial_task_queue.dart';
 
 abstract interface class AdminSettingsPersistence {
   Future<String?> loadPin();
@@ -95,6 +96,8 @@ class AdminSettings extends ChangeNotifier {
   final AdminSettingsPersistence _persistence;
   final DateTime Function() _clock;
 
+  final _writes = SerialTaskQueue();
+
   String _pin = defaultPin;
   Map<String, double> _weights = const {};
   int _failures = 0;
@@ -161,29 +164,28 @@ class AdminSettings extends ChangeNotifier {
     if (!isValidPin(next)) {
       throw ArgumentError.value(next, 'next', '숫자 $pinLength자리여야 합니다.');
     }
-    final previous = _pin;
-    _pin = next;
-    try {
+    await _writes.run(() async {
       await _persistence.savePin(next);
-    } catch (_) {
-      _pin = previous;
-      rethrow;
-    }
+      _pin = next;
+    });
   }
 
   Future<void> setWeight(String menu, double value) async {
     if (!activeDagwaMenuSet.contains(menu)) return;
-    final next = Map<String, double>.of(_weights);
-    final normalized = normalizeWeight(value);
-    if (normalized == 1.0) {
-      next.remove(menu);
-    } else {
-      next[menu] = normalized;
-    }
-    await _save(next);
+    await _writes.run(() async {
+      // 앞선 저장이 끝난 최신 상태에 변경분을 적용한다.
+      final next = Map<String, double>.of(_weights);
+      final normalized = normalizeWeight(value);
+      if (normalized == 1.0) {
+        next.remove(menu);
+      } else {
+        next[menu] = normalized;
+      }
+      await _save(next);
+    });
   }
 
-  Future<void> resetWeights() => _save(const {});
+  Future<void> resetWeights() => _writes.run(() => _save(const {}));
 
   Future<void> _save(Map<String, double> next) async {
     if (mapEquals(next, _weights)) return;

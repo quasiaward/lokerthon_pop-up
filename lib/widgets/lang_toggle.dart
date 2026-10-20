@@ -5,7 +5,9 @@ import '../theme/app_colors.dart';
 import 'kiosk/glass_surface.dart';
 
 class LangToggle extends StatelessWidget {
-  const LangToggle({super.key});
+  const LangToggle({super.key, this.onActivity});
+
+  final VoidCallback? onActivity;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<Lang>(
@@ -22,7 +24,10 @@ class LangToggle extends StatelessWidget {
               Semantics(
                 selected: selectedLang == lang,
                 child: TextButton(
-                  onPressed: () => appLang.value = lang,
+                  onPressed: () {
+                    onActivity?.call();
+                    appLang.value = lang;
+                  },
                   style:
                       TextButton.styleFrom(
                         minimumSize: const Size(60, 48),

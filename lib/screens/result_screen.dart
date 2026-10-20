@@ -19,11 +19,13 @@ class ResultScreen extends StatefulWidget {
     required this.menuName,
     required this.onRestart,
     required this.onHome,
+    this.onActivity,
   });
 
   final String menuName;
   final VoidCallback onRestart;
   final VoidCallback onHome;
+  final VoidCallback? onActivity;
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -32,6 +34,12 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   bool _story = const bool.fromEnvironment('KIOSK_STORY');
   bool _directions = false;
+
+  void _interact(VoidCallback update) {
+    // VoiceOver의 활성화는 포인터 이벤트 없이 실행된다.
+    widget.onActivity?.call();
+    setState(update);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +129,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                       fullWidth: true,
                                       accentColor: tone.deep,
                                       onPressed: () =>
-                                          setState(() => _story = true),
+                                          _interact(() => _story = true),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -157,7 +165,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       Expanded(
                         flex: 2,
                         child: _StoreRouteCard(
-                          onPressed: () => setState(() => _directions = true),
+                          onPressed: () => _interact(() => _directions = true),
                         ),
                       ),
                     ],
@@ -169,13 +177,15 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
         if (_story)
           StorySheet(
+            onActivity: widget.onActivity,
             result: result,
             tone: tone,
-            onClose: () => setState(() => _story = false),
+            onClose: () => _interact(() => _story = false),
           ),
         if (_directions)
           StoreDirectionsSheet(
-            onClose: () => setState(() => _directions = false),
+            onActivity: widget.onActivity,
+            onClose: () => _interact(() => _directions = false),
           ),
       ],
     );

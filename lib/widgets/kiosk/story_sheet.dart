@@ -15,11 +15,13 @@ class StorySheet extends StatefulWidget {
     required this.result,
     required this.tone,
     required this.onClose,
+    this.onActivity,
   });
 
   final DagwaResult result;
   final DagwaTone tone;
   final VoidCallback onClose;
+  final VoidCallback? onActivity;
 
   @override
   State<StorySheet> createState() => _StorySheetState();
@@ -52,6 +54,7 @@ class _StorySheetState extends State<StorySheet>
 
   Future<void> _close() async {
     if (_closing) return;
+    widget.onActivity?.call();
     _closing = true;
     if (!MediaQuery.disableAnimationsOf(context)) {
       try {
