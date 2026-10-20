@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:haenggung_dagwa/data/dangwa_catalog.dart';
 import 'package:haenggung_dagwa/services/dangwa_inventory.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 class _MemoryPersistence implements DagwaInventoryPersistence {
   Set<String>? stored;
@@ -13,6 +16,8 @@ class _MemoryPersistence implements DagwaInventoryPersistence {
 }
 
 void main() {
+  group('업데이트 전후 저장값', _migrationTests);
+
   test('저장된 재고 설정을 다음 실행에 복원한다', () async {
     final persistence = _MemoryPersistence();
     final first = DagwaInventory(persistence: persistence);
@@ -53,5 +58,59 @@ void main() {
     await inventory.restoreAll();
 
     expect(inventory.value, unorderedEquals(activeDagwaMenus));
+  });
+}
+
+void _migrationTests() {
+  setUp(
+    () => SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty(),
+  );
+
+  test('업데이트 전 저장값은 그때의 5종 기준으로 읽고, 새로 켠 다과는 재고 있음이다', () async {
+    // 업데이트 전 앱은 재고 있음 목록만 저장했다. 양갱만 꺼 둔 상태.
+    await SharedPreferencesAsync().setStringList('available_dangwa_menus_v1', [
+      '금귤정과',
+      '매작과',
+      '콩고물 도라지정과',
+      '흑임자다식',
+    ]);
+    final inventory = DagwaInventory(
+      persistence: SharedPreferencesDagwaInventoryPersistence(),
+    );
+    await inventory.initialize();
+
+    expect(inventory.value, isNot(contains('양갱')));
+    expect(
+      inventory.value,
+      containsAll(
+        activeDagwaMenus.where(
+          (m) => !SharedPreferencesDagwaInventoryPersistence.legacyKnownMenus
+              .contains(m),
+        ),
+      ),
+    );
+    expect(inventory.value.length, activeDagwaMenus.length - 1);
+  });
+
+  test('저장 뒤 다과를 새로 켜도 저장한 품절 상태만 유지한다', () async {
+    final persistence = SharedPreferencesDagwaInventoryPersistence();
+    final first = DagwaInventory(persistence: persistence);
+    expect(await first.setInStock('육포다식', false), isTrue);
+
+    final restored = DagwaInventory(
+      persistence: SharedPreferencesDagwaInventoryPersistence(),
+    );
+    await restored.initialize();
+    expect(restored.value, first.value);
+
+    // 저장 당시 몰랐던 다과는 품절로 보지 않는다.
+    expect(
+      SharedPreferencesDagwaInventoryPersistence.restore(
+        {'금귤정과'},
+        {'금귤정과', '매작과'},
+      ),
+      {'금귤정과', ...activeDagwaMenus.where((m) => m != '매작과')},
+    );
   });
 }

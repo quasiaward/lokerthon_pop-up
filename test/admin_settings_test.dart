@@ -171,7 +171,7 @@ void main() {
             )[menu]!,
         ];
         // 현장에서 체감할 만큼: 낮음은 기본의 65% 이하, 높음은 130% 이상.
-        // (현재 낮음 50~62%, 높음 139~163%)
+        // (현재 낮음 46~57%, 높음 152~177%)
         expect(shares[0], lessThan(shares[1] * 0.65), reason: menu);
         expect(shares[2], greaterThan(shares[1] * 1.3), reason: menu);
       }
@@ -297,7 +297,7 @@ void main() {
       expect(find.byKey(const ValueKey('admin-inventory-sheet')), findsNothing);
     });
 
-    testWidgets('재고 관리 타일 5개가 모두 시트 안에 온전히 보인다', (tester) async {
+    testWidgets('재고 관리 타일이 모두 시트 안에 온전히 보인다', (tester) async {
       await _pumpKiosk(tester, AdminSettings(persistence: _MemorySettings()));
       await _enterPin(tester, '2003');
       final sheet = tester.getRect(
@@ -306,17 +306,13 @@ void main() {
       final switches = find.byType(Switch);
       expect(switches, findsNWidgets(activeDagwaMenus.length));
       for (final menu in activeDagwaMenus) {
-        final name = tester.getRect(find.text(menu));
-        expect(sheet.contains(name.bottomRight), isTrue, reason: menu);
+        final tile = tester.getRect(find.byKey(ValueKey('stock-$menu')));
+        expect(sheet.contains(tile.topLeft), isTrue, reason: menu);
+        expect(sheet.contains(tile.bottomRight), isTrue, reason: menu);
       }
       // 마지막 타일이 버튼 줄 위에서 끝나야 한다.
       final lastTile = tester.getRect(
-        find
-            .ancestor(
-              of: find.text(activeDagwaMenus.last),
-              matching: find.byType(Container),
-            )
-            .first,
+        find.byKey(ValueKey('stock-${activeDagwaMenus.last}')),
       );
       final buttons = tester.getRect(find.text('설정 완료'));
       // 사이의 안내 문구 칸(30)과 여백(10)을 비워 둬야 한다. 예전 고정 비율

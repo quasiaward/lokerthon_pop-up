@@ -7,6 +7,7 @@ import 'perf_probe.dart';
 import 'pages/kiosk_page.dart';
 import 'services/admin_settings.dart';
 import 'services/dangwa_inventory.dart';
+import 'services/local_recommendation_engine.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -31,6 +32,8 @@ Future<void> main() async {
 
   await dagwaInventory.initialize();
   await adminSettings.initialize();
+  // 4096개 조합의 적합도와 다과별 보정값을 미리 계산해 첫 추천이 밀리지 않게 한다.
+  LocalRecommendationEngine.warmUp();
 
   PerfProbe.start();
   runApp(const DagwaRecommendationApp());

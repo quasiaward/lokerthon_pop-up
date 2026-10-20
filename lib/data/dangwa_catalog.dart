@@ -19,21 +19,31 @@ const dagwaMenus = <String>[
 /// 앱 서비스에서 기본으로 운영하는 다과.
 ///
 /// 관리자는 이 목록 안에서 당일 재고에 따라 메뉴를 추가로 품절 처리할 수 있다.
-const activeDagwaMenus = <String>['금귤정과', '매작과', '양갱', '콩고물 도라지정과', '흑임자다식'];
+const activeDagwaMenus = <String>[
+  '금귤정과',
+  '매작과',
+  '양갱',
+  '콩고물 도라지정과',
+  '흑임자다식',
+  '구움 견과 강정',
+  '도라지정과',
+  '육포다식',
+];
 
-const activeDagwaMenuSet = <String>{'금귤정과', '매작과', '양갱', '콩고물 도라지정과', '흑임자다식'};
+const activeDagwaMenuSet = <String>{
+  '금귤정과',
+  '매작과',
+  '양갱',
+  '콩고물 도라지정과',
+  '흑임자다식',
+  '구움 견과 강정',
+  '도라지정과',
+  '육포다식',
+};
 
 /// 앱 서비스에서 잠시 제외한 다과.
 ///
 /// 항목을 삭제하지 않고 이 집합만 수정해 운영 상태를 전환한다.
-const inactiveDagwaMenus = <String>{
-  '도라지정과',
-  '육포다식',
-  '곶감 호두말이',
-  '구움 견과 강정',
-  '깨강정',
-  '영양찰떡',
-  '수원약과',
-};
+const inactiveDagwaMenus = <String>{'곶감 호두말이', '깨강정', '영양찰떡', '수원약과'};
 
 bool isDagwaActive(String menu) => activeDagwaMenuSet.contains(menu);

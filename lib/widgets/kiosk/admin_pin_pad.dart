@@ -7,6 +7,7 @@ import '../../services/admin_settings.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import 'glass_surface.dart';
+import 'kiosk_modal.dart';
 
 enum AdminPinMode {
   /// 관리자 설정에 들어가기 전 암호 확인.
@@ -165,104 +166,97 @@ class _AdminPinPadState extends State<AdminPinPad>
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    scopesRoute: true,
-    namesRoute: true,
-    explicitChildNodes: true,
-    label: _title,
-    child: Stack(
-      children: [
-        Positioned.fill(
-          child: ModalBarrier(
-            color: AppColors.accentDeep.withValues(alpha: 0.38),
-            dismissible: true,
-            onDismiss: widget.onCancel,
-            semanticsLabel: '암호 입력 닫기',
-          ),
-        ),
-        Center(
-          child: GlassSurface(
-            radius: Radii.sheet,
-            strong: true,
-            blurBackdrop: true,
-            child: SizedBox(
-              key: const ValueKey('admin-pin-pad'),
-              width: 460,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Space.xxl,
-                    Space.xl,
-                    Space.xxl,
-                    Space.xl,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: const BoxDecoration(
-                          color: AppColors.accentSoft,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.lock_rounded,
-                          color: AppColors.accent,
-                          size: 24,
-                        ),
+  Widget build(BuildContext context) => KioskModal(
+    opacity: kAlwaysCompleteAnimation,
+    onDismiss: widget.onCancel,
+    dismissLabel: '암호 입력 닫기',
+    child: Semantics(
+      scopesRoute: true,
+      namesRoute: true,
+      explicitChildNodes: true,
+      label: _title,
+      child: Center(
+        child: GlassSurface(
+          radius: Radii.sheet,
+          strong: true,
+          blurBackdrop: true,
+          child: SizedBox(
+            key: const ValueKey('admin-pin-pad'),
+            width: 460,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Space.xxl,
+                  Space.xl,
+                  Space.xxl,
+                  Space.xl,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accentSoft,
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: Space.md),
-                      Text(_title, style: Type.section.copyWith(fontSize: 28)),
-                      const SizedBox(height: Space.xs),
-                      Text(
-                        _subtitle,
-                        style: Type.bodyMuted.copyWith(fontSize: 18),
+                      child: const Icon(
+                        Icons.lock_rounded,
+                        color: AppColors.accent,
+                        size: 24,
                       ),
-                      const SizedBox(height: Space.lg),
-                      AnimatedBuilder(
-                        animation: _shake,
-                        builder: (context, child) => Transform.translate(
-                          offset: Offset(
-                            math.sin(_shake.value * math.pi * 6) *
-                                12 *
-                                (1 - _shake.value),
-                            0,
-                          ),
-                          child: child,
+                    ),
+                    const SizedBox(height: Space.md),
+                    Text(_title, style: Type.section.copyWith(fontSize: 28)),
+                    const SizedBox(height: Space.xs),
+                    Text(
+                      _subtitle,
+                      style: Type.bodyMuted.copyWith(fontSize: 18),
+                    ),
+                    const SizedBox(height: Space.lg),
+                    AnimatedBuilder(
+                      animation: _shake,
+                      builder: (context, child) => Transform.translate(
+                        offset: Offset(
+                          math.sin(_shake.value * math.pi * 6) *
+                              12 *
+                              (1 - _shake.value),
+                          0,
                         ),
-                        child: _Dots(filled: _input.length),
+                        child: child,
                       ),
-                      const SizedBox(height: Space.sm),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(minHeight: 48),
-                        child: Center(
-                          child: Text(
-                            _message ?? '',
-                            textAlign: TextAlign.center,
-                            style: Type.caption.copyWith(
-                              fontSize: 16,
-                              color: Colors.red.shade700,
-                            ),
+                      child: _Dots(filled: _input.length),
+                    ),
+                    const SizedBox(height: Space.sm),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Center(
+                        child: Text(
+                          _message ?? '',
+                          textAlign: TextAlign.center,
+                          style: Type.caption.copyWith(
+                            fontSize: 16,
+                            color: Colors.red.shade700,
                           ),
                         ),
                       ),
-                      const SizedBox(height: Space.sm),
-                      _Keypad(
-                        enabled: !_busy && !_locked,
-                        onDigit: _press,
-                        onDelete: _delete,
-                        onCancel: widget.onCancel,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: Space.sm),
+                    _Keypad(
+                      enabled: !_busy && !_locked,
+                      onDigit: _press,
+                      onDelete: _delete,
+                      onCancel: widget.onCancel,
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
     ),
   );
 }

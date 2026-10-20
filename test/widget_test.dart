@@ -40,17 +40,19 @@ void main() {
     }
   });
 
-  test('운영 5종만 추천하고 나머지 7종 데이터는 보존한다', () {
-    expect(activeDagwaMenus, ['금귤정과', '매작과', '양갱', '콩고물 도라지정과', '흑임자다식']);
-    expect(inactiveDagwaMenus, {
+  test('운영 8종만 추천하고 나머지 4종 데이터는 보존한다', () {
+    expect(activeDagwaMenus, [
+      '금귤정과',
+      '매작과',
+      '양갱',
+      '콩고물 도라지정과',
+      '흑임자다식',
+      '구움 견과 강정',
       '도라지정과',
       '육포다식',
-      '곶감 호두말이',
-      '구움 견과 강정',
-      '깨강정',
-      '영양찰떡',
-      '수원약과',
-    });
+    ]);
+    expect(activeDagwaMenuSet, activeDagwaMenus.toSet());
+    expect(inactiveDagwaMenus, {'곶감 호두말이', '깨강정', '영양찰떡', '수원약과'});
     expect(activeDagwaMenus, isNot(contains(anyOf(inactiveDagwaMenus))));
     expect({
       ...activeDagwaMenus,
@@ -72,14 +74,6 @@ void main() {
     }
   });
 
-  test('활성화된 5개 메뉴가 모두 한 번 이상 추천된다', () {
-    final seen = <String>{};
-    for (final answers in _allAnswerCombinations()) {
-      seen.add(LocalRecommendationEngine.pick(answers));
-    }
-    expect(seen, unorderedEquals(activeDagwaMenus));
-  });
-
   test('비활성 메뉴는 4096개 답변 조합에서 한 번도 추천되지 않는다', () {
     for (final answers in _allAnswerCombinations()) {
       expect(
@@ -90,93 +84,115 @@ void main() {
     }
   });
 
-  test('한 메뉴가 전체 조합의 절반을 넘게 차지하지 않는다', () {
-    final counts = <String, int>{};
-    var total = 0;
-    for (final answers in _allAnswerCombinations()) {
-      final menu = LocalRecommendationEngine.pick(answers);
-      counts[menu] = (counts[menu] ?? 0) + 1;
-      total++;
-    }
-    for (final entry in counts.entries) {
-      expect(
-        entry.value / total,
-        lessThan(0.5),
-        reason: '${entry.key}에 추천이 쏠려 있다',
-      );
-    }
-  });
-
-  test('활성 다과마다 특성 프로필이 있고, 모든 선택지가 점수표에 있다', () {
-    expect(
-      LocalRecommendationEngine.profiledMenus,
-      containsAll(activeDagwaMenus),
-    );
+  test('다과마다 특성 프로필이 있고, 모든 선택지가 점수표에 있다', () {
+    // 비활성 다과도 다시 켤 때를 위해 프로필을 남겨 둔다.
+    expect(LocalRecommendationEngine.profiledMenus, containsAll(dagwaMenus));
     for (final options in _quizOptions) {
       expect(LocalRecommendationEngine.knownAnswers, containsAll(options));
     }
   });
 
-  test('5종이 전체 조합에 고르게 나뉜다 (각 10~30%)', () {
-    final counts = <String, int>{};
-    var total = 0;
-    for (final answers in _allAnswerCombinations()) {
-      final menu = LocalRecommendationEngine.pick(answers);
-      counts[menu] = (counts[menu] ?? 0) + 1;
-      total++;
-    }
+  test('8종이 전체 조합에 고르게 나뉜다 (각 10.5~14.5%)', () {
+    final shares = LocalRecommendationEngine.expectedShares();
+    expect(shares.keys, unorderedEquals(activeDagwaMenus));
     for (final menu in activeDagwaMenus) {
-      final share = (counts[menu] ?? 0) / total;
-      expect(share, inInclusiveRange(0.10, 0.30), reason: '$menu $share');
+      expect(shares[menu], inInclusiveRange(0.105, 0.145), reason: menu);
     }
   });
 
-  test('어느 질문이든 답을 바꾸면 결과가 달라질 수 있다', () {
+  test('답변 하나만 바꿔도 결과가 자주 바뀌고, 모든 질문이 고르게 영향을 준다', () {
+    final results = {
+      for (final answers in _allAnswerCombinations())
+        answers.join('|'): LocalRecommendationEngine.pick(answers),
+    };
     final flips = List.filled(_quizOptions.length, 0);
-    var total = 0;
+    var changes = 0;
     for (final answers in _allAnswerCombinations()) {
-      total++;
-      final base = LocalRecommendationEngine.pick(answers);
+      final base = results[answers.join('|')];
       for (var q = 0; q < _quizOptions.length; q++) {
-        final changes = _quizOptions[q].any((alt) {
-          if (alt == answers[q]) return false;
+        for (final alt in _quizOptions[q]) {
+          if (alt == answers[q]) continue;
+          changes++;
           final next = [...answers]..[q] = alt;
-          return LocalRecommendationEngine.pick(next) != base;
-        });
-        if (changes) flips[q]++;
+          if (results[next.join('|')] != base) flips[q]++;
+        }
       }
     }
+    final perQuestion = changes ~/ _quizOptions.length;
+    // 점수를 더하기만 하는 방식은 50% 언저리에서 멈춘다(현재 약 64%).
+    expect(flips.fold(0, (a, b) => a + b) / changes, greaterThan(0.6));
     for (var q = 0; q < flips.length; q++) {
-      // 분위기 질문도 무시되지 않되, 식감처럼 직접적인 질문이 더 크게 움직인다.
-      expect(flips[q] / total, greaterThan(0.25), reason: 'Q${q + 1}');
+      // 분위기 질문도 식감·계절만큼 결과를 움직인다(현재 61~68%).
+      expect(flips[q] / perQuestion, greaterThan(0.55), reason: 'Q${q + 1}');
     }
-    expect(flips[3], greaterThan(flips[0]));
-    expect(flips[3], greaterThan(flips[2]));
   });
 
-  test('식감·계절·문양 답변은 조사한 다과 특징과 맞는 결과로 기운다', () {
-    String topFor(int question, String answer) {
+  test('결과는 늘 적합도 상위 3종 안에서 나오고, 1위가 가장 많이 나온다', () {
+    final ranks = List.filled(3, 0);
+    for (final answers in _allAnswerCombinations()) {
+      final ranked = LocalRecommendationEngine.rank(answers);
+      final picked = LocalRecommendationEngine.pick(answers);
+      final index = ranked.indexWhere((s) => s.menu == picked);
+      expect(index, lessThan(3), reason: '$answers');
+      expect(ranked[index].probability, greaterThan(0), reason: '$answers');
+      expect(
+        ranked.fold<double>(0, (sum, s) => sum + s.probability),
+        closeTo(1, 1e-9),
+      );
+      expect(
+        ranked.where((s) => s.probability > 0).length,
+        lessThanOrEqualTo(3),
+      );
+      ranks[index]++;
+    }
+    // 현재 1위 약 59%, 2위 26%, 3위 15%.
+    expect(ranks[0], greaterThan(ranks[1]));
+    expect(ranks[1], greaterThan(ranks[2]));
+    expect(ranks[0] / 4096, greaterThan(0.5));
+  });
+
+  test('한 다과가 확실히 앞서는 답변에서는 그 다과가 그대로 나온다', () {
+    for (final answers in _allAnswerCombinations()) {
+      final ranked = LocalRecommendationEngine.rank(answers);
+      for (final score in ranked.skip(1)) {
+        if (score.probability == 0) continue;
+        // 확률 10% 미만 후보는 아예 빠진다.
+        expect(
+          score.probability,
+          greaterThanOrEqualTo(0.1),
+          reason: '$answers',
+        );
+      }
+    }
+  });
+
+  test('답변은 조사한 다과 특징과 맞는 결과로 기운다', () {
+    List<String> topFor(int question, String answer, [int n = 1]) {
       final counts = <String, int>{};
       for (final answers in _allAnswerCombinations()) {
         if (answers[question] != answer) continue;
         final menu = LocalRecommendationEngine.pick(answers);
         counts[menu] = (counts[menu] ?? 0) + 1;
       }
-      return (counts.entries.toList()..sort((a, b) => b.value - a.value))
-          .first
-          .key;
+      final sorted = counts.entries.toList()..sort((a, b) => b.value - a.value);
+      return [for (final e in sorted.take(n)) e.key];
     }
 
-    expect(topFor(3, '부드러운'), '양갱');
-    expect(topFor(3, '바삭한'), '매작과');
-    expect(topFor(3, '쫀득한'), '콩고물 도라지정과');
-    expect(topFor(4, '봄'), '금귤정과');
-    expect(topFor(4, '여름'), '양갱');
-    expect(topFor(4, '가을'), '콩고물 도라지정과');
-    expect(topFor(4, '겨울'), '흑임자다식');
-    expect(topFor(5, '둥근 모양'), '금귤정과');
-    expect(topFor(5, '물결 모양'), '매작과');
-    expect(topFor(5, '별·꽃 모양'), '흑임자다식');
+    expect(topFor(0, '매화 분홍'), ['매작과']);
+    expect(topFor(0, '유자 노랑'), ['금귤정과']);
+    expect(topFor(0, '소나무 청록'), ['콩고물 도라지정과']);
+    expect(topFor(2, '혼자'), ['양갱']);
+    expect(topFor(2, '가족'), ['콩고물 도라지정과']);
+    expect(topFor(2, '친구', 2), unorderedEquals(['육포다식', '구움 견과 강정']));
+    expect(topFor(3, '바삭한', 2), unorderedEquals(['구움 견과 강정', '매작과']));
+    expect(topFor(3, '쫀득한'), ['도라지정과']);
+    expect(topFor(4, '봄', 2), unorderedEquals(['매작과', '금귤정과']));
+    expect(topFor(4, '여름'), ['양갱']);
+    expect(topFor(4, '겨울'), ['흑임자다식']);
+    expect(topFor(5, '둥근 모양'), ['금귤정과']);
+    expect(topFor(5, '물결 모양'), ['매작과']);
+    expect(topFor(5, '직선 모양'), ['도라지정과']);
+    expect(topFor(5, '별·꽃 모양', 2), unorderedEquals(['육포다식', '흑임자다식']));
   });
 
   test('대표 취향 조합은 예상한 다과를 고른다', () {
@@ -185,9 +201,17 @@ void main() {
       '양갱': ['먹색', '잔잔하고 평온', '혼자', '부드러운', '여름', '직선 모양'],
       '콩고물 도라지정과': ['소나무 청록', '흐리고 지침', '가족', '쫀득한', '가을', '직선 모양'],
       '금귤정과': ['유자 노랑', '설레고 두근거려요', '소중한 사람', '촉촉한', '봄', '둥근 모양'],
-      '흑임자다식': ['먹색', '잔잔하고 평온', '혼자', '부드러운', '겨울', '별·꽃 모양'],
+      '흑임자다식': ['먹색', '흐리고 지침', '혼자', '부드러운', '겨울', '별·꽃 모양'],
+      '구움 견과 강정': ['유자 노랑', '맑고 활기참', '친구', '바삭한', '가을', '물결 모양'],
+      '도라지정과': ['먹색', '잔잔하고 평온', '소중한 사람', '쫀득한', '겨울', '직선 모양'],
+      '육포다식': ['소나무 청록', '설레고 두근거려요', '친구', '쫀득한', '가을', '별·꽃 모양'],
     };
     cases.forEach((expected, answers) {
+      expect(
+        LocalRecommendationEngine.rank(answers).first.menu,
+        expected,
+        reason: '$answers',
+      );
       expect(
         LocalRecommendationEngine.pick(answers),
         expected,
@@ -196,14 +220,16 @@ void main() {
     });
   });
 
-  test('1위와 2위가 완전히 같은 점수인 조합이 없다', () {
-    for (final answers in _allAnswerCombinations()) {
-      final ranked = LocalRecommendationEngine.rank(answers);
-      expect(
-        ranked[0].total - ranked[1].total,
-        greaterThan(1e-9),
-        reason: '$answers',
-      );
+  test('비중을 올린 다과는 원래 나오던 조합에서 빠지지 않는다', () {
+    for (final menu in activeDagwaMenus) {
+      for (final answers in _allAnswerCombinations()) {
+        if (LocalRecommendationEngine.pick(answers) != menu) continue;
+        expect(
+          LocalRecommendationEngine.pick(answers, weights: {menu: 1.1}),
+          menu,
+          reason: '$menu $answers',
+        );
+      }
     }
   });
 

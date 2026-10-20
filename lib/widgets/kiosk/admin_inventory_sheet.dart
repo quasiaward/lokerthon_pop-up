@@ -14,6 +14,7 @@ import 'admin_pin_pad.dart';
 import 'dangwa_image.dart';
 import 'glass_surface.dart';
 import 'kiosk_button.dart';
+import 'kiosk_modal.dart';
 
 class AdminInventorySheet extends StatefulWidget {
   const AdminInventorySheet({
@@ -100,57 +101,54 @@ class _AdminInventorySheetState extends State<AdminInventorySheet> {
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    scopesRoute: true,
-    namesRoute: true,
-    explicitChildNodes: true,
-    label: '관리자 재고 설정',
-    child: Stack(
-      children: [
-        Positioned.fill(
-          child: ModalBarrier(
-            color: AppColors.accentDeep.withValues(alpha: 0.38),
-            dismissible: true,
-            onDismiss: widget.onClose,
-            semanticsLabel: '관리자 설정 닫기',
-          ),
-        ),
-        Center(
-          child: GlassSurface(
-            radius: Radii.sheet,
-            strong: true,
-            blurBackdrop: true,
-            child: SizedBox(
-              key: const ValueKey('admin-inventory-sheet'),
-              width: 1080,
-              height: 790,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(46, 34, 46, 38),
-                child: ListenableBuilder(
-                  listenable: Listenable.merge([
-                    widget.inventory,
-                    widget.settings,
-                  ]),
-                  builder: (context, _) => _buildContent(),
+  Widget build(BuildContext context) => KioskModal(
+    opacity: kAlwaysCompleteAnimation,
+    onDismiss: widget.onClose,
+    dismissLabel: '관리자 설정 닫기',
+    child: Semantics(
+      scopesRoute: true,
+      namesRoute: true,
+      explicitChildNodes: true,
+      label: '관리자 재고 설정',
+      child: Stack(
+        children: [
+          Center(
+            child: GlassSurface(
+              radius: Radii.sheet,
+              strong: true,
+              blurBackdrop: true,
+              child: SizedBox(
+                key: const ValueKey('admin-inventory-sheet'),
+                width: 1080,
+                height: 850,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(46, 34, 46, 38),
+                  child: ListenableBuilder(
+                    listenable: Listenable.merge([
+                      widget.inventory,
+                      widget.settings,
+                    ]),
+                    builder: (context, _) => _buildContent(),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        if (_changingPin)
-          Positioned.fill(
-            child: AdminPinPad(
-              settings: widget.settings,
-              mode: AdminPinMode.change,
-              onCancel: () => setState(() => _changingPin = false),
-              onDone: () => setState(() {
-                _changingPin = false;
-                _message = null;
-                _notice = '관리자 암호를 바꿨어요.';
-              }),
+          if (_changingPin)
+            Positioned.fill(
+              child: AdminPinPad(
+                settings: widget.settings,
+                mode: AdminPinMode.change,
+                onCancel: () => setState(() => _changingPin = false),
+                onDone: () => setState(() {
+                  _changingPin = false;
+                  _message = null;
+                  _notice = '관리자 암호를 바꿨어요.';
+                }),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     ),
   );
 
@@ -441,7 +439,7 @@ class _WeightPanelState extends State<_WeightPanel> {
         padding: const EdgeInsets.only(right: 12),
         children: [
           for (final menu in activeDagwaMenus) ...[
-            if (menu != activeDagwaMenus.first) const SizedBox(height: 10),
+            if (menu != activeDagwaMenus.first) const SizedBox(height: 6),
             _WeightRow(
               menu: menu,
               inStock: widget.inStock.contains(menu),
@@ -473,10 +471,9 @@ class _WeightPanelState extends State<_WeightPanel> {
                     ),
             ),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
-            '예상 추천 비율은 4,096가지 답변 조합이 고르게 나온다고 보고 계산한 값이에요. '
-            '품절 다과는 0%입니다.',
+            '예상 추천 비율은 4,096가지 답변 조합을 모두 넣어 센 값이에요. 품절 다과는 0%입니다.',
             style: Type.caption.copyWith(fontSize: 15, color: AppColors.muted),
           ),
         ],
@@ -515,12 +512,12 @@ class _WeightRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(result.name.ko, style: Type.section.copyWith(fontSize: 20)),
-        const SizedBox(height: 4),
+        Text(result.name.ko, style: Type.section.copyWith(fontSize: 19)),
+        const SizedBox(height: 2),
         Text(
           subtitle,
           style: Type.caption.copyWith(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
             color: inStock ? AppColors.muted : AppColors.faint,
           ),
@@ -534,11 +531,11 @@ class _WeightRow extends StatelessWidget {
         Text(
           _percent(share),
           key: ValueKey('share-$menu'),
-          style: Type.section.copyWith(fontSize: 24, color: AppColors.accent),
+          style: Type.section.copyWith(fontSize: 22, color: AppColors.accent),
         ),
         Text(
           changed ? '기본 ${_percent(baselineShare)}' : '예상 추천 비율',
-          style: Type.caption.copyWith(fontSize: 14, color: AppColors.muted),
+          style: Type.caption.copyWith(fontSize: 13, color: AppColors.muted),
         ),
       ],
     );
@@ -561,8 +558,8 @@ class _WeightRow extends StatelessWidget {
             Row(
               children: [
                 SizedBox(
-                  width: 64,
-                  height: 64,
+                  width: 46,
+                  height: 46,
                   child: DangwaImage(
                     assetPath: result.imagePath,
                     tone: toneFor(menu),
@@ -644,7 +641,7 @@ class _InventoryTile extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 92,
+              width: 76,
               child: DangwaImage(
                 assetPath: result.imagePath,
                 tone: toneFor(menu),
@@ -658,7 +655,8 @@ class _InventoryTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    result.name.ko,
+                    _keepWords(result.name.ko),
+                    semanticsLabel: result.name.ko,
                     style: Type.section.copyWith(fontSize: 22),
                   ),
                   const SizedBox(height: 8),
@@ -775,7 +773,7 @@ class _LevelButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: Motion.fast,
-        constraints: const BoxConstraints(minWidth: 104, minHeight: 48),
+        constraints: const BoxConstraints(minWidth: 96, minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -798,7 +796,7 @@ class _LevelButton extends StatelessWidget {
   );
 }
 
-/// 재고 타일 두 칸씩. 글자가 커지면 행 높이를 늘리고 스크롤한다.
+/// 재고 타일 세 칸씩. 글자가 커지면 두 칸으로 줄이고 행 높이를 늘려 스크롤한다.
 class _InventoryGrid extends StatefulWidget {
   const _InventoryGrid({
     required this.inStock,
@@ -815,7 +813,6 @@ class _InventoryGrid extends StatefulWidget {
 }
 
 class _InventoryGridState extends State<_InventoryGrid> {
-  static const _columns = 2;
   static const _gap = 14.0;
   final _scroll = ScrollController();
 
@@ -830,7 +827,9 @@ class _InventoryGridState extends State<_InventoryGrid> {
     final scaler = MediaQuery.textScalerOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
-        final rows = (activeDagwaMenus.length / _columns).ceil();
+        // 세 칸에서는 큰 글씨의 이름이 세 줄로 넘어가 타일을 넘친다.
+        final columns = scaler.scale(22) > 28 ? 2 : 3;
+        final rows = (activeDagwaMenus.length / columns).ceil();
         final rowHeight = math.max(
           (constraints.maxHeight - _gap * (rows - 1)) / rows,
           // 이름 두 줄과 재고 안내 한 줄, 카드 안쪽 여백을 확보한다.
@@ -847,7 +846,7 @@ class _InventoryGridState extends State<_InventoryGrid> {
             key: const PageStorageKey('admin-inventory-scroll'),
             padding: const EdgeInsets.only(right: 12),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _columns,
+              crossAxisCount: columns,
               crossAxisSpacing: _gap,
               mainAxisSpacing: _gap,
               mainAxisExtent: rowHeight,
@@ -869,3 +868,8 @@ class _InventoryGridState extends State<_InventoryGrid> {
     );
   }
 }
+
+/// 한글은 글자 사이에서도 줄이 바뀌어 '도라지정 / 과'처럼 끊긴다.
+/// 단어 안에 줄바꿈 금지 문자를 넣어 띄어쓰기에서만 줄을 바꾼다.
+String _keepWords(String text) =>
+    text.split(' ').map((word) => word.split('').join('\u2060')).join(' ');
