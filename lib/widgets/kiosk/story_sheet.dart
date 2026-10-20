@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import 'brand_mark.dart';
 import 'glass_surface.dart';
 import 'kiosk_button.dart';
+import 'kiosk_modal.dart';
 
 class StorySheet extends StatefulWidget {
   const StorySheet({
@@ -82,157 +83,146 @@ class _StorySheetState extends State<StorySheet>
       explicitChildNodes: true,
       namesRoute: true,
       label: tr('다과 이야기', 'Dagwa story', '茶菓の物語'),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: FadeTransition(
-              opacity: _curve,
-              child: ModalBarrier(
-                color: AppColors.accentDeep.withValues(alpha: 0.38),
-                dismissible: true,
-                onDismiss: _close,
-                semanticsLabel: tr('닫기', 'Close', '閉じる'),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SlideTransition(
-              position: Tween(
-                begin: const Offset(0, 1),
-                end: Offset.zero,
-              ).animate(_curve),
-              child: ScaleTransition(
-                scale: Tween(begin: 0.985, end: 1.0).animate(_curve),
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 26),
-                  child: GlassSurface(
-                    radius: Radii.sheet,
-                    strong: true,
-                    blurBackdrop: true,
-                    child: SizedBox(
-                      width: 1188,
-                      height: 824,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(48, 18, 48, 32),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: Container(
-                                width: 54,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: AppColors.lineStrong.withValues(
-                                    alpha: 0.42,
-                                  ),
-                                  borderRadius: BorderRadius.circular(99),
+      child: KioskModal(
+        opacity: _curve,
+        onDismiss: _close,
+        dismissLabel: tr('닫기', 'Close', '閉じる'),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(_curve),
+            child: ScaleTransition(
+              scale: Tween(begin: 0.985, end: 1.0).animate(_curve),
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 26),
+                child: GlassSurface(
+                  radius: Radii.sheet,
+                  strong: true,
+                  blurBackdrop: true,
+                  child: SizedBox(
+                    width: 1188,
+                    height: 824,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(48, 18, 48, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 54,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: AppColors.lineStrong.withValues(
+                                  alpha: 0.42,
                                 ),
+                                borderRadius: BorderRadius.circular(99),
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                const BrandMark(compact: true),
-                                const Spacer(),
-                                Text(
-                                  'THE STORY',
-                                  style: Type.eyebrow(
-                                    AppColors.accent,
-                                    tracking: 2.8,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const BrandMark(compact: true),
+                              const Spacer(),
+                              Text(
+                                'THE STORY',
+                                style: Type.eyebrow(
+                                  AppColors.accent,
+                                  tracking: 2.8,
+                                ),
+                              ),
+                              const SizedBox(width: 18),
+                              IconButton(
+                                onPressed: _close,
+                                tooltip: tr('닫기', 'Close', '閉じる'),
+                                icon: const Icon(Icons.close_rounded),
+                                color: AppColors.charcoal,
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.46,
+                                  ),
+                                  minimumSize: const Size(48, 48),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  result.name.t,
+                                  style: Type.resultTitle.copyWith(
+                                    fontSize: 48,
                                   ),
                                 ),
-                                const SizedBox(width: 18),
-                                IconButton(
-                                  onPressed: _close,
-                                  tooltip: tr('닫기', 'Close', '閉じる'),
-                                  icon: const Icon(Icons.close_rounded),
-                                  color: AppColors.charcoal,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.white.withValues(
-                                      alpha: 0.46,
-                                    ),
-                                    minimumSize: const Size(48, 48),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    result.name.t,
-                                    style: Type.resultTitle.copyWith(
-                                      fontSize: 48,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 54,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        widget.tone.deep,
-                                        AppColors.celadon,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            Expanded(
-                              child: Scrollbar(
-                                controller: _scroll,
-                                thumbVisibility: true,
-                                // 마지막 줄까지 선명하게 읽을 수 있도록 스크롤바로만
-                                // 이어지는 내용을 알린다. 고정 마스크는 끝에서도 글을 가린다.
-                                child: SingleChildScrollView(
-                                  controller: _scroll,
-                                  padding: const EdgeInsets.only(
-                                    right: 24,
-                                    bottom: 32,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        result.description.t,
-                                        style: Type.body.copyWith(
-                                          fontSize: 22,
-                                          height: 1.68,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 28),
-                                      _Note(
-                                        icon: Icons.local_cafe_rounded,
-                                        label: tr(
-                                          '어울리는 차',
-                                          'Pairs with',
-                                          '相性のよいお茶',
-                                        ),
-                                        value: result.pairing.t,
-                                        body: result.pairingDesc.t,
-                                      ),
+                              ),
+                              Container(
+                                width: 54,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      widget.tone.deep,
+                                      AppColors.celadon,
                                     ],
                                   ),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: Scrollbar(
+                              controller: _scroll,
+                              thumbVisibility: true,
+                              // 마지막 줄까지 선명하게 읽을 수 있도록 스크롤바로만
+                              // 이어지는 내용을 알린다. 고정 마스크는 끝에서도 글을 가린다.
+                              child: SingleChildScrollView(
+                                controller: _scroll,
+                                padding: const EdgeInsets.only(
+                                  right: 24,
+                                  bottom: 32,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      result.description.t,
+                                      style: Type.body.copyWith(
+                                        fontSize: 22,
+                                        height: 1.68,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 28),
+                                    _Note(
+                                      icon: Icons.local_cafe_rounded,
+                                      label: tr(
+                                        '어울리는 차',
+                                        'Pairs with',
+                                        '相性のよいお茶',
+                                      ),
+                                      value: result.pairing.t,
+                                      body: result.pairingDesc.t,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 18),
-                            KioskButton(
-                              label: tr('닫기', 'Close', '閉じる'),
-                              onPressed: _close,
-                              fullWidth: true,
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 18),
+                          KioskButton(
+                            label: tr('닫기', 'Close', '閉じる'),
+                            onPressed: _close,
+                            fullWidth: true,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -240,7 +230,7 @@ class _StorySheetState extends State<StorySheet>
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

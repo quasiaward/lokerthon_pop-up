@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import 'brand_mark.dart';
 import 'kiosk_button.dart';
+import 'kiosk_modal.dart';
 
 /// 팝업 장소에서 행궁다과까지의 짧은 도보 경로를 앱 안에서 보여 주는 안내 시트.
 /// 실제 지도 캡처에서 도로·건물 모양만 뽑아 앱 색으로 다시 칠한 배경
@@ -96,129 +97,120 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
     explicitChildNodes: true,
     namesRoute: true,
     label: tr('행궁다과 길 안내', 'Directions to Haenggung Dagwa', '行宮茶菓への道案内'),
-    child: Stack(
-      children: [
-        Positioned.fill(
-          child: FadeTransition(
-            opacity: _curve,
-            child: ModalBarrier(
-              color: AppColors.accentDeep.withValues(alpha: 0.38),
-              dismissible: true,
-              onDismiss: _close,
-              semanticsLabel: tr('닫기', 'Close', '閉じる'),
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: SlideTransition(
-            position: Tween(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(_curve),
-            // 크기 변화 없이 위치만 옮겨야 캐시된 레이어를 그대로 쓴다.
-            // 지도와 안내를 또렷하게 읽어야 하는 시트라 반투명 유리 대신
-            // 불투명한 면을 쓴다. 뒤 흐림도 필요 없어 움직임이 가볍다.
-            child: RepaintBoundary(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 26),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(Radii.sheet),
-                    border: Border.all(color: AppColors.mist),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentDeep.withValues(alpha: 0.16),
-                        blurRadius: 40,
-                        offset: const Offset(0, 16),
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: 1188,
-                    height: 824,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(44, 18, 44, 34),
-                      child: Column(
-                        children: [
-                          Center(
-                            child: Container(
-                              width: 54,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: AppColors.lineStrong.withValues(
-                                  alpha: 0.42,
-                                ),
-                                borderRadius: BorderRadius.circular(99),
+    child: KioskModal(
+      opacity: _curve,
+      onDismiss: _close,
+      dismissLabel: tr('닫기', 'Close', '閉じる'),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: SlideTransition(
+          position: Tween(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(_curve),
+          // 크기 변화 없이 위치만 옮겨야 캐시된 레이어를 그대로 쓴다.
+          // 지도와 안내를 또렷하게 읽어야 하는 시트라 반투명 유리 대신
+          // 불투명한 면을 쓴다. 뒤 흐림도 필요 없어 움직임이 가볍다.
+          child: RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 26),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(Radii.sheet),
+                  border: Border.all(color: AppColors.mist),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accentDeep.withValues(alpha: 0.16),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  key: const ValueKey('directions-sheet'),
+                  width: 1188,
+                  height: 824,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(44, 18, 44, 34),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 54,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: AppColors.lineStrong.withValues(
+                                alpha: 0.42,
                               ),
+                              borderRadius: BorderRadius.circular(99),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          // 로고와 닫기 버튼의 폭이 달라 Spacer로는 가운데가 맞지
-                          // 않는다. 문구는 줄 전체의 가운데에 따로 놓는다.
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  const BrandMark(compact: true),
-                                  const Spacer(),
-                                  Semantics(
-                                    button: true,
-                                    label: tr('닫기', 'Close', '閉じる'),
-                                    child: IconButton.filledTonal(
-                                      onPressed: _close,
-                                      icon: const Icon(Icons.close_rounded),
-                                      iconSize: 26,
-                                      style: IconButton.styleFrom(
-                                        fixedSize: const Size(50, 50),
-                                        backgroundColor: AppColors.accentSoft,
-                                        foregroundColor: AppColors.accentDeep,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // 자간이 마지막 글자 뒤에도 붙어 글자가 그만큼
-                              // 왼쪽으로 보인다. 같은 폭을 앞에 더해 맞춘다.
-                              Padding(
-                                padding: const EdgeInsets.only(left: 2.8),
-                                child: Text(
-                                  'A SHORT WALK',
-                                  key: const ValueKey('directions-eyebrow'),
-                                  style: Type.eyebrow(
-                                    AppColors.accent,
-                                    tracking: 2.8,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          Expanded(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                        ),
+                        const SizedBox(height: 10),
+                        // 로고와 닫기 버튼의 폭이 달라 Spacer로는 가운데가 맞지
+                        // 않는다. 문구는 줄 전체의 가운데에 따로 놓는다.
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Row(
                               children: [
-                                Expanded(
-                                  flex: 6,
-                                  child: _RouteIllustration(loop: _loop),
-                                ),
-                                const SizedBox(width: 34),
-                                Expanded(
-                                  flex: 4,
-                                  child: _RouteDetails(
-                                    key: const ValueKey(
-                                      'store-directions-details',
+                                const BrandMark(compact: true),
+                                const Spacer(),
+                                Semantics(
+                                  button: true,
+                                  label: tr('닫기', 'Close', '閉じる'),
+                                  child: IconButton.filledTonal(
+                                    onPressed: _close,
+                                    icon: const Icon(Icons.close_rounded),
+                                    iconSize: 26,
+                                    style: IconButton.styleFrom(
+                                      fixedSize: const Size(50, 50),
+                                      backgroundColor: AppColors.accentSoft,
+                                      foregroundColor: AppColors.accentDeep,
                                     ),
-                                    onClose: _close,
                                   ),
                                 ),
                               ],
                             ),
+                            // 자간이 마지막 글자 뒤에도 붙어 글자가 그만큼
+                            // 왼쪽으로 보인다. 같은 폭을 앞에 더해 맞춘다.
+                            Padding(
+                              padding: const EdgeInsets.only(left: 2.8),
+                              child: Text(
+                                'A SHORT WALK',
+                                key: const ValueKey('directions-eyebrow'),
+                                style: Type.eyebrow(
+                                  AppColors.accent,
+                                  tracking: 2.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                flex: 6,
+                                child: _RouteIllustration(loop: _loop),
+                              ),
+                              const SizedBox(width: 34),
+                              Expanded(
+                                flex: 4,
+                                child: _RouteDetails(
+                                  key: const ValueKey(
+                                    'store-directions-details',
+                                  ),
+                                  onClose: _close,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -226,7 +218,7 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
             ),
           ),
         ),
-      ],
+      ),
     ),
   );
 }

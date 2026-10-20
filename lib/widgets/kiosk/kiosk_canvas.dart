@@ -29,23 +29,37 @@ class KioskCanvas extends StatelessWidget {
           if (background != null)
             Positioned.fill(
               child: IgnorePointer(
-                child: LayoutBuilder(
-                  builder: (context, constraints) =>
-                      _fitCanvas(constraints, background!),
-                ),
+                child: KioskCanvasLayer(safeArea: false, child: background!),
               ),
             ),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) => _fitCanvas(constraints, child),
-            ),
-          ),
+          KioskCanvasLayer(child: child),
         ],
       ),
     );
   }
+}
 
-  Widget _fitCanvas(BoxConstraints constraints, Widget content) {
+/// 배경을 칠하지 않고 같은 디자인 좌표와 안전 영역으로 내용을 배치한다.
+/// 전체 화면 오버레이에서도 본문과 동일한 크기·비율을 유지한다.
+class KioskCanvasLayer extends StatelessWidget {
+  const KioskCanvasLayer({
+    super.key,
+    required this.child,
+    this.safeArea = true,
+  });
+
+  final Widget child;
+  final bool safeArea;
+
+  @override
+  Widget build(BuildContext context) {
+    final canvas = LayoutBuilder(
+      builder: (context, constraints) => _fitCanvas(constraints),
+    );
+    return safeArea ? SafeArea(child: canvas) : canvas;
+  }
+
+  Widget _fitCanvas(BoxConstraints constraints) {
     if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
       return const SizedBox.shrink();
     }
@@ -62,11 +76,7 @@ class KioskCanvas extends StatelessWidget {
     return SizedBox.expand(
       child: FittedBox(
         fit: BoxFit.contain,
-        child: SizedBox(
-          width: canvasWidth,
-          height: canvasHeight,
-          child: content,
-        ),
+        child: SizedBox(width: canvasWidth, height: canvasHeight, child: child),
       ),
     );
   }

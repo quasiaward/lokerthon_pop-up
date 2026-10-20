@@ -69,12 +69,7 @@ void main() {
     await _pumpSheet(tester);
     await tester.pump(const Duration(seconds: 1));
     final sheet = tester.getRect(
-      find
-          .ancestor(
-            of: find.byKey(const ValueKey('directions-eyebrow')),
-            matching: find.byType(SizedBox),
-          )
-          .last,
+      find.byKey(const ValueKey('directions-sheet')),
     );
     final text = tester.getRect(
       find.byKey(const ValueKey('directions-eyebrow')),
