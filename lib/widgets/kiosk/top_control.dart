@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../l10n/lang.dart';
@@ -14,7 +16,7 @@ class TopControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 60,
+    height: math.max(60, MediaQuery.textScalerOf(context).scale(18) * 1.4 + 24),
     child: Stack(
       alignment: Alignment.center,
       children: [

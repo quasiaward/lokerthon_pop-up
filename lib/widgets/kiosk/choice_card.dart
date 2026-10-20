@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../data/quiz_questions.dart';
@@ -18,6 +20,40 @@ class ChoiceCard extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
   final Color accentColor;
+
+  static TextStyle get _labelStyle =>
+      Type.section.copyWith(fontSize: isEn ? 24 : 28);
+  static TextStyle get _descriptionStyle =>
+      Type.caption.copyWith(fontSize: 18, height: 1.38, color: AppColors.muted);
+
+  /// 이미지와 확대된 선택지 문구가 카드 내부에서 잘리지 않는 최소 높이.
+  static double minimumHeight(
+    BuildContext context,
+    QuizOption option,
+    double width,
+  ) {
+    // 안쪽 여백·이미지·간격·선택 표시·선택 상태의 테두리를 제외한다.
+    final textWidth = math.max(1.0, width - 40 - 112 - 24 - 16 - 34 - 4);
+    double height(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.maybeLocaleOf(context),
+      )..layout(maxWidth: textWidth);
+      final result = painter.height;
+      painter.dispose();
+      return result;
+    }
+
+    return math.max(
+          112.0,
+          height(option.label.t, _labelStyle) +
+              8 +
+              height(option.desc.t, _descriptionStyle),
+        ) +
+        44;
+  }
 
   @override
   State<ChoiceCard> createState() => _ChoiceCardState();
@@ -126,8 +162,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
                         children: [
                           Text(
                             widget.option.label.t,
-                            style: Type.section.copyWith(
-                              fontSize: isEn ? 24 : 28,
+                            style: ChoiceCard._labelStyle.copyWith(
                               color: selected
                                   ? AppColors.accentDeep
                                   : AppColors.ink,
@@ -136,13 +171,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
                           const SizedBox(height: 8),
                           Text(
                             widget.option.desc.t,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Type.caption.copyWith(
-                              fontSize: 18,
-                              height: 1.38,
-                              color: AppColors.muted,
-                            ),
+                            style: ChoiceCard._descriptionStyle,
                           ),
                         ],
                       ),

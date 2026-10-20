@@ -51,7 +51,10 @@ class _KioskButtonState extends State<KioskButton> {
               : null,
           borderRadius: BorderRadius.circular(Radii.button),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.symmetric(
+              horizontal: 32,
+              vertical: textOnly ? 12 : 22,
+            ),
             child: Row(
               mainAxisSize: widget.fullWidth
                   ? MainAxisSize.max
@@ -89,17 +92,19 @@ class _KioskButtonState extends State<KioskButton> {
         opacity: enabled ? 1 : 0.45,
         child: SizedBox(
           width: widget.fullWidth ? double.infinity : null,
-          height: textOnly ? 56 : 72,
-          child: textOnly
-              ? content
-              : GlassSurface(
-                  radius: Radii.button,
-                  accented: primary,
-                  strong: primary,
-                  accentColor: widget.accentColor,
-                  blurBackdrop: true,
-                  child: content,
-                ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: textOnly ? 56 : 72),
+            child: textOnly
+                ? content
+                : GlassSurface(
+                    radius: Radii.button,
+                    accented: primary,
+                    strong: primary,
+                    accentColor: widget.accentColor,
+                    blurBackdrop: true,
+                    child: content,
+                  ),
+          ),
         ),
       ),
     );

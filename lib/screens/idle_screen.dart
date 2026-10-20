@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/brand_mark.dart';
 import '../widgets/kiosk/tap_cue.dart';
+import '../widgets/kiosk/kiosk_reading_panel.dart';
 import '../widgets/kiosk/rotating_dangwa_image.dart';
 
 /// 01 · Attract / Idle — 아무도 쓰지 않을 때 보이는 화면.
@@ -85,9 +86,7 @@ class _IdleScreenState extends State<IdleScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     flex: 6,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: KioskReadingPanel(
                       children: [
                         Text(
                           'TASTE OF HWASEONG',

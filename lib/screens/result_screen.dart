@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/kiosk/dangwa_image.dart';
 import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/kiosk_button.dart';
+import '../widgets/kiosk/kiosk_reading_panel.dart';
 import '../widgets/kiosk/story_sheet.dart';
 import '../widgets/kiosk/store_directions_sheet.dart';
 import '../widgets/kiosk/top_control.dart';
@@ -71,8 +72,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       const SizedBox(width: 64),
                       Expanded(
                         flex: 6,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: KioskReadingPanel(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
@@ -90,7 +90,6 @@ class _ResultScreenState extends State<ResultScreen> {
                             const SizedBox(height: 14),
                             Text(
                               result.name.t,
-                              maxLines: 2,
                               style: Type.resultTitle.copyWith(height: 1.12),
                             ),
                             const SizedBox(height: 20),
@@ -107,37 +106,40 @@ class _ResultScreenState extends State<ResultScreen> {
                               accentColor: tone.deep,
                             ),
                             const SizedBox(height: 26),
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: KioskButton(
-                                    label: tr(
-                                      '이 다과 이야기 보기',
-                                      'Read the story',
-                                      'この茶菓の物語を読む',
+                            IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: KioskButton(
+                                      label: tr(
+                                        '이 다과 이야기 보기',
+                                        'Read the story',
+                                        'この茶菓の物語を読む',
+                                      ),
+                                      fullWidth: true,
+                                      accentColor: tone.deep,
+                                      onPressed: () =>
+                                          setState(() => _story = true),
                                     ),
-                                    fullWidth: true,
-                                    accentColor: tone.deep,
-                                    onPressed: () =>
-                                        setState(() => _story = true),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  flex: 2,
-                                  child: KioskButton(
-                                    label: tr(
-                                      '다시 추천받기',
-                                      'Try again',
-                                      'もう一度さがす',
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 2,
+                                    child: KioskButton(
+                                      label: tr(
+                                        '다시 추천받기',
+                                        'Try again',
+                                        'もう一度さがす',
+                                      ),
+                                      fullWidth: true,
+                                      variant: KioskButtonVariant.secondary,
+                                      onPressed: widget.onRestart,
                                     ),
-                                    fullWidth: true,
-                                    variant: KioskButtonVariant.secondary,
-                                    onPressed: widget.onRestart,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -146,17 +148,20 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                Row(
-                  children: [
-                    const Expanded(flex: 3, child: _PickupNotice()),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      flex: 2,
-                      child: _StoreRouteCard(
-                        onPressed: () => setState(() => _directions = true),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Expanded(flex: 3, child: _PickupNotice()),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        flex: 2,
+                        child: _StoreRouteCard(
+                          onPressed: () => setState(() => _directions = true),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -212,11 +217,13 @@ class _TeaPairing extends StatelessWidget {
           tr('어울리는 차', 'Pairs with', '相性のよいお茶'),
           style: Type.bodyMuted.copyWith(fontSize: 18),
         ),
-        const Spacer(),
-        Text(
-          pairing,
-          textAlign: TextAlign.right,
-          style: Type.section.copyWith(fontSize: 22, color: accentColor),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            pairing,
+            textAlign: TextAlign.right,
+            style: Type.section.copyWith(fontSize: 22, color: accentColor),
+          ),
         ),
       ],
     ),
@@ -248,8 +255,9 @@ class _PickupNotice extends StatelessWidget {
         radius: 30,
         strong: true,
         blurBackdrop: true,
-        child: SizedBox(
-          height: 126,
+        child: ConstrainedBox(
+          key: const ValueKey('pickup-notice'),
+          constraints: const BoxConstraints(minHeight: 126),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             child: Row(
@@ -282,17 +290,10 @@ class _PickupNotice extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Type.section.copyWith(fontSize: 23),
-                      ),
+                      Text(title, style: Type.section.copyWith(fontSize: 23)),
                       const SizedBox(height: 4),
                       Text(
                         guide,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                         style: Type.bodyMuted.copyWith(
                           fontSize: 16,
                           height: 1.35,
@@ -334,8 +335,9 @@ class _StoreRouteCard extends StatelessWidget {
         radius: 30,
         strong: true,
         blurBackdrop: true,
-        child: SizedBox(
-          height: 126,
+        child: ConstrainedBox(
+          key: const ValueKey('store-route-card'),
+          constraints: const BoxConstraints(minHeight: 126),
           child: Material(
             type: MaterialType.transparency,
             child: InkWell(
@@ -375,8 +377,6 @@ class _StoreRouteCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: Type.section.copyWith(fontSize: 21),
                           ),
                           const SizedBox(height: 4),

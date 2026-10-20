@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
@@ -15,14 +17,18 @@ class KioskProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badgeSize = math.max(
+      42.0,
+      MediaQuery.textScalerOf(context).scale(20) * 1.22 + 12,
+    );
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : Motion.slow;
     return Row(
       children: [
         Container(
-          width: 42,
-          height: 42,
+          width: badgeSize,
+          height: badgeSize,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.accentSoft,

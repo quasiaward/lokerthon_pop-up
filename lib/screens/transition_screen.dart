@@ -143,8 +143,8 @@ class _TransitionScreenState extends State<TransitionScreen>
           ),
         ),
         const SizedBox(height: Space.lg),
-        SizedBox(
-          height: 48,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
           // 앞 문구가 완전히 사라진 뒤 다음 문구가 올라온다. 두 문구가
           // 겹쳐 보이면 급하게 넘기는 인상을 준다.
           child: AnimatedSwitcher(

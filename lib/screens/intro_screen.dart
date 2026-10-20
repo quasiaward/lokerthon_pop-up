@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../data/dangwa_catalog.dart';
@@ -5,6 +7,7 @@ import '../l10n/lang.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/kiosk/tap_cue.dart';
+import '../widgets/kiosk/kiosk_reading_panel.dart';
 import '../widgets/kiosk/brand_mark.dart';
 import '../widgets/kiosk/glass_surface.dart';
 import '../widgets/kiosk/rotating_dangwa_image.dart';
@@ -50,7 +53,10 @@ class _IntroScreenState extends State<IntroScreen> {
           // 실제 버튼이 시작 제스처보다 먼저 터치를 처리한다.
           // 여백은 시작 영역으로, 이전·언어 버튼은 각자의 조작으로 유지한다.
           SizedBox(
-            height: 62,
+            height: math.max(
+              62,
+              MediaQuery.textScalerOf(context).scale(18) * 1.4 + 14,
+            ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -83,9 +89,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       children: [
                         Expanded(
                           flex: 6,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: KioskReadingPanel(
                             children: [
                               Text(
                                 'YOUR TASTE, OUR HERITAGE',
@@ -171,7 +175,7 @@ class _IntroBackControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 56,
+    height: math.max(56, MediaQuery.textScalerOf(context).scale(18) * 1.4 + 12),
     child: GlassSurface(
       radius: 24,
       blurBackdrop: true,

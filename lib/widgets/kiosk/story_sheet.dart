@@ -303,8 +303,6 @@ class _Note extends StatelessWidget {
                   Flexible(
                     child: Text(
                       value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: Type.section.copyWith(
                         fontSize: 23,
                         color: AppColors.accentDeep,

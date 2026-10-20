@@ -201,7 +201,12 @@ class _StoreDirectionsSheetState extends State<StoreDirectionsSheet>
                                 const SizedBox(width: 34),
                                 Expanded(
                                   flex: 4,
-                                  child: _RouteDetails(onClose: _close),
+                                  child: _RouteDetails(
+                                    key: const ValueKey(
+                                      'store-directions-details',
+                                    ),
+                                    onClose: _close,
+                                  ),
                                 ),
                               ],
                             ),
@@ -883,7 +888,7 @@ class _PlaceLabel extends StatelessWidget {
 }
 
 class _RouteDetails extends StatelessWidget {
-  const _RouteDetails({required this.onClose});
+  const _RouteDetails({super.key, required this.onClose});
 
   final VoidCallback onClose;
 
@@ -891,55 +896,65 @@ class _RouteDetails extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        tr(
-          '행궁다과까지\n걸어서 1분이에요',
-          'Haenggung Dagwa is\njust a 1-minute walk',
-          '行宮茶菓まで\n歩いて約1分です',
-        ),
-        style: Type.question.copyWith(fontSize: 38, height: 1.2),
-      ),
-      const SizedBox(height: 12),
-      Text(
-        tr(
-          '팝업을 나와 행궁로를 따라 98m만 걸어오세요.',
-          'Leave the pop-up and follow Haenggung-ro for 98 m.',
-          'ポップアップを出て、行宮路を98mほどお進みください。',
-        ),
-        style: Type.bodyMuted.copyWith(fontSize: 18, height: 1.48),
-      ),
-      const SizedBox(height: 20),
-      Row(
-        children: [
-          _RouteMetric(
-            icon: Icons.directions_walk_rounded,
-            value: tr('약 1분', '1 min', '約1分'),
+      Expanded(
+        child: SingleChildScrollView(
+          primary: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                tr(
+                  '행궁다과까지\n걸어서 1분이에요',
+                  'Haenggung Dagwa is\njust a 1-minute walk',
+                  '行宮茶菓まで\n歩いて約1分です',
+                ),
+                style: Type.question.copyWith(fontSize: 38, height: 1.2),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                tr(
+                  '팝업을 나와 행궁로를 따라 98m만 걸어오세요.',
+                  'Leave the pop-up and follow Haenggung-ro for 98 m.',
+                  'ポップアップを出て、行宮路を98mほどお進みください。',
+                ),
+                style: Type.bodyMuted.copyWith(fontSize: 18, height: 1.48),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  _RouteMetric(
+                    icon: Icons.directions_walk_rounded,
+                    value: tr('약 1분', '1 min', '約1分'),
+                  ),
+                  const SizedBox(width: 10),
+                  _RouteMetric(icon: Icons.route_rounded, value: '98 m'),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _RouteStep(
+                number: '1',
+                title: tr('팝업에서 출발', 'Leave the pop-up', 'ポップアップを出発'),
+                body: tr(
+                  '가회당에서 나와 행궁로를 따라 걸어주세요.',
+                  'Exit Gahoedang and follow Haenggung-ro.',
+                  'カフェダンを出て、行宮路に沿ってお進みください。',
+                ),
+              ),
+              const SizedBox(height: 10),
+              _RouteStep(
+                number: '2',
+                title: tr('건물 2층에 도착', 'Head up to the 2nd floor', '建物の2階へ'),
+                body: tr(
+                  '행궁로 25 건물 2층에서 기다리고 있어요.',
+                  'We’re waiting on the 2nd floor at 25 Haenggung-ro.',
+                  '行宮路25の建物2階でお待ちしています。',
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          _RouteMetric(icon: Icons.route_rounded, value: '98 m'),
-        ],
+        ),
       ),
       const SizedBox(height: 20),
-      _RouteStep(
-        number: '1',
-        title: tr('팝업에서 출발', 'Leave the pop-up', 'ポップアップを出発'),
-        body: tr(
-          '가회당에서 나와 행궁로를 따라 걸어주세요.',
-          'Exit Gahoedang and follow Haenggung-ro.',
-          'カフェダンを出て、行宮路に沿ってお進みください。',
-        ),
-      ),
-      const SizedBox(height: 10),
-      _RouteStep(
-        number: '2',
-        title: tr('건물 2층에 도착', 'Head up to the 2nd floor', '建物の2階へ'),
-        body: tr(
-          '행궁로 25 건물 2층에서 기다리고 있어요.',
-          'We’re waiting on the 2nd floor at 25 Haenggung-ro.',
-          '行宮路25の建物2階でお待ちしています。',
-        ),
-      ),
-      const Spacer(),
       KioskButton(
         label: tr('확인했어요', 'Got it', '確認しました'),
         fullWidth: true,
@@ -999,8 +1014,8 @@ class _RouteStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 32,
-          height: 32,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          padding: const EdgeInsets.all(4),
           alignment: Alignment.center,
           decoration: const BoxDecoration(
             color: AppColors.accent,

@@ -18,80 +18,83 @@ class DangwaImage extends StatelessWidget {
   final double padding;
 
   @override
-  Widget build(BuildContext context) => AspectRatio(
-    aspectRatio: aspectRatio,
-    child: LayoutBuilder(
-      builder: (context, constraints) => RepaintBoundary(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Radii.asset),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xEFFFFFFF), Color(0xBFFFFFFF)],
+  // Row의 고정 폭을 느슨하게 받아, 높이가 짧은 화면에서도 카드 비율을 보존한다.
+  Widget build(BuildContext context) => Center(
+    child: AspectRatio(
+      aspectRatio: aspectRatio,
+      child: LayoutBuilder(
+        builder: (context, constraints) => RepaintBoundary(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Radii.asset),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xEFFFFFFF), Color(0xBFFFFFFF)],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.92)),
+              boxShadow: [
+                BoxShadow(
+                  color: tone.deep.withValues(alpha: 0.14),
+                  blurRadius: 52,
+                  spreadRadius: -4,
+                  offset: const Offset(0, 24),
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.56),
+                  blurRadius: 2,
+                  offset: const Offset(0, -1),
+                ),
+              ],
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.92)),
-            boxShadow: [
-              BoxShadow(
-                color: tone.deep.withValues(alpha: 0.14),
-                blurRadius: 52,
-                spreadRadius: -4,
-                offset: const Offset(0, 24),
-              ),
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.56),
-                blurRadius: 2,
-                offset: const Offset(0, -1),
-              ),
-            ],
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Positioned(
-                width: constraints.maxWidth * 0.78,
-                height: constraints.maxWidth * 0.78,
-                right: -constraints.maxWidth * 0.18,
-                top: -constraints.maxWidth * 0.24,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        tone.soft.withValues(alpha: 0.82),
-                        tone.soft.withValues(alpha: 0),
-                      ],
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned(
+                  width: constraints.maxWidth * 0.78,
+                  height: constraints.maxWidth * 0.78,
+                  right: -constraints.maxWidth * 0.18,
+                  top: -constraints.maxWidth * 0.24,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          tone.soft.withValues(alpha: 0.82),
+                          tone.soft.withValues(alpha: 0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 28,
-                right: 28,
-                top: 0,
-                child: Container(
-                  height: 1.2,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0),
-                        Colors.white,
-                        Colors.white.withValues(alpha: 0),
-                      ],
+                Positioned(
+                  left: 28,
+                  right: 28,
+                  top: 0,
+                  child: Container(
+                    height: 1.2,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0),
+                          Colors.white,
+                          Colors.white.withValues(alpha: 0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(constraints.maxWidth * padding),
-                child: Image.asset(
-                  assetPath,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
+                Padding(
+                  padding: EdgeInsets.all(constraints.maxWidth * padding),
+                  child: Image.asset(
+                    assetPath,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

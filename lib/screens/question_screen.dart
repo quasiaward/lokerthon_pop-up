@@ -86,15 +86,27 @@ class QuestionScreen extends StatelessWidget {
             const gap = 22.0;
             final rows = (question.options.length / 2).ceil();
             final cardWidth = (constraints.maxWidth - gap) / 2;
+            final minimumHeight = question.options
+                .map(
+                  (option) =>
+                      ChoiceCard.minimumHeight(context, option, cardWidth),
+                )
+                .reduce(math.max);
             // 폭만으로 높이를 정하면 mini처럼 가로 비율이 긴 iPad에서
             // 두 번째 행이 스크롤 불가능한 뷰포트 아래로 잘린다.
-            final cardHeight = math.min(
-              cardWidth / 2.4,
-              (constraints.maxHeight - gap * (rows - 1)) / rows,
+            final cardHeight = math.max(
+              minimumHeight,
+              math.min(
+                cardWidth / 2.4,
+                (constraints.maxHeight - gap * (rows - 1)) / rows,
+              ),
             );
             return GridView.count(
+              key: ValueKey(index),
               padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
+              // 기본 크기는 네 선택지를 한 번에 표시한다. 큰 글자에서만
+              // 필요한 만큼 스크롤해 문구를 줄이거나 잘라내지 않는다.
+              physics: const ClampingScrollPhysics(),
               crossAxisCount: 2,
               mainAxisSpacing: gap,
               crossAxisSpacing: gap,
@@ -146,24 +158,26 @@ class QuestionScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 9),
                 ],
-                Text(
-                  error ??
-                      (index == quizQuestions.length - 1
-                          ? tr(
-                              '선택하면 나에게 어울리는 다과를 알려드려요',
-                              'Choose an answer to discover your dagwa',
-                              '選ぶとあなたに似合う茶菓をご紹介します',
-                            )
-                          : tr(
-                              '선택하면 다음 질문으로 넘어가요',
-                              'Choose an answer to continue',
-                              '選ぶと次の質問に進みます',
-                            )),
-                  style: Type.caption.copyWith(
-                    fontSize: 18,
-                    color: error == null
-                        ? AppColors.muted
-                        : Colors.red.shade700,
+                Flexible(
+                  child: Text(
+                    error ??
+                        (index == quizQuestions.length - 1
+                            ? tr(
+                                '선택하면 나에게 어울리는 다과를 알려드려요',
+                                'Choose an answer to discover your dagwa',
+                                '選ぶとあなたに似合う茶菓をご紹介します',
+                              )
+                            : tr(
+                                '선택하면 다음 질문으로 넘어가요',
+                                'Choose an answer to continue',
+                                '選ぶと次の質問に進みます',
+                              )),
+                    style: Type.caption.copyWith(
+                      fontSize: 18,
+                      color: error == null
+                          ? AppColors.muted
+                          : Colors.red.shade700,
+                    ),
                   ),
                 ),
               ],

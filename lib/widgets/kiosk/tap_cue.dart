@@ -14,7 +14,7 @@ import '../../theme/app_theme.dart';
 class TapCue extends StatefulWidget {
   const TapCue({super.key, this.supportingText});
 
-  /// 화면에 맞는 시작 안내. 두 줄까지 같은 영역에 배치한다.
+  /// 화면에 맞는 시작 안내. 글자 확대 시 필요한 만큼 높이가 늘어난다.
   final String? supportingText;
 
   @override
@@ -100,30 +100,30 @@ class _TapCueState extends State<TapCue> with SingleTickerProviderStateMixin {
       key: const ValueKey('tap-cue-surface'),
       child: SizedBox(
         width: 480,
-        height: 142,
-        child: Stack(
-          alignment: Alignment.topCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Positioned(
-              top: 0,
-              left: 12,
-              right: 12,
-              height: 48,
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
               child: Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Type.caption.copyWith(
-                    fontSize: 18,
-                    height: 1.35,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.muted,
+                heightFactor: 1,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Type.caption.copyWith(
+                      fontSize: 18,
+                      height: 1.35,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.muted,
+                    ),
                   ),
                 ),
               ),
             ),
-            Positioned(
-              top: 56,
+            const SizedBox(height: 8),
+            SizedBox(
               child: AnimatedBuilder(
                 animation: _motion,
                 child: const Icon(
@@ -178,6 +178,7 @@ class _TapCueState extends State<TapCue> with SingleTickerProviderStateMixin {
                 },
               ),
             ),
+            const SizedBox(height: 6),
           ],
         ),
       ),
