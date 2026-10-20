@@ -221,6 +221,45 @@ void main() {
   );
 
   testWidgets(
+    'background branch reaches the screen bottom outside the safe area',
+    (tester) async {
+      _setUpView(tester);
+      tester.view.padding = const FakeViewPadding(bottom: 40);
+      addTearDown(tester.view.resetPadding);
+      for (final screen in _landscapeSizes) {
+        tester.view.physicalSize = screen * 2;
+        await tester.pumpWidget(
+          MaterialApp(theme: buildAppTheme(), home: const KioskPage()),
+        );
+        await _frames(tester);
+        final branch = find.byWidgetPredicate((widget) {
+          if (widget is! Image) return false;
+          final provider = widget.image;
+          final source = provider is ResizeImage
+              ? provider.imageProvider
+              : provider;
+          return source is AssetImage &&
+              source.assetName ==
+                  'assets/figma/deco/deco_watercolor_pink_branch.png';
+        });
+        expect(branch, findsOneWidget);
+        expect(
+          tester.getRect(branch).bottom,
+          closeTo(screen.height, 0.01),
+          reason:
+              '$screen: the background must continue behind the home indicator',
+        );
+        final cue = tester.getRect(
+          find.byKey(const ValueKey('tap-cue-surface')),
+        );
+        expect(cue.bottom, lessThanOrEqualTo(screen.height - 20));
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     'resizing during a quiz preserves the answer and finishes the flow',
     (tester) async {
       _setUpView(tester);

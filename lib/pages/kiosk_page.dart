@@ -357,24 +357,27 @@ class _KioskPageState extends State<KioskPage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: AppColors.ground,
       body: KioskCanvas(
+        background: Stack(
+          children: [
+            Positioned.fill(
+              child: TweenAnimationBuilder<Color?>(
+                tween: ColorTween(end: stageTint),
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : Motion.slow,
+                curve: Motion.curve,
+                builder: (context, tint, _) => AmbientField(tint: tint),
+              ),
+            ),
+            // 배경 장식은 홈 인디케이터 뒤까지 이어져야 하단이 끊기지 않는다.
+            const Positioned.fill(child: BloomBackdrop()),
+          ],
+        ),
         child: Listener(
           onPointerDown: (_) => _bumpIdleTimer(),
           onPointerMove: (_) => _bumpIdleTimer(),
           child: Stack(
             children: [
-              Positioned.fill(
-                child: TweenAnimationBuilder<Color?>(
-                  tween: ColorTween(end: stageTint),
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : Motion.slow,
-                  curve: Motion.curve,
-                  builder: (context, tint, _) => AmbientField(tint: tint),
-                ),
-              ),
-              // 홈페이지 시안과 같은 두 수채화 조각을 모든 단계에 고정한다.
-              // 화면 콘텐츠와 함께 교체하지 않아 전환 중 위치가 흔들리지 않는다.
-              const Positioned.fill(child: BloomBackdrop()),
               Positioned.fill(
                 child: AbsorbPointer(
                   absorbing: _busy,
