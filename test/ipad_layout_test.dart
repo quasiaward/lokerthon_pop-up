@@ -9,6 +9,7 @@ import 'package:haenggung_dagwa/screens/intro_screen.dart';
 import 'package:haenggung_dagwa/screens/question_screen.dart';
 import 'package:haenggung_dagwa/screens/result_screen.dart';
 import 'package:haenggung_dagwa/screens/transition_screen.dart';
+import 'package:haenggung_dagwa/widgets/kiosk/kiosk_canvas.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/tap_cue.dart';
 
 /// iPad Pro 12.9형(5세대) 가로 논리 해상도.
@@ -40,6 +41,26 @@ Future<void> _tapText(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets('11형 iPad 가로 화면에서 캔버스가 양옆 끝까지 닿는다', (tester) async {
+    const screenSize = Size(1194, 834);
+    tester.view.physicalSize = screenSize * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: KioskCanvas(child: SizedBox.expand())),
+      ),
+    );
+
+    final canvas = find.descendant(
+      of: find.byType(KioskCanvas),
+      matching: find.byType(SizedBox),
+    );
+    expect(tester.getRect(canvas.first), Rect.fromLTWH(0, 0, 1194, 834));
+  });
+
   testWidgets('Idle과 Intro의 시작 안내가 같은 하단 중심축을 유지한다', (tester) async {
     await _pumpKiosk(tester);
 

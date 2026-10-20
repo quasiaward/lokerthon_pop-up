@@ -14,7 +14,7 @@ build.sh)은 모두 제거했다.
 - **백엔드**: FastAPI (`backend/`) — 지금은 쓰지 않음. 추후 OpenAI 추천 전환용으로 보관
 
 ## 대상 기기
-iPad Pro 12.9형(5세대), iPadOS 26.6. **가로 전용.**
+iPad·mini·Air·Pro의 다양한 화면 크기. **가로 전용.**
 
 ## 디렉토리 구조
 ```
@@ -31,7 +31,7 @@ lokerthon_pop-up/
 │   │   └── result_screen.dart             ← 결과·페어링·다시하기 액션
 │   ├── widgets/
 │   │   ├── kiosk/                         ← 디자인 시스템 컴포넌트
-│   │   │   ├── kiosk_canvas.dart          ← 1366×1024 고정 캔버스
+│   │   │   ├── kiosk_canvas.dart          ← 1366×1024 기준, 안전 영역 안에서 폭·높이 확장
 │   │   │   ├── kiosk_button.dart          ← Primary/Secondary/Text
 │   │   │   ├── choice_card.dart           ← 선택 카드
 │   │   │   ├── kiosk_progress.dart        ← 진행 표시
@@ -61,7 +61,7 @@ lokerthon_pop-up/
 ├── backend/                               ← FastAPI (현재 미사용)
 └── test/
     ├── widget_test.dart                   ← 추천 알고리즘 전수 검증
-    └── ipad_layout_test.dart              ← 12.9형 가로 레이아웃 검증
+    └── ipad_layout_test.dart              ← 11형 화면 채움·12.9형 가로 레이아웃 검증
 ```
 
 ## 추천 알고리즘
@@ -141,8 +141,10 @@ Pretendard sans가 본문. 영문 accent에만 Fraunces italic을 보조로 쓴�
 가른다 — 영문 대문자에는 넓은 자간, 한글에는 거의 주지 않는다.
 
 ### 레이아웃
-모든 화면은 `KioskCanvas` 안의 **1366×1024 고정 좌표**로 그린다. 대상 기기에서
-배율이 정확히 1이고, 비율이 다른 태블릿에서도 구조가 깨지지 않는다.
+모든 화면은 `KioskCanvas` 안의 **1366×1024 기준 좌표**로 그린다. 시스템 안전 영역을
+제외한 화면 비율에 맞춰 캔버스 폭 또는 높이를 확장하고 균일 배율을 적용한다.
+질문 그리드는 폭뿐 아니라 남은 높이로 카드 높이를 제한한다. 스크롤을 막아 둔
+그리드이므로 모든 카드가 뷰포트 안에 들어오는지 실제 경계와 터치로 검증해야 한다.
 좌우 여백 88~96px, 상하 72~80px.
 
 ### 화면 흐름
