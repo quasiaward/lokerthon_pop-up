@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 8 이상은 기기마다 아이콘 모양을 잘라 낸다. 글자가 잘리지 않도록
+     가운데 안전 영역 안으로 줄인 전경을 쓴다. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

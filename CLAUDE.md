@@ -9,12 +9,13 @@
 build.sh)은 모두 제거했다.
 
 ## 기술 스택
-- **앱**: Flutter (Dart) → iOS (iPad 전용, 가로 고정)
+- **앱**: Flutter (Dart) → iOS(iPad)·Android(태블릿), 가로 고정. 앱이 떠 있는 동안 화면이
+  꺼지지 않고(`wakelock_plus`), Android 뒤로 가기로 앱이 닫히지 않는다(`KioskPage`의 `PopScope`).
 - **추천 로직**: 기기 안에서 도는 규칙 기반 알고리즘 (네트워크·API 키 불필요)
 - **백엔드**: FastAPI (`backend/`) — 지금은 쓰지 않음. 추후 OpenAI 추천 전환용으로 보관
 
 ## 대상 기기
-iPad·mini·Air·Pro의 다양한 화면 크기. **가로 전용.**
+iPad·mini·Air·Pro와 Android 태블릿(16:10 1280×800dp 등)의 다양한 화면 크기. **가로 전용.**
 
 ## 디렉토리 구조
 ```
@@ -53,6 +54,7 @@ lokerthon_pop-up/
 │   │   └── app_theme.dart                 ← 타이포 스케일 (Type)
 │   └── l10n/lang.dart                     ← 한/영/일 (Lang, tr, L10nText)
 ├── ios/                                   ← iOS 러너, 앱 아이콘, Info.plist
+├── android/                               ← Android 러너, 적응형 아이콘, 가로 고정 Manifest
 ├── assets/
 │   ├── branding/app_icon.png              ← 앱 아이콘 원본 (1024px)
 │   ├── figma/quiz/                        ← 퀴즈 선택지 이미지
@@ -269,7 +271,12 @@ flutter test
 
 ## 작업 시 주의
 - **가로 전용이다.** 세로 레이아웃은 지원하지 않는다.
-  방향을 바꾸려면 `ios/Runner/Info.plist`와 `lib/main.dart` 양쪽을 고쳐야 한다.
+  방향을 바꾸려면 `ios/Runner/Info.plist`, `android/app/src/main/AndroidManifest.xml`의
+  `screenOrientation`, `lib/main.dart`를 함께 고쳐야 한다.
+- Android APK는 스토어 없이 직접 설치하는 전시용이라 디버그 키로 서명한다
+  (`android/app/build.gradle.kts`). 다른 PC에서 빌드한 APK로 바꾸려면 기존 앱을 지우고 설치한다.
+- 앱 아이콘을 바꾸면 iOS(`ios/Runner/Assets.xcassets`)와 Android(`android/app/src/main/res/mipmap-*`)
+  양쪽을 다시 만든다. Android 적응형 아이콘 전경은 글자가 잘리지 않게 78%로 줄였다.
 - 온디바이스 추천은 즉시 끝난다. 기대감은 `TransitionScreen`의 3초 로딩
   연출(점이 둘레를 3바퀴 돌고 문구가 세 번 바뀐다)이 만든다. 여기서 결과 다과 이미지나 이름을 미리
   보여 주지 않는다. progress bar는 쓰지 않는다.

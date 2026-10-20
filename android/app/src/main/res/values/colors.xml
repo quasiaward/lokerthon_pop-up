@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 앱 아이콘 바탕(assets/branding/app_icon.png 모서리 색) -->
+    <color name="ic_launcher_background">#FBF9F6</color>
+    <!-- 앱 바탕 warm ivory (AppColors.ground) -->
+    <color name="app_ground">#F5F0E8</color>
+</resources>

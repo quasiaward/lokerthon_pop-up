@@ -1,6 +1,6 @@
-# 행궁다과 — 다과 추천 아이패드 앱
+# 행궁다과 — 다과 추천 태블릿 앱 (iPad · Android)
 
-화성행궁 전통 다과 브랜드 **행궁다과**의 팝업 부스용 아이패드 앱입니다.
+화성행궁 전통 다과 브랜드 **행궁다과**의 팝업 부스용 태블릿 앱입니다. iPad와 Android 태블릿에서 실행됩니다.
 6문항 취향 테스트로 오늘의 다과를 추천합니다. 12개 다과 데이터를
 보존하면서 금귤정과·매작과·양갱·콩고물 도라지정과·흑임자다식·구움 견과 강정·
 도라지정과·육포다식 8종을 운영합니다.
@@ -54,7 +54,10 @@ flutter run --dart-define=USE_API=true \
 ```bash
 flutter pub get
 flutter run -d <기기 또는 시뮬레이터>
+flutter build apk --release   # Android 설치 파일: build/app/outputs/flutter-apk/app-release.apk
 ```
+
+설치와 전시 운영 절차는 인수인계서(`행궁다과_태블릿_인수인계서.docx`)에 정리했습니다.
 
 ## 검증
 
@@ -158,13 +161,16 @@ flutter run --dart-define=KIOSK_LANG=ja --dart-define=KIOSK_STAGE=result
 flutter run --dart-define=KIOSK_STAGE=result   # idle|intro|question|transition|result
 ```
 
-## 아이패드 설정
+## 태블릿 설정
 
 - **대상 기기**: iPad·mini·Air·Pro의 다양한 가로 화면 크기 (검증 해상도는 위 참고)
 - **가로 전용**: `Info.plist`의 `UISupportedInterfaceOrientations`와
   `main.dart`의 `setPreferredOrientations` 양쪽에서 가로로 고정
 - **전체화면 고정**: `UIRequiresFullScreen = true` (스플릿뷰·슬라이드오버 차단)
 - **상태표시줄 숨김**: `UIStatusBarHidden = true` + `immersiveSticky` 모드
+- **Android**: `AndroidManifest.xml`의 `sensorLandscape`로 가로 고정, 앱 이름 '행궁다과',
+  뒤로 가기로 앱이 닫히지 않음, APK는 디버그 키 서명(직접 설치용)
+- **화면 꺼짐 방지**: 앱이 떠 있는 동안 `wakelock_plus`로 화면을 켜 둠(iOS·Android)
 - **앱 아이콘**: `assets/branding/app_icon.png` (다식판 꽃문양 모티브)
 - **폰트**: Pretendard(본문) + Fraunces(영문 accent)
 

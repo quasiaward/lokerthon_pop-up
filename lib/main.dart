@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'l10n/lang.dart';
 import 'perf_probe.dart';
@@ -19,6 +20,9 @@ Future<void> main() async {
     DeviceOrientation.landscapeRight,
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // 전시 중 화면이 꺼지지 않게 한다. 기기 자동 잠금 설정과 별개로 앱이
+  // 앞에 떠 있는 동안 유지된다.
+  await WakelockPlus.enable();
 
   // 확인용 시작 언어. `--dart-define=KIOSK_LANG=ja` 처럼 지정한다.
   // 지정하지 않으면 늘 한국어로 시작한다.
