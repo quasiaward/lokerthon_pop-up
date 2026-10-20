@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import '../data/quiz_questions.dart';
 import '../l10n/lang.dart';
@@ -79,22 +81,35 @@ class QuestionScreen extends StatelessWidget {
       Text(question.hint.t, style: Type.bodyMuted.copyWith(fontSize: 23)),
       const SizedBox(height: 36),
       Expanded(
-        child: GridView.count(
-          padding: EdgeInsets.zero,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 22,
-          crossAxisSpacing: 22,
-          childAspectRatio: 2.4,
-          children: [
-            for (final option in question.options)
-              ChoiceCard(
-                key: ValueKey(option.title),
-                option: option,
-                selected: selected == option.title,
-                onTap: () => onSelect(option),
-              ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            const gap = 22.0;
+            final rows = (question.options.length / 2).ceil();
+            final cardWidth = (constraints.maxWidth - gap) / 2;
+            // 폭만으로 높이를 정하면 mini처럼 가로 비율이 긴 iPad에서
+            // 두 번째 행이 스크롤 불가능한 뷰포트 아래로 잘린다.
+            final cardHeight = math.min(
+              cardWidth / 2.4,
+              (constraints.maxHeight - gap * (rows - 1)) / rows,
+            );
+            return GridView.count(
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: gap,
+              crossAxisSpacing: gap,
+              mainAxisExtent: cardHeight,
+              children: [
+                for (final option in question.options)
+                  ChoiceCard(
+                    key: ValueKey(option.title),
+                    option: option,
+                    selected: selected == option.title,
+                    onTap: () => onSelect(option),
+                  ),
+              ],
+            );
+          },
         ),
       ),
       const SizedBox(height: 12),
