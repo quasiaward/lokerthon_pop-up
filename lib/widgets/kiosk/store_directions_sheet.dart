@@ -300,8 +300,18 @@ class _RouteIllustration extends StatelessWidget {
                             gaplessPlayback: true,
                           ),
                         ),
-                        ..._roadLabels(at),
-                        for (final poi in _pois) _PoiMarker.place(poi, at),
+                        ..._roadLabels(
+                          at,
+                          size,
+                          MediaQuery.textScalerOf(context),
+                        ),
+                        for (final poi in _pois)
+                          _PoiMarker.place(
+                            poi,
+                            at,
+                            size,
+                            MediaQuery.textScalerOf(context),
+                          ),
                       ],
                     ),
                   ),
@@ -338,7 +348,6 @@ class _RouteIllustration extends StatelessWidget {
                 ),
                 _besidePin(
                   at(_MapGeo.destination),
-                  size,
                   _PlaceLabel(
                     eyebrow: tr('도착', 'ARRIVE', '到着'),
                     title: tr('행궁다과 · 2층', 'Haenggung Dagwa · 2F', '行宮茶菓・2階'),
@@ -348,7 +357,6 @@ class _RouteIllustration extends StatelessWidget {
                 ),
                 _besidePin(
                   at(_MapGeo.start),
-                  size,
                   _PlaceLabel(
                     eyebrow: tr('출발 · 현재 위치', 'START · YOU ARE HERE', '出発・現在地'),
                     title: tr('가회당 · 팝업', 'Gahoedang · Pop-up', 'カフェダン・ポップアップ'),
@@ -364,26 +372,14 @@ class _RouteIllustration extends StatelessWidget {
     ),
   );
 
-  /// 핀 머리 오른쪽에 이름표를 붙인다. 지도 밖으로 넘치지 않게 폭을 줄인다.
-  static Widget _besidePin(Offset tip, Size size, _PlaceLabel label) {
-    const gap = 26.0;
-    const edge = 12.0;
-    final left = tip.dx + gap;
-    return Positioned(
-      left: left,
-      // 핀 머리(끝에서 약 32px 위)와 이름표의 세로 가운데를 맞춘다.
-      top: tip.dy - 32,
-      child: FractionalTranslation(
-        translation: const Offset(0, -0.5),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: math.max(120, size.width - left - edge),
-          ),
-          child: label,
-        ),
-      ),
-    );
-  }
+  /// 핀 머리 오른쪽에 이름표를 붙인다. 지도 밖으로 넘치지 않게 폭을 줄이고,
+  /// 글자를 키워 이름표가 길어지면 세로로도 지도 안에 밀어 넣는다.
+  static Widget _besidePin(Offset tip, _PlaceLabel label) => Positioned.fill(
+    child: CustomSingleChildLayout(
+      delegate: _BesidePinLayout(tip),
+      child: label,
+    ),
+  );
 
   /// [point]에 자식의 [anchor] 지점이 오도록 놓는다.
   static Widget _anchored(Offset point, Alignment anchor, Widget child) =>
@@ -396,47 +392,123 @@ class _RouteIllustration extends StatelessWidget {
         ),
       );
 
-  static List<Widget> _roadLabels(Offset Function(Offset) at) => [
-    _anchored(
-      at(const Offset(1178, 1100)),
-      Alignment.center,
-      _RoadLabel(tr('행궁로', 'Haenggung-ro', '行宮路'), angle: 1.39),
-    ),
-    _anchored(
-      at(const Offset(790, 418)),
-      Alignment.center,
-      _RoadLabel(
+  static List<Widget> _roadLabels(
+    Offset Function(Offset) at,
+    Size size,
+    TextScaler scaler,
+  ) {
+    // 기울어진 글자는 높이의 절반만큼 모서리가 더 튀어나온다.
+    final halfHeight = scaler.scale(_RoadLabel.fontSize) * 0.75;
+    Widget road(Offset point, double angle, String text) {
+      final p = at(point);
+      return _anchored(
+        p,
+        Alignment.center,
+        _RoadLabel(
+          text,
+          angle: angle,
+          maxLength: _roadRoom(p, angle, size, halfHeight),
+        ),
+      );
+    }
+
+    return [
+      road(const Offset(1178, 1100), 1.39, tr('행궁로', 'Haenggung-ro', '行宮路')),
+      road(
+        const Offset(790, 418),
+        -0.58,
         tr('행궁로26번길', 'Haenggung-ro 26beon-gil', '行宮路26番ギル'),
-        angle: -0.58,
       ),
-    ),
-    _anchored(
-      at(const Offset(1508, 598)),
-      Alignment.center,
-      _RoadLabel(
+      road(
+        const Offset(1508, 598),
+        0.55,
         tr('정조로801번길', 'Jeongjo-ro 801beon-gil', '正祖路801番ギル'),
-        angle: 0.55,
       ),
-    ),
-  ];
+    ];
+  }
+
+  /// [p]를 가운데로 [angle]만큼 기운 이름이 지도 밖으로 나가지 않는 최대 길이.
+  /// 기운 글자의 모서리(높이의 절반)와 둥근 테두리 여백까지 감안한다.
+  static double _roadRoom(
+    Offset p,
+    double angle,
+    Size size,
+    double halfHeight,
+  ) {
+    const edge = 8.0;
+    final cos = math.cos(angle).abs();
+    final sin = math.sin(angle).abs();
+    final roomX = math.min(p.dx, size.width - p.dx) - edge - halfHeight * sin;
+    final roomY = math.min(p.dy, size.height - p.dy) - edge - halfHeight * cos;
+    final alongX = cos < 1e-6 ? double.infinity : roomX / cos;
+    final alongY = sin < 1e-6 ? double.infinity : roomY / sin;
+    return 2 * math.max(0.0, math.min(alongX, alongY));
+  }
+}
+
+class _BesidePinLayout extends SingleChildLayoutDelegate {
+  const _BesidePinLayout(this.tip);
+
+  final Offset tip;
+
+  static const _gap = 26.0;
+  static const _edge = 12.0;
+
+  /// 핀 끝에서 핀 머리 가운데까지의 높이.
+  static const _head = 32.0;
+
+  double get _left => tip.dx + _gap;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      BoxConstraints(
+        maxWidth: math.max(120, constraints.maxWidth - _left - _edge),
+        maxHeight: math.max(0, constraints.maxHeight - _edge * 2),
+      );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final centered = tip.dy - _head - childSize.height / 2;
+    final top = centered.clamp(
+      _edge,
+      math.max(_edge, size.height - _edge - childSize.height),
+    );
+    return Offset(_left, top.toDouble());
+  }
+
+  @override
+  bool shouldRelayout(_BesidePinLayout oldDelegate) => oldDelegate.tip != tip;
 }
 
 class _RoadLabel extends StatelessWidget {
-  const _RoadLabel(this.text, {required this.angle});
+  const _RoadLabel(this.text, {required this.angle, required this.maxLength});
 
   final String text;
   final double angle;
 
+  /// 지도 안에 들어가는 최대 길이. 글자를 키워 이보다 길어지면 이 길이에 맞춘다.
+  final double maxLength;
+
+  static const fontSize = 12.0;
+
   @override
   Widget build(BuildContext context) => Transform.rotate(
     angle: angle,
-    child: Text(
-      text,
-      style: Type.caption.copyWith(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.4,
-        color: AppColors.faint,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxLength),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          text,
+          maxLines: 1,
+          softWrap: false,
+          style: Type.caption.copyWith(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
+            color: AppColors.faint,
+          ),
+        ),
       ),
     ),
   );
@@ -655,23 +727,79 @@ const _pois = [
 
 /// 네이버 지도처럼 작은 아이콘 아래에 이름을 둔다.
 class _PoiMarker extends StatelessWidget {
-  const _PoiMarker(this.poi);
+  const _PoiMarker(
+    this.poi, {
+    this.dotInset = 0,
+    this.nameInset = 0,
+    this.nameAbove = false,
+  });
 
   final _Poi poi;
 
-  static const _dot = 12.0;
+  /// 왼쪽 끝에서 점까지, 이름까지의 거리.
+  final double dotInset;
+  final double nameInset;
+  final bool nameAbove;
 
-  static Widget place(_Poi poi, Offset Function(Offset) at) {
+  static const _dot = 12.0;
+  static const _gap = 2.0;
+
+  /// 이름이 지도 테두리에서 떨어져야 하는 거리.
+  static const _edge = 8.0;
+
+  static final _nameStyle = Type.caption.copyWith(
+    fontSize: 10.5,
+    height: 1.15,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// 점은 [poi] 위치에 그대로 두고, 이름은 지도 안으로 밀어 넣는다. 글자를
+  /// 키우면 가장자리 건물 이름이 지도 밖으로 잘리기 때문이다. 아래 공간이
+  /// 모자라면 이름을 점 위로 올린다.
+  static Widget place(
+    _Poi poi,
+    Offset Function(Offset) at,
+    Size size,
+    TextScaler scaler,
+  ) {
     final p = at(poi.at);
-    final (anchor, shift) = switch (poi.text ?? _PoiText.center) {
-      _PoiText.center => (Alignment.topCenter, Offset.zero),
-      _PoiText.toRight => (Alignment.topLeft, const Offset(-_dot / 2, 0)),
-      _PoiText.toLeft => (Alignment.topRight, const Offset(_dot / 2, 0)),
+    if (poi.kind == _PoiKind.parking) {
+      return _RouteIllustration._anchored(
+        p - const Offset(0, _dot / 2),
+        Alignment.topCenter,
+        _PoiMarker(poi),
+      );
+    }
+    final painter = TextPainter(
+      text: TextSpan(text: tr(poi.ko, poi.en, poi.ja), style: _nameStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+    )..layout();
+    final name = painter.size;
+    painter.dispose();
+
+    final wanted = switch (poi.text ?? _PoiText.center) {
+      _PoiText.center => p.dx - name.width / 2,
+      _PoiText.toRight => p.dx - _dot / 2,
+      _PoiText.toLeft => p.dx + _dot / 2 - name.width,
     };
-    return _RouteIllustration._anchored(
-      p + shift - const Offset(0, _dot / 2),
-      anchor,
-      _PoiMarker(poi),
+    final left = wanted
+        .clamp(_edge, math.max(_edge, size.width - _edge - name.width))
+        .toDouble();
+    final dotTop = p.dy - _dot / 2;
+    final dotLeft = p.dx - _dot / 2;
+    final above = dotTop + _dot + _gap + name.height > size.height - _edge;
+    // 점과 이름 가운데 더 왼쪽에 있는 쪽을 기준으로 둔다.
+    final origin = math.min(left, dotLeft);
+    return Positioned(
+      left: origin,
+      top: above ? dotTop - _gap - name.height : dotTop,
+      child: _PoiMarker(
+        poi,
+        dotInset: dotLeft - origin,
+        nameInset: left - origin,
+        nameAbove: above,
+      ),
     );
   }
 
@@ -706,42 +834,42 @@ class _PoiMarker extends StatelessWidget {
         ),
       );
     }
-    final align = switch (poi.text ?? _PoiText.center) {
-      _PoiText.center => CrossAxisAlignment.center,
-      _PoiText.toRight => CrossAxisAlignment.start,
-      _PoiText.toLeft => CrossAxisAlignment.end,
-    };
     final food = poi.kind == _PoiKind.food || poi.kind == _PoiKind.shop;
+    final dot = Padding(
+      padding: EdgeInsets.only(left: dotInset),
+      child: Container(
+        width: _dot,
+        height: _dot,
+        decoration: BoxDecoration(
+          color: _color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 1.5),
+        ),
+      ),
+    );
+    final name = Padding(
+      padding: EdgeInsets.only(left: nameInset),
+      child: Text(
+        tr(poi.ko, poi.en, poi.ja),
+        maxLines: 1,
+        softWrap: false,
+        style: _nameStyle.copyWith(
+          color: food
+              ? Color.lerp(_color, AppColors.ink, 0.35)
+              : AppColors.muted,
+          shadows: const [
+            Shadow(color: Colors.white, blurRadius: 3),
+            Shadow(color: Colors.white, blurRadius: 3),
+          ],
+        ),
+      ),
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: align,
-      children: [
-        Container(
-          width: _dot,
-          height: _dot,
-          decoration: BoxDecoration(
-            color: _color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 1.5),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          tr(poi.ko, poi.en, poi.ja),
-          style: Type.caption.copyWith(
-            fontSize: 10.5,
-            height: 1.15,
-            fontWeight: FontWeight.w600,
-            color: food
-                ? Color.lerp(_color, AppColors.ink, 0.35)
-                : AppColors.muted,
-            shadows: const [
-              Shadow(color: Colors.white, blurRadius: 3),
-              Shadow(color: Colors.white, blurRadius: 3),
-            ],
-          ),
-        ),
-      ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: nameAbove
+          ? [name, const SizedBox(height: _gap), dot]
+          : [dot, const SizedBox(height: _gap), name],
     );
   }
 }

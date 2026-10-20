@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:haenggung_dagwa/widgets/kiosk/kiosk_canvas.dart';
 import 'package:haenggung_dagwa/l10n/lang.dart';
 import 'package:haenggung_dagwa/theme/app_theme.dart';
 import 'package:haenggung_dagwa/widgets/kiosk/store_directions_sheet.dart';
@@ -96,5 +99,72 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(tester.binding.hasScheduledFrame, isFalse);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('글자를 키워도 지도 위 이름이 지도 테두리 안에 남는다', (tester) async {
+    await (FontLoader(
+      kSans,
+    )..addFont(rootBundle.load('assets/fonts/PretendardVariable.ttf'))).load();
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final mapImage = find.byWidgetPredicate(
+      (w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == 'assets/map/route_map.png',
+    );
+    for (final size in const [
+      Size(1024, 768),
+      Size(1133, 744),
+      Size(1366, 1024),
+      Size(960, 600),
+    ]) {
+      tester.view.physicalSize = size;
+      for (final scale in [1.0, 1.3, 1.6, 2.0]) {
+        for (final lang in Lang.values) {
+          appLang.value = lang;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: buildAppTheme(),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(scale),
+                  disableAnimations: true,
+                ),
+                child: child!,
+              ),
+              home: Scaffold(
+                body: KioskCanvas(child: StoreDirectionsSheet(onClose: () {})),
+              ),
+            ),
+          );
+          await tester.pump();
+          final reason = '$size / ×$scale / ${lang.name}';
+          expect(tester.takeException(), isNull, reason: reason);
+          final clip = find
+              .ancestor(of: mapImage, matching: find.byType(ClipRRect))
+              .first;
+          final bounds = tester.getRect(clip).inflate(0.5);
+          final labels = find
+              .descendant(of: clip, matching: find.byType(RichText))
+              .evaluate();
+          expect(labels, isNotEmpty);
+          for (final element in labels) {
+            final paragraph = element.renderObject! as RenderParagraph;
+            final rect = MatrixUtils.transformRect(
+              paragraph.getTransformTo(null),
+              Offset.zero & paragraph.size,
+            );
+            expect(
+              bounds.contains(rect.topLeft) &&
+                  bounds.contains(rect.bottomRight),
+              isTrue,
+              reason: '$reason / ${paragraph.text.toPlainText()} $rect in $bounds',
+            );
+          }
+        }
+      }
+    }
   });
 }
